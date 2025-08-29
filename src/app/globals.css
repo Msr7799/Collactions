@@ -1,0 +1,397 @@
+@import "tailwindcss";
+
+
+  :root {
+    /* Dark theme (default) */
+    --background: #0c1012;
+    --high-light-bg: #0e0e0e;
+    --bg-dark: #0d1315;
+    --foreground: #ededed;
+    --primary: #f57c52;
+    --primary-glow: rgba(255, 255, 255, 0.4);
+    --primary-hover: #fff017;
+    --secondary: #ffffff;
+    --border: #2a2a2a;
+    --muted: #4a4a4a;
+    --input: #1e1f1c;
+  
+    --danger: #e91822;
+    --warning: #cdca00;
+    --success: hsla(122, 48%, 56%, 0.976);
+    --light: rgba(230, 237, 237, 0.862);
+    --glow: 0 0 3px rgba(227, 237, 236, 0.625), 0 0 4px rgba(236, 240, 247, 0.667);
+  }
+
+  /* Light theme */
+  :root.light {
+    --background: #ffffff9f;
+    --high-light-bg: #f8f9fa;
+    --bg-dark: #f5f5f5;
+    --foreground: #1a1a1a;
+    --primary: #f57c52;
+    --primary-glow: rgba(0, 0, 0, 0.6);
+    --primary-hover: #e76a3f;
+    --secondary: #000000;
+    --border: #d1d5db;
+    --muted: #212121;
+    --input: #ffffff;
+  
+    --danger: #dc2626;
+    --warning: #d97706;
+    --success: #16a34a;
+    --light: #1f2937;
+    --glow: 0 0 3px rgba(31, 41, 55, 0.4), 0 0 4px rgba(55, 65, 81, 0.3);
+  }
+
+  button {
+
+    cursor:pointer !important ;
+  }
+    
+
+@theme inline {
+  --color-background: var(--background);
+  --color-high-light-bg: var(--high-light-bg);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-muted: var(--muted);
+  --color-input: var(--input);
+  --color-light: var(--light);
+  --color-glow: var(--glow);
+  --color-primary-glow: var(--primary-glow);
+  --color-bg-dark: var(--bg-dark);
+  
+}
+
+body {
+
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  overflow-x: hidden;
+  background-color: var(--bg-dark );
+}
+
+* {
+  border-color: var(--border);
+}
+
+.glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba(26, 26, 26, 0.8);
+  border: 1px solid rgba(42, 42, 42, 0.5);
+}
+
+.neon-glow {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.text-glow {
+  text-shadow: var(--glow);
+  color: var(--light);
+}
+
+.primary-glow{
+text-shadow: var(--glow);
+color: var(--light);
+
+}
+
+.dotted-background {
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.08) 1.2px, transparent 1.5px),
+    radial-gradient(circle at 85% 85%, rgba(255, 255, 255, 0.06) 1px, transparent 1.2px),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04) 0.8px, transparent 1px);
+  background-size: 50px 50px, 70px 70px, 90px 90px;
+  background-color: var(--bg-dark);
+  background-attachment: fixed;
+}
+
+:root.light .dotted-background {
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(0, 0, 0, 0.08) 1.2px, transparent 1.5px),
+    radial-gradient(circle at 85% 85%, rgba(0, 0, 0, 0.06) 1px, transparent 1.2px),
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.04) 0.8px, transparent 1px);
+  background-size: 50px 50px, 70px 70px, 90px 90px;
+  background-color: var(--bg-dark);
+  background-attachment: fixed;
+}
+
+.header-dots {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px, 16px 16px;
+  background-color: #050505;
+}
+
+:root.light .header-dots {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px, 16px 16px;
+  background-color: #f0f0f0;
+}
+
+/* Light theme text improvements */
+:root.light {
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --chat-bg: #ffffff;
+  --chat-user-bg: #f3f4f6;
+  --chat-assistant-bg: #ffffff;
+}
+
+:root.light .text-white\/80 {
+  color: var(--text-primary) !important;
+}
+
+:root.light .text-white\/90 {
+  color: var(--text-primary) !important;
+}
+
+:root.light .text-gray-300 {
+  color: var(--text-secondary) !important;
+}
+
+:root.light .text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+:root.light .text-gray-100 {
+  color: var(--text-primary) !important;
+}
+
+/* Fade In/Out Animations */
+.fade-in {
+  animation: fadeIn 1.2s ease-in-out;
+}
+
+.fade-out {
+  animation: fadeOut 0.8s ease-in-out;
+}
+
+.fade-in-up {
+  animation: fadeInUp 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in-down {
+  animation: fadeInDown 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in-scale {
+  animation: fadeInScale 1.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) rotate(-5deg);
+  }
+  30% {
+    opacity: 0.3;
+    transform: scale(0.85) rotate(-2deg);
+  }
+  70% {
+    opacity: 0.8;
+    transform: scale(1.05) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Enhanced Glow Effects */
+.primary-glow-enhanced {
+  text-shadow: 
+    0 0 8px var(--light),
+    0 0 16px var(--light),
+    0 0 24px rgba(255, 255, 255, 0.2);
+  color: var(--light);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.primary-glow-enhanced:hover {
+  text-shadow: 
+    0 0 12px var(--light),
+    0 0 24px var(--light),
+    0 0 36px rgba(255, 255, 255, 0.6);
+}
+
+.button-glow {
+  box-shadow: 
+    0 0 10px var(--light),
+    0 0 20px rgba(255, 252, 251, 0.1);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.button-glow:hover {
+  box-shadow: 
+    0 0 15px var(--light),
+    0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+
+.red-glow {
+  text-shadow: var(--glow);
+  color: var(--light);
+}
+.light-glow-new {
+  text-shadow: 
+    0 0 12px var(--light),
+    0 0 24px var(--light),
+    0 0 36px rgba(255, 255, 255, 0.3);
+}
+
+.border-glow {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 0 8px rgba(255, 255, 255, 0.18),
+    0 0 16px rgba(255, 255, 255, 0.12);
+}
+
+.bg-transform-10 {
+  background-color: rgba(13, 19, 21, 0.10); /* based on --bg-dark (#0d1315) */
+}
+
+:root.light .bg-transform-10 {
+  background-color: rgba(245, 245, 245, 0.90); /* light theme equivalent */
+}
+
+/* Chat message styling for light theme */
+:root.light .bg-\[\#050505\] {
+  background-color: #f9fafb !important;
+  border-color: #e5e7eb !important;
+}
+
+:root.light .bg-\[\#212121\] {
+  background-color: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+}
+
+:root.light .bg-\[\#1a1a1a\] {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #111827 !important;
+}
+
+/* Chat message specific fixes for light mode */
+:root.light .prose {
+  color: #111827 !important;
+}
+
+:root.light .prose * {
+  color: #111827 !important;
+}
+
+:root.light .prose p,
+:root.light .prose h1,
+:root.light .prose h2,
+:root.light .prose h3,
+:root.light .prose h4,
+:root.light .prose h5,
+:root.light .prose h6,
+:root.light .prose li,
+:root.light .prose span,
+:root.light .prose div {
+  color: #111827 !important;
+}
+
+:root.light .prose code {
+  color: #dc2626 !important;
+  background-color: #f3f4f6 !important;
+}
+
+:root.light .prose pre {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+:root.light .prose pre code {
+  color: #111827 !important;
+}
+
+/* Search input styling for light mode - dark text for visibility */
+:root.light input[type="text"]::placeholder {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+:root.light input[type="text"] {
+  color: #000000 !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+:root.light .text-foreground\/60 {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Dark mode search styling */
+:root.dark input[type="text"]::placeholder,
+input[type="text"]::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+:root.dark input[type="text"],
+input[type="text"] {
+  color: #ffffff !important;
+}

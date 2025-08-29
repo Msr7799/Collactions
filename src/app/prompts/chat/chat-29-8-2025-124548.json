@@ -1,0 +1,41 @@
+{
+  "id": "chat-29-8-2025-124548.json",
+  "filename": "chat-29-8-2025-124548.json",
+  "title": "أكتب لي كود بايثون fast api",
+  "messages": [
+    {
+      "id": "1756460748248",
+      "content": "أكتب لي كود بايثون fast api",
+      "role": "user",
+      "timestamp": "2025-08-29T09:45:48.248Z"
+    },
+    {
+      "id": "1756460764501",
+      "content": "تمام 👍  \nخليني أعطيك مثال أساسي على **FastAPI** بلغة Python، يشمل تشغيل سيرفر بسيط مع بعض الـ endpoints.  \n\n```python\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\n\n# إنشاء التطبيق\napp = FastAPI()\n\n# موديل لتبادل البيانات\nclass Item(BaseModel):\n    name: str\n    price: float\n    in_stock: bool = True\n\n# الصفحة الرئيسية\n@app.get(\"/\")\ndef read_root():\n    return {\"message\": \"مرحباً بك في API بسيط مع FastAPI 🚀\"}\n\n# Endpoint لإرجاع تحية\n@app.get(\"/hello/{name}\")\ndef say_hello(name: str):\n    return {\"message\": f\"أهلاً {name} 👋\"}\n\n# Endpoint لإضافة عنصر جديد\n@app.post(\"/items/\")\ndef create_item(item: Item):\n    return {\"item\": item, \"message\": \"تمت إضافة العنصر بنجاح ✅\"}\n\n# Endpoint لإرجاع عنصر حسب الـ ID\n@app.get(\"/items/{item_id}\")\ndef get_item(item_id: int, q: str | None = None):\n    return {\"item_id\": item_id, \"query\": q}\n```\n\n### خطوات التشغيل:\n1. احفظ الملف مثلاً باسم `main.py`\n2. شغل السيرفر بـ:\n   ```bash\n   uvicorn main:app --reload\n   ```\n3. افتح المتصفح على:  \n   - [http://127.0.0.1:8000](http://127.0.0.1:8000) → الصفحة الرئيسية  \n   - [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) → واجهة Swagger للتجربة  \n\nتحب أطورلك الكود ليشمل **اتصال بقاعدة بيانات (SQLite/Postgres)** ولا تفضل أبقيه API بسيط للتجارب؟",
+      "role": "assistant",
+      "timestamp": "2025-08-29T09:46:04.500Z"
+    }
+  ],
+  "createdAt": "2025-08-29T09:45:48.262Z",
+  "updatedAt": "2025-08-29T09:45:48.262Z",
+  "model": {
+    "id": "gpt-4o",
+    "name": "GPT-4o",
+    "provider": "GPTGOD0",
+    "description": "أحدث نموذج من OpenAI مع قدرات متقدمة في النص والصور والصوت - يدعم تحليل الصور",
+    "contextLength": 128000,
+    "pricing": {
+      "input": "Via GPTGOD",
+      "output": "Via GPTGOD"
+    },
+    "capabilities": [
+      "multimodal",
+      "advanced_reasoning",
+      "coding",
+      "vision",
+      "audio",
+      "image_analysis"
+    ],
+    "type": "free"
+  }
+}

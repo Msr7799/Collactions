@@ -35,6 +35,7 @@ import {
   AlertCircle, 
   Zap,
   Copy,
+  Download,
   Maximize2,
   Minimize2,
   Check,
@@ -43,7 +44,6 @@ import {
   EyeOff,
   ChevronLeft,
   ChevronRight,
-  Download,
   Paperclip,
   Edit3,
   Save,
@@ -94,13 +94,92 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code, onPreviewHtm
 
   const copyCode = async () => {
     const codeToCopy = isEditing ? editedCode : code;
-    try {
-      await navigator.clipboard.writeText(codeToCopy);
+    
+    const copyToClipboard = async (text: string) => {
+      try {
+        // Modern clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } else {
+          // Fallback for older browsers or non-secure contexts
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          
+          const success = document.execCommand('copy');
+          textArea.remove();
+          
+          if (!success) {
+            throw new Error('Copy command failed');
+          }
+          return true;
+        }
+      } catch (err) {
+        console.error('Failed to copy:', err);
+        return false;
+      }
+    };
+
+    const success = await copyToClipboard(codeToCopy);
+    if (success) {
       setShowCopySuccess(true);
       setTimeout(() => setShowCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy code:', err);
     }
+  };
+
+  const downloadCode = () => {
+    const codeToCopy = isEditing ? editedCode : code;
+    const fileExtension = getFileExtension(language);
+    const fileName = `code.${fileExtension}`;
+    
+    const blob = new Blob([codeToCopy], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const getFileExtension = (lang: string) => {
+    const extensions: { [key: string]: string } = {
+      javascript: 'js',
+      typescript: 'ts',
+      python: 'py',
+      java: 'java',
+      cpp: 'cpp',
+      c: 'c',
+      csharp: 'cs',
+      php: 'php',
+      ruby: 'rb',
+      go: 'go',
+      rust: 'rs',
+      kotlin: 'kt',
+      swift: 'swift',
+      html: 'html',
+      css: 'css',
+      scss: 'scss',
+      json: 'json',
+      xml: 'xml',
+      yaml: 'yml',
+      markdown: 'md',
+      bash: 'sh',
+      powershell: 'ps1',
+      sql: 'sql',
+      r: 'r',
+      matlab: 'm',
+      jsx: 'jsx',
+      tsx: 'tsx'
+    };
+    return extensions[lang] || 'txt';
   };
 
   // Handle keyboard shortcuts in edit mode
@@ -380,6 +459,13 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ language, code, onPreviewHtm
             ) : (
               <Copy className="w-4 h-4" />
             )}
+          </button>
+          <button
+            onClick={() => downloadCode()}
+            className="flex items-center space-x-1 px-2 py-1 text-gray-400 hover:text-gray-200 transition-colors"
+            title={currentLanguage === 'ar' ? 'تحميل الكود' : 'Download code'}
+          >
+            <Download className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -1574,18 +1660,50 @@ ${language === 'ar'
       }).join('\n---\n\n');
     }
 
-    // Copy to clipboard
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      const successId = messageIndex !== undefined ? `message-${messageIndex}` : 'chat';
-      setShowCopySuccess(successId);
-      
-      // Hide success message after 2 seconds
-      setTimeout(() => {
-        setShowCopySuccess(null);
-      }, 2000);
-    }).catch(err => {
-      console.error('Failed to copy:', err);
-      alert(language === 'ar' ? 'فشل في النسخ' : 'Failed to copy');
+    // Copy to clipboard with fallback
+    const copyToClipboard = async (text: string) => {
+      try {
+        // Modern clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } else {
+          // Fallback for older browsers or non-secure contexts
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          
+          const success = document.execCommand('copy');
+          textArea.remove();
+          
+          if (!success) {
+            throw new Error('Copy command failed');
+          }
+          return true;
+        }
+      } catch (err) {
+        console.error('Failed to copy:', err);
+        return false;
+      }
+    };
+
+    copyToClipboard(textToCopy).then((success) => {
+      if (success) {
+        const successId = messageIndex !== undefined ? `message-${messageIndex}` : 'chat';
+        setShowCopySuccess(successId);
+        
+        // Hide success message after 2 seconds
+        setTimeout(() => {
+          setShowCopySuccess(null);
+        }, 2000);
+      } else {
+        alert(language === 'ar' ? 'فشل في النسخ' : 'Failed to copy');
+      }
     });
   };
 

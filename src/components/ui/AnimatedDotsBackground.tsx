@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const AnimatedDotsBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -22,11 +24,11 @@ const AnimatedDotsBackground = () => {
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Configuration
+    // Configuration - dynamic colors based on theme
     const config = {
       dotRadius: 1,
-      dotColor: 'rgba(255, 255, 255, 0.2)',
-      lineColor: 'rgba(0, 212, 255, 0.15)',
+      dotColor: theme === 'light' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.2)',
+      lineColor: theme === 'light' ? 'rgba(0, 0, 0, 0.25)' : 'rgba(0, 212, 255, 0.15)',
       lineWidth: 0.8,
       dotCount: 100,
       maxDistance: 150,
@@ -97,7 +99,7 @@ const AnimatedDotsBackground = () => {
       }
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <canvas

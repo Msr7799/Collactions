@@ -41,10 +41,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     
     // Update CSS custom properties
     if (newTheme === 'light') {
-      root.style.setProperty('--background', '#ffffff');
-      root.style.setProperty('--high-light-bg', '#f8f9fa');
-      root.style.setProperty('--bg-dark', '#f5f5f5');
-      root.style.setProperty('--foreground', '#1a1a1a');
+      root.style.setProperty('--background', '#f7f8f9');
+      root.style.setProperty('--high-light-bg', '#f1f3f4');
+      root.style.setProperty('--bg-dark', '#e8eaed');
+      root.style.setProperty('--foreground', '#202124');
       root.style.setProperty('--primary', '#f57c52');
       root.style.setProperty('--primary-glow', 'rgba(0, 0, 0, 0.4)');
       root.style.setProperty('--primary-hover', '#e76a3f');

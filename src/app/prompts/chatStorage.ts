@@ -41,22 +41,28 @@ export class ChatStorageManager {
     this.loadClientMetadata();
   }
 
-  // Load simple metadata from localStorage
+  // Load simple metadata from localStorage (client-side only)
   private loadClientMetadata(): void {
     try {
-      const stored = localStorage.getItem(METADATA_KEY);
-      if (stored) {
-        this.metadata = JSON.parse(stored);
+      // Check if we're running on the client side
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem(METADATA_KEY);
+        if (stored) {
+          this.metadata = JSON.parse(stored);
+        }
       }
     } catch (error) {
       console.error('Error loading client chat metadata:', error);
     }
   }
 
-  // Save simple metadata to localStorage
+  // Save simple metadata to localStorage (client-side only)
   private saveClientMetadata(): void {
     try {
-      localStorage.setItem(METADATA_KEY, JSON.stringify(this.metadata));
+      // Check if we're running on the client side
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(METADATA_KEY, JSON.stringify(this.metadata));
+      }
     } catch (error) {
       console.error('Error saving client chat metadata:', error);
     }

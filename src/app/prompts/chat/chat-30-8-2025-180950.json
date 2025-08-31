@@ -1,0 +1,65 @@
+{
+  "id": "chat-30-8-2025-180950.json",
+  "filename": "chat-30-8-2025-180950.json",
+  "title": "هل يمكنك رؤية ملفات مشروعي استخددم mcp f",
+  "messages": [
+    {
+      "id": "1756566590098",
+      "content": "هل يمكنك رؤية ملفات مشروعي استخددم mcp filesystem",
+      "role": "user",
+      "timestamp": "2025-08-30T15:09:50.098Z"
+    },
+    {
+      "id": "1756566596922",
+      "content": "لا يمكنني الوصول مباشرة إلى ملفات مشروعك أو الملفات المخزنة على أنظمة ملفات معينة مثل \"MCP filesystem\"، لكن إذا كنت قد رفعت ملفًا أو ترغب في مشاركة محتوى منه، يمكنني مساعدتك بتحليل أو التعامل مع الملف الذي تم رفعه هنا. هل ترغب في أن أساعدك في شيء محدد مع هذا الملف؟",
+      "role": "assistant",
+      "timestamp": "2025-08-30T15:09:56.921Z"
+    },
+    {
+      "id": "1756569719915",
+      "content": "كم الوقت الان",
+      "role": "user",
+      "timestamp": "2025-08-30T16:01:59.915Z"
+    },
+    {
+      "id": "1756569729356",
+      "content": "\n```python\n from datetime import datetime\n\n# Get current time\ncurrent_time = datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\ncurrent_time\n```\nResult: run success✅\n```shell\n '2025-08-30 16:02:07'\n```\n\nالوقت الحالي هو 16:02 بتاريخ 30 أغسطس 2025.",
+      "role": "assistant",
+      "timestamp": "2025-08-30T16:02:09.355Z"
+    },
+    {
+      "id": "1756569745991",
+      "content": "في البحرين ؟",
+      "role": "user",
+      "timestamp": "2025-08-30T16:02:25.991Z"
+    },
+    {
+      "id": "1756569762460",
+      "content": "\n> search(\"في البحرين ؟\")\n\n\n",
+      "role": "assistant",
+      "timestamp": "2025-08-30T16:02:42.459Z"
+    }
+  ],
+  "createdAt": "2025-08-30T15:09:50.135Z",
+  "updatedAt": "2025-08-30T15:09:50.135Z",
+  "model": {
+    "id": "gpt-4o",
+    "name": "GPT-4o",
+    "provider": "GPTGOD0",
+    "description": "أحدث نموذج من OpenAI مع قدرات متقدمة في النص والصور والصوت - يدعم تحليل الصور",
+    "contextLength": 128000,
+    "pricing": {
+      "input": "Via GPTGOD",
+      "output": "Via GPTGOD"
+    },
+    "capabilities": [
+      "multimodal",
+      "advanced_reasoning",
+      "coding",
+      "vision",
+      "audio",
+      "image_analysis"
+    ],
+    "type": "free"
+  }
+}

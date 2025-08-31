@@ -97,6 +97,26 @@ export const openRouterModels: AIModel[] = [
 
 export const gptGodModels: AIModel[] = [
   {
+    id: 'o1-preview',
+    name: 'GPT o1-Preview',
+    provider: 'GPTGOD0',
+    description: 'نموذج التفكير المتقدم من OpenAI - يظهر خطوات التفكير بالتفصيل قبل الإجابة',
+    contextLength: 128000,
+    pricing: { input: 'Via GPTGOD', output: 'Via GPTGOD' },
+    capabilities: ['reasoning_visible', 'step_by_step', 'advanced_reasoning', 'chain_of_thought'],
+    type: 'free'
+  },
+  {
+    id: 'o1-mini',
+    name: 'GPT o1-Mini',
+    provider: 'GPTGOD0',
+    description: 'إصدار سريع من نموذج التفكير - يظهر عملية التفكير مع أداء أسرع',
+    contextLength: 128000,
+    pricing: { input: 'Via GPTGOD', output: 'Via GPTGOD' },
+    capabilities: ['reasoning_visible', 'step_by_step', 'fast_reasoning', 'chain_of_thought'],
+    type: 'free'
+  },
+  {
     id: 'gpt-4o',
     name: 'GPT-4o',
     provider: 'GPTGOD0',

@@ -113,19 +113,6 @@ const ServiceGateway: React.FC = () => {
           icon: <Brain className="w-5 h-5 text-black" />
         },
         {
-          id: 'time',
-          name: 'Time',
-          description: 'Time and timezone conversion capabilities.',
-          category: 'utility',
-          status: 'active',
-          isVerified: true,
-          monthlyToolCalls: 'Official',
-          successRate: 'Stable',
-          published: '2024',
-          sourceCode: 'https://github.com/modelcontextprotocol/servers/tree/main/src/time',
-          icon: <Activity className="w-5 h-5 text-black" />
-        },
-        {
           id: 'everything',
           name: 'Everything',
           description: 'Reference / test server with prompts, resources, and tools.',

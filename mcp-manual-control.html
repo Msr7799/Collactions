@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>🎛️ MCP Manual Control - تحكم يدوي كامل</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f8f9fa; 
+            margin: 0; 
+            padding: 20px; 
+            direction: rtl;
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header { 
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        .section { 
+            padding: 20px; 
+            border-bottom: 1px solid #eee; 
+        }
+        .section:last-child { border-bottom: none; }
+        .server-card { 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-right: 4px solid #007bff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .server-info h4 { margin: 0 0 5px 0; color: #333; }
+        .server-info p { margin: 0; color: #666; font-size: 14px; }
+        .server-controls { display: flex; gap: 8px; }
+        .status-badge { 
+            display: inline-block; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 11px; 
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .status-connected { background: #d4edda; color: #155724; }
+        .status-disconnected { background: #f8d7da; color: #721c24; }
+        .btn { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .btn:hover { opacity: 0.8; }
+        .btn-danger { background: #dc3545; }
+        .btn-success { background: #28a745; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .template-card { 
+            background: #e9ecef; 
+            border-radius: 6px; 
+            padding: 12px; 
+            margin: 8px 0; 
+            border: 2px dashed #6c757d;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .template-card:hover { 
+            background: #dee2e6; 
+            border-color: #007bff;
+        }
+        .template-card.selected { 
+            background: #cce5ff; 
+            border-color: #007bff; 
+            border-style: solid;
+        }
+        .status-display { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin: 10px 0; 
+            white-space: pre-wrap; 
+            font-family: 'Courier New', monospace; 
+            font-size: 13px;
+            max-height: 200px; 
+            overflow-y: auto;
+        }
+        .warning-box { 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin: 15px 0; 
+            color: #856404;
+        }
+        .chat-test { 
+            background: #f1f3f4; 
+            border-radius: 8px; 
+            padding: 15px; 
+            margin: 10px 0;
+        }
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            margin: 5px 0;
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            .server-card { flex-direction: column; align-items: flex-start; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ MCP Manual Control System</h1>
+            <p>تحكم يدوي كامل في خوادم MCP - أمان وأداء محسّن</p>
+        </div>
+
+        <div class="section">
+            <h2>📊 حالة النظام الحالية</h2>
+            <button onclick="refreshStatus()" class="btn btn-warning">🔄 تحديث الحالة</button>
+            <div id="systemStatus" class="status-display">جاري التحقق من الحالة...</div>
+        </div>
+
+        <div class="section">
+            <h2>🖥️ الخوادم النشطة</h2>
+            <div id="activeServers"></div>
+            <p style="color: #666; font-size: 14px;">الخوادم المتصلة حالياً والقابلة للاستخدام</p>
+        </div>
+
+        <div class="section">
+            <h2>➕ إضافة خادم جديد</h2>
+            <div class="warning-box">
+                <strong>⚠️ تنبيه أمني:</strong> إضافة خوادم تستهلك موارد النظام وقد تؤثر على الأداء. أضف فقط ما تحتاجه.
+            </div>
+            
+            <h3>اختر من القوالب المتاحة:</h3>
+            <div id="serverTemplates"></div>
+            
+            <h3>أو إضافة مخصص:</h3>
+            <div class="grid">
+                <div>
+                    <label>معرف الخادم:</label>
+                    <input type="text" id="customId" placeholder="مثال: my-server">
+                    
+                    <label>اسم الخادم:</label>
+                    <input type="text" id="customName" placeholder="مثال: My Custom Server">
+                    
+                    <label>الأمر:</label>
+                    <input type="text" id="customCommand" placeholder="مثال: npx">
+                </div>
+                <div>
+                    <label>المعاملات (واحد في كل سطر):</label>
+                    <textarea id="customArgs" placeholder="-y&#10;@modelcontextprotocol/server-example" rows="4"></textarea>
+                    
+                    <button onclick="addCustomServer()" class="btn btn-success">✅ إضافة الخادم المخصص</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💬 اختبار الدردشة مع MCP</h2>
+            <div class="chat-test">
+                <input type="text" id="testMessage" placeholder="اختبر رسالة مع MCP (مثال: What time is it?)">
+                <label><input type="checkbox" id="enableMCP" checked> تفعيل MCP</label>
+                <button onclick="testChat()" class="btn">🧪 اختبار</button>
+                <div id="chatResult" class="status-display" style="margin-top: 10px;">نتائج الاختبار ستظهر هنا...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedTemplate = null;
+
+        async function refreshStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            const activeDiv = document.getElementById('activeServers');
+            const templatesDiv = document.getElementById('serverTemplates');
+            
+            statusDiv.innerHTML = 'جاري التحقق...';
+            activeDiv.innerHTML = '';
+            templatesDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/mcp/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // عرض حالة النظام
+                    statusDiv.innerHTML = `📊 إحصائيات النظام:
+خوادم نشطة: ${data.stats.connected}/${data.stats.total}
+أدوات متاحة: ${data.stats.availableTools}
+الحالة: ${data.message}
+
+⚡ استهلاك الذاكرة: محدود (تحكم يدوي)
+🔒 الأمان: عالي (لا توجد خوادم تلقائية)`;
+
+                    // عرض الخوادم النشطة
+                    if (data.activeServers.length > 0) {
+                        data.activeServers.forEach(server => {
+                            const serverCard = document.createElement('div');
+                            serverCard.className = 'server-card';
+                            serverCard.innerHTML = `
+                                <div class="server-info">
+                                    <h4>${server.name}</h4>
+                                    <p>معرف: ${server.id} | أدوات: ${server.toolsCount}</p>
+                                    <span class="status-badge ${server.isConnected ? 'status-connected' : 'status-disconnected'}">
+                                        ${server.isConnected ? '🟢 متصل' : '🔴 غير متصل'}
+                                    </span>
+                                </div>
+                                <div class="server-controls">
+                                    <button onclick="stopServer('${server.id}')" class="btn btn-danger">🛑 إيقاف</button>
+                                    <button onclick="deleteServer('${server.id}')" class="btn btn-danger">🗑️ حذف</button>
+                                </div>
+                            `;
+                            activeDiv.appendChild(serverCard);
+                        });
+                    } else {
+                        activeDiv.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">لا توجد خوادم نشطة حالياً</p>';
+                    }
+
+                    // عرض القوالب المتاحة
+                    data.serverTemplates.forEach(template => {
+                        const templateCard = document.createElement('div');
+                        templateCard.className = 'template-card';
+                        templateCard.onclick = () => selectTemplate(template, templateCard);
+                        templateCard.innerHTML = `
+                            <h4>${template.name}</h4>
+                            <p>${template.description}</p>
+                            <small>الفئة: ${template.category} | الأمر: ${template.command}</small>
+                        `;
+                        templatesDiv.appendChild(templateCard);
+                    });
+                } else {
+                    statusDiv.innerHTML = `❌ خطأ: ${data.error}`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `❌ خطأ في الاتصال: ${error.message}`;
+            }
+        }
+
+        function selectTemplate(template, cardElement) {
+            // إزالة التحديد السابق
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // تحديد القالب الجديد
+            cardElement.classList.add('selected');
+            selectedTemplate = template;
+        }
+
+        async function addSelectedTemplate() {
+            if (!selectedTemplate) {
+                alert('يرجى اختيار قالب أولاً');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/mcp/servers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        serverId: selectedTemplate.id,
+                        name: selectedTemplate.name,
+                        command: selectedTemplate.command,
+                        args: selectedTemplate.args
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`✅ تم إضافة الخادم: ${selectedTemplate.name}`);
+                    selectedTemplate = null;
+                    await refreshStatus();
+                } else {
+                    alert(`❌ فشل في إضافة الخادم: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`❌ خطأ: ${error.message}`);
+            }
+        }
+
+        async function addCustomServer() {
+            const id = document.getElementById('customId').value.trim();
+            const name = document.getElementById('customName').value.trim();
+            const command = document.getElementById('customCommand').value.trim();
+            const argsText = document.getElementById('customArgs').value.trim();
+
+            if (!id || !name || !command || !argsText) {
+                alert('يرجى ملء جميع الحقول');
+                return;
+            }
+
+            const args = argsText.split('\n').map(arg => arg.trim()).filter(arg => arg);
+
+            try {
+                const response = await fetch('/api/mcp/servers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ serverId: id, name, command, args })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`✅ تم إضافة الخادم المخصص: ${name}`);
+                    // مسح النموذج
+                    document.getElementById('customId').value = '';
+                    document.getElementById('customName').value = '';
+                    document.getElementById('customCommand').value = '';
+                    document.getElementById('customArgs').value = '';
+                    await refreshStatus();
+                } else {
+                    alert(`❌ فشل في إضافة الخادم: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`❌ خطأ: ${error.message}`);
+            }
+        }
+
+        async function deleteServer(serverId) {
+            if (!confirm(`هل أنت متأكد من حذف الخادم ${serverId}؟\nسيتم إيقافه نهائياً وحذف جميع عملياته.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/mcp/servers?id=${serverId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`✅ تم حذف الخادم: ${serverId}`);
+                    await refreshStatus();
+                } else {
+                    alert(`❌ فشل في حذف الخادم: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`❌ خطأ: ${error.message}`);
+            }
+        }
+
+        async function testChat() {
+            const message = document.getElementById('testMessage').value.trim();
+            const useMCP = document.getElementById('enableMCP').checked;
+            const resultDiv = document.getElementById('chatResult');
+
+            if (!message) {
+                alert('يرجى كتابة رسالة للاختبار');
+                return;
+            }
+
+            resultDiv.innerHTML = 'جاري المعالجة...';
+
+            try {
+                const response = await fetch('/api/chat/enhanced', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, useMCP })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    let result = `📝 الرسالة: ${message}\n`;
+                    result += `🤖 الرد: ${data.message}\n`;
+                    result += `🔧 استخدم MCP: ${data.mcpUsed ? 'نعم' : 'لا'}\n`;
+                    if (data.mcpResults && data.mcpResults.length > 0) {
+                        result += `📊 نتائج MCP: ${data.mcpResults.length} عملية\n`;
+                        data.mcpResults.forEach((mcpResult, i) => {
+                            result += `  ${i+1}. ${mcpResult.tool}: ${mcpResult.result.substring(0, 100)}...\n`;
+                        });
+                    }
+                    resultDiv.innerHTML = result;
+                } else {
+                    resultDiv.innerHTML = `❌ خطأ: ${data.error || data.message}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ خطأ في الإرسال: ${error.message}`;
+            }
+        }
+
+        // إضافة مستمع للقوالب
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshStatus();
+            
+            // إضافة زر لتفعيل القالب المحدد
+            const templatesSection = document.querySelector('.section:nth-child(4)');
+            const addButton = document.createElement('button');
+            addButton.innerHTML = '✅ إضافة القالب المحدد';
+            addButton.className = 'btn btn-success';
+            addButton.onclick = addSelectedTemplate;
+            addButton.style.marginTop = '10px';
+            templatesSection.appendChild(addButton);
+        });
+    </script>
+</body>
+</html>

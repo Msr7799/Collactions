@@ -21,7 +21,7 @@ interface Params {
 
 // GET - Fetch a single chat file
 export async function GET(request: Request, { params }: Params) {
-  const { filename } = params;
+  const { filename } = await params;
   if (!filename) {
     return NextResponse.json({ message: 'Filename is required' }, { status: 400 });
   }
@@ -40,7 +40,7 @@ export async function GET(request: Request, { params }: Params) {
 
 // DELETE - Delete a single chat file
 export async function DELETE(request: Request, { params }: Params) {
-  const { filename } = params;
+  const { filename } = await params;
   if (!filename) {
     return NextResponse.json({ message: 'Filename is required' }, { status: 400 });
   }

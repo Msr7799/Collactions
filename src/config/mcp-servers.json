@@ -1,0 +1,586 @@
+{
+  "official_servers": [
+    {
+      "id": "fetch",
+      "name": "Fetch Server",
+      "description": "Web content fetching and conversion for efficient LLM usage",
+      "category": "web",
+      "status": "active",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "tools": [
+        {
+          "name": "fetch_url",
+          "description": "Fetch content from a URL and return it in various formats",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "The URL to fetch content from"
+              },
+              "format": {
+                "type": "string",
+                "enum": ["text", "html", "markdown", "json"],
+                "description": "Output format for the content",
+                "default": "text"
+              },
+              "extract_readable": {
+                "type": "boolean",
+                "description": "Extract only readable content using Readability",
+                "default": true
+              }
+            },
+            "required": ["url"]
+          }
+        },
+        {
+          "name": "fetch_multiple",
+          "description": "Fetch content from multiple URLs concurrently",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "urls": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Array of URLs to fetch"
+              },
+              "format": {
+                "type": "string",
+                "enum": ["text", "html", "markdown", "json"],
+                "default": "text"
+              }
+            },
+            "required": ["urls"]
+          }
+        }
+      ],
+      "resources": [],
+      "prompts": []
+    },
+    {
+      "id": "filesystem",
+      "name": "Filesystem Server",
+      "description": "Secure file operations with configurable access controls",
+      "category": "files",
+      "status": "active",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem"],
+      "tools": [
+        {
+          "name": "read_file",
+          "description": "Read the contents of a file",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the file to read"
+              },
+              "encoding": {
+                "type": "string",
+                "enum": ["utf8", "base64", "binary"],
+                "default": "utf8"
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "write_file",
+          "description": "Write content to a file",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the file to write"
+              },
+              "content": {
+                "type": "string",
+                "description": "Content to write to the file"
+              },
+              "create_directories": {
+                "type": "boolean",
+                "default": true
+              }
+            },
+            "required": ["path", "content"]
+          }
+        },
+        {
+          "name": "list_directory",
+          "description": "List files and directories in a path",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the directory to list"
+              },
+              "recursive": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "create_directory",
+          "description": "Create a new directory",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the directory to create"
+              },
+              "recursive": {
+                "type": "boolean",
+                "default": true
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "delete_file",
+          "description": "Delete a file or directory",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the file or directory to delete"
+              },
+              "recursive": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": ["path"]
+          }
+        }
+      ],
+      "resources": [],
+      "prompts": []
+    },
+    {
+      "id": "memory",
+      "name": "Memory Server",
+      "description": "Knowledge graph-based persistent memory system",
+      "category": "memory",
+      "status": "active",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "tools": [
+        {
+          "name": "create_memory",
+          "description": "Create a new memory with entities and relationships",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string",
+                "description": "The content to remember"
+              },
+              "entities": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "type": { "type": "string" },
+                    "observations": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              },
+              "relations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "from": { "type": "string" },
+                    "to": { "type": "string" },
+                    "relationType": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "required": ["content"]
+          }
+        },
+        {
+          "name": "search_memory",
+          "description": "Search memories using semantic similarity",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Search query"
+              },
+              "limit": {
+                "type": "number",
+                "default": 10,
+                "description": "Maximum number of results"
+              }
+            },
+            "required": ["query"]
+          }
+        },
+        {
+          "name": "get_memories",
+          "description": "Get all memories or filter by entity",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "entity_name": {
+                "type": "string",
+                "description": "Filter by entity name (optional)"
+              }
+            }
+          }
+        }
+      ],
+      "resources": [],
+      "prompts": []
+    },
+    {
+      "id": "time",
+      "name": "Time Server",
+      "description": "Time and timezone conversion capabilities",
+      "category": "utility",
+      "status": "active",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-time"],
+      "tools": [
+        {
+          "name": "get_current_time",
+          "description": "Get the current time in various formats and timezones",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "timezone": {
+                "type": "string",
+                "description": "Timezone (e.g., 'America/New_York', 'UTC')",
+                "default": "UTC"
+              },
+              "format": {
+                "type": "string",
+                "description": "Time format (ISO, timestamp, human)",
+                "default": "ISO"
+              }
+            }
+          }
+        },
+        {
+          "name": "convert_time",
+          "description": "Convert time between timezones",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "time": {
+                "type": "string",
+                "description": "Time to convert (ISO format)"
+              },
+              "from_timezone": {
+                "type": "string",
+                "description": "Source timezone"
+              },
+              "to_timezone": {
+                "type": "string",
+                "description": "Target timezone"
+              }
+            },
+            "required": ["time", "from_timezone", "to_timezone"]
+          }
+        },
+        {
+          "name": "format_time",
+          "description": "Format time according to locale and format string",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "time": {
+                "type": "string",
+                "description": "Time to format (ISO format)"
+              },
+              "format": {
+                "type": "string",
+                "description": "Format string"
+              },
+              "locale": {
+                "type": "string",
+                "description": "Locale (e.g., 'en-US', 'ar-SA')",
+                "default": "en-US"
+              }
+            },
+            "required": ["time", "format"]
+          }
+        }
+      ],
+      "resources": [],
+      "prompts": []
+    },
+    {
+      "id": "sequentialthinking",
+      "name": "Sequential Thinking Server",
+      "description": "Dynamic and reflective problem-solving through thought sequences",
+      "category": "ai",
+      "status": "active",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequentialthinking"],
+      "tools": [
+        {
+          "name": "think_step",
+          "description": "Process a single thinking step in a sequence",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "thought": {
+                "type": "string",
+                "description": "Current thinking step"
+              },
+              "step_number": {
+                "type": "integer",
+                "description": "Current step number"
+              },
+              "total_steps": {
+                "type": "integer",
+                "description": "Estimated total steps"
+              },
+              "context": {
+                "type": "string",
+                "description": "Additional context for thinking"
+              }
+            },
+            "required": ["thought", "step_number", "total_steps"]
+          }
+        },
+        {
+          "name": "reflect_on_thinking",
+          "description": "Reflect on and analyze the thinking sequence",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "sequence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "thought": { "type": "string" },
+                    "step_number": { "type": "integer" }
+                  }
+                },
+                "description": "Sequence of thinking steps to reflect on"
+              },
+              "reflection_type": {
+                "type": "string",
+                "enum": ["quality", "completeness", "logic", "creativity"],
+                "default": "quality"
+              }
+            },
+            "required": ["sequence"]
+          }
+        }
+      ],
+      "resources": [],
+      "prompts": [
+        {
+          "name": "problem_solving",
+          "description": "Break down a complex problem into thinking steps",
+          "arguments": [
+            {
+              "name": "problem",
+              "description": "The problem to solve",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "git",
+      "name": "Git Server",
+      "description": "Tools to read, search, and manipulate Git repositories",
+      "category": "development",
+      "status": "active",
+      "command": "uvx",
+      "args": ["mcp-server-git"],
+      "tools": [
+        {
+          "name": "git_log",
+          "description": "Get git commit history",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "max_count": {
+                "type": "integer",
+                "default": 10,
+                "description": "Maximum number of commits to return"
+              },
+              "since": {
+                "type": "string",
+                "description": "Show commits after this date"
+              },
+              "path": {
+                "type": "string",
+                "description": "Filter commits for specific file/directory"
+              }
+            }
+          }
+        },
+        {
+          "name": "git_diff",
+          "description": "Show differences between commits, branches, or files",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "base": {
+                "type": "string",
+                "description": "Base commit/branch for comparison"
+              },
+              "target": {
+                "type": "string",
+                "description": "Target commit/branch for comparison"
+              },
+              "path": {
+                "type": "string",
+                "description": "Specific file path to diff"
+              }
+            }
+          }
+        },
+        {
+          "name": "git_show",
+          "description": "Show commit details",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "commit": {
+                "type": "string",
+                "description": "Commit hash or reference",
+                "default": "HEAD"
+              }
+            }
+          }
+        },
+        {
+          "name": "git_search",
+          "description": "Search for text in git history",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Search query"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["commit_message", "file_content", "author"],
+                "default": "commit_message"
+              }
+            },
+            "required": ["query"]
+          }
+        }
+      ],
+      "resources": [],
+      "prompts": []
+    },
+    {
+      "id": "everything",
+      "name": "Everything Server",
+      "description": "Reference/test server with prompts, resources, and tools",
+      "category": "reference",
+      "status": "active",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"],
+      "tools": [
+        {
+          "name": "echo",
+          "description": "Echo back the input",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "Message to echo back"
+              }
+            },
+            "required": ["message"]
+          }
+        },
+        {
+          "name": "add",
+          "description": "Add two numbers",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "a": {
+                "type": "number",
+                "description": "First number"
+              },
+              "b": {
+                "type": "number", 
+                "description": "Second number"
+              }
+            },
+            "required": ["a", "b"]
+          }
+        },
+        {
+          "name": "get_current_weather",
+          "description": "Get current weather for a location (mock)",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "location": {
+                "type": "string",
+                "description": "Location to get weather for"
+              },
+              "unit": {
+                "type": "string",
+                "enum": ["celsius", "fahrenheit"],
+                "default": "celsius"
+              }
+            },
+            "required": ["location"]
+          }
+        }
+      ],
+      "resources": [
+        {
+          "uri": "file://example.txt",
+          "name": "Example Text File",
+          "description": "An example text file resource",
+          "mimeType": "text/plain"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "example_prompt",
+          "description": "An example prompt for testing",
+          "arguments": [
+            {
+              "name": "topic",
+              "description": "Topic to write about",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "configuration": {
+    "default_timeout": 30000,
+    "max_retries": 3,
+    "enable_logging": true,
+    "supported_transports": ["stdio", "http", "websocket"]
+  }
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   ChevronDown, 
   ChevronUp, 
@@ -29,8 +30,10 @@ interface ServiceDetailProps {
   serviceName?: string;
 }
 
-const ServiceDetail: React.FC<ServiceDetailProps> = ({ serviceName = "fetch" }) => {
+function ServiceDetail({ serviceName }: { serviceName: string }) {
   const [expandedTool, setExpandedTool] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'auto' | 'json' | 'typescript' | 'python'>('auto');
 
   // Get server configuration based on serviceName
@@ -111,6 +114,41 @@ const ServiceDetail: React.FC<ServiceDetailProps> = ({ serviceName = "fetch" }) 
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+  };
+
+  const handleTestInPrompts = async () => {
+    setIsAdding(true);
+    try {
+      // Add server to MCP system
+      const response = await fetch('/api/mcp/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: serviceName,
+          name: serverConfig.name,
+          command: 'npx',
+          args: ['-y', serverConfig.npmPackage],
+          env: {}
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Navigate to prompts page with server added
+        router.push('/prompts?mcpAdded=' + serviceName);
+      } else {
+        console.error('Failed to add server:', result.error);
+        // Still navigate to show the error or let user try manually
+        router.push('/prompts');
+      }
+    } catch (error) {
+      console.error('Error adding server:', error);
+      // Navigate anyway
+      router.push('/prompts');
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -230,13 +268,16 @@ const ServiceDetail: React.FC<ServiceDetailProps> = ({ serviceName = "fetch" }) 
                 <p className="text-sm font-medium text-foreground mb-3">Test this MCP Server</p>
                 
                 <div className="space-y-3">
-                  <a 
-                    href="/prompts" 
-                    className="w-full flex items-center justify-center space-x-2 p-3 bg-primary text-black rounded-md hover:bg-primary/80 transition-colors"
+                  <button 
+                    onClick={handleTestInPrompts}
+                    disabled={isAdding}
+                    className="w-full flex items-center justify-center space-x-2 p-3 bg-primary text-black rounded-md hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Zap className="w-4 h-4" />
-                    <span className="font-medium">Test in Prompts Page</span>
-                  </a>
+                    <span className="font-medium">
+                      {isAdding ? 'Adding Server...' : 'Test in Prompts Page'}
+                    </span>
+                  </button>
                   
                   <div className="text-xs text-muted text-center">
                     Try this server with real prompts and see the results
@@ -247,8 +288,8 @@ const ServiceDetail: React.FC<ServiceDetailProps> = ({ serviceName = "fetch" }) 
                   <h3 className="text-sm font-medium text-foreground">Installation & Setup</h3>
                   <p className="text-xs text-muted">Install and configure this MCP server for your environment.</p>
                   
-                  <div className="bg-secondary rounded-md p-3 font-mono text-xs">
-                    <pre className="text-foreground whitespace-pre-wrap">
+                  <div className="bg-secondary rounded-md p-3  font-mono text-xs">
+                    <pre className="text-background whitespace-pre-wrap">
 {`# Install the server
 npm install ${serverConfig.npmPackage}
 

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>🎛️ MCP Control Panel - لوحة تحكم MCP</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f8f9fa; 
+            margin: 0; 
+            padding: 20px; 
+            direction: rtl;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        .section { 
+            padding: 20px; 
+            border-bottom: 1px solid #eee; 
+        }
+        .section:last-child { border-bottom: none; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin: 5px; 
+            transition: all 0.2s;
+        }
+        button:hover { 
+            background: #0056b3; 
+            transform: translateY(-2px);
+        }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-warning:hover { background: #e0a800; }
+        .status-box { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin: 10px 0; 
+            white-space: pre-wrap; 
+            font-family: 'Courier New', monospace; 
+            max-height: 300px; 
+            overflow-y: auto;
+        }
+        .server-card { 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-left: 4px solid #007bff;
+        }
+        .server-status { 
+            display: inline-block; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 12px; 
+            font-weight: bold;
+        }
+        .status-connected { background: #d4edda; color: #155724; }
+        .status-disconnected { background: #f8d7da; color: #721c24; }
+        input, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            margin: 8px 0; 
+            box-sizing: border-box;
+        }
+        .chat-area { 
+            background: #ffffff; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            height: 200px; 
+            overflow-y: auto; 
+            padding: 15px; 
+            margin: 10px 0;
+        }
+        .message { 
+            padding: 8px 12px; 
+            margin: 5px 0; 
+            border-radius: 18px; 
+            max-width: 80%;
+        }
+        .user-message { 
+            background: #007bff; 
+            color: white; 
+            margin-right: auto; 
+            text-align: right;
+        }
+        .bot-message { 
+            background: #f1f3f4; 
+            color: #333; 
+            margin-left: auto; 
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ لوحة تحكم MCP</h1>
+            <p>المنطقة الجديدة للتحكم في خوادم MCP</p>
+        </div>
+
+        <div class="section">
+            <h2>📊 حالة الخوادم</h2>
+            <button onclick="checkMCPStatus()">🔍 فحص الحالة</button>
+            <div id="serverStatus" class="status-box">اضغط "فحص الحالة" لمشاهدة الخوادم...</div>
+        </div>
+
+        <div class="section">
+            <h2>💬 دردشة محسنة مع MCP</h2>
+            <div class="chat-area" id="chatArea">
+                <div class="message bot-message">مرحباً! جرب إرسال رسائل مثل "كم الساعة الآن؟" أو ضع رابط</div>
+            </div>
+            <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." onkeypress="handleEnter(event)">
+            <button onclick="sendMessage()" class="btn-success">📤 إرسال</button>
+            <label><input type="checkbox" id="useMCP" checked> استخدم MCP</label>
+        </div>
+
+        <div class="section">
+            <h2>🧪 اختبارات سريعة</h2>
+            <button onclick="testTime()" class="btn-warning">⏰ اختبر Time Server</button>
+            <button onclick="testFetch()" class="btn-warning">🌐 اختبر Fetch Server</button>
+            <button onclick="testCustom()" class="btn-warning">🎯 اختبار مخصص</button>
+        </div>
+    </div>
+
+    <script>
+        let chatHistory = [];
+
+        async function checkMCPStatus() {
+            const statusDiv = document.getElementById('serverStatus');
+            statusDiv.innerHTML = 'جاري الفحص...';
+            
+            try {
+                const response = await fetch('/api/mcp/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = `<strong>📊 حالة الخوادم:</strong>\n\n`;
+                    data.servers.forEach(server => {
+                        const status = server.isConnected ? 'متصل' : 'غير متصل';
+                        const statusClass = server.isConnected ? 'status-connected' : 'status-disconnected';
+                        html += `🔧 ${server.name}: <span class="${statusClass}">${status}</span> (${server.toolsCount} أداة)\n`;
+                    });
+                    html += `\n<strong>🛠️ الأدوات المتاحة:</strong> ${data.tools.length}`;
+                    statusDiv.innerHTML = html;
+                } else {
+                    statusDiv.innerHTML = `❌ خطأ: ${data.error}`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `❌ خطأ في الاتصال: ${error.message}`;
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const useMCP = document.getElementById('useMCP').checked;
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            addMessageToChat(message, 'user');
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/chat/enhanced', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: message, 
+                        useMCP: useMCP,
+                        messages: chatHistory
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    let responseText = data.message;
+                    if (data.mcpUsed && data.mcpResults?.length > 0) {
+                        responseText += `\n\n🔧 معلومات MCP: ${data.mcpResults.length} نتيجة`;
+                    }
+                    addMessageToChat(responseText, 'bot');
+                    chatHistory.push({ role: 'user', content: message });
+                    chatHistory.push({ role: 'assistant', content: data.message });
+                } else {
+                    addMessageToChat(`❌ خطأ: ${data.message}`, 'bot');
+                }
+            } catch (error) {
+                addMessageToChat(`❌ خطأ في الإرسال: ${error.message}`, 'bot');
+            }
+        }
+
+        function addMessageToChat(message, type) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = message;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function testTime() {
+            document.getElementById('chatInput').value = 'كم الساعة الآن في الرياض؟';
+            await sendMessage();
+        }
+
+        async function testFetch() {
+            document.getElementById('chatInput').value = 'Please fetch this URL: https://httpbin.org/json';
+            await sendMessage();
+        }
+
+        async function testCustom() {
+            const customMessage = prompt('أدخل رسالة الاختبار:', 'What time is it and fetch https://example.com');
+            if (customMessage) {
+                document.getElementById('chatInput').value = customMessage;
+                await sendMessage();
+            }
+        }
+
+        // Auto-load status on page load
+        window.onload = () => {
+            checkMCPStatus();
+            addMessageToChat('مرحباً! هذه لوحة التحكم الجديدة لنظام MCP المبسط.', 'bot');
+        };
+    </script>
+</body>
+</html>

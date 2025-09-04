@@ -1,0 +1,41 @@
+{
+  "id": "chat-1-9-2025-221659.json",
+  "filename": "chat-1-9-2025-221659.json",
+  "title": "أكتب لي كود ل fast api server بالبايثون ",
+  "messages": [
+    {
+      "id": "ed738eff-9a3c-4e6e-afd1-3a5e9233c57d",
+      "content": "أكتب لي كود ل fast api server بالبايثون ",
+      "role": "user",
+      "timestamp": "2025-09-01T19:16:45.114Z"
+    },
+    {
+      "id": "b8b502ae-ae02-455b-9cfe-7dea2d202ea7",
+      "content": "تمام ✅، خليني أكتب لك مثال عملي لبناء **خادم FastAPI** بسيط بلغة بايثون:  \n\n```python\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\n\n# إنشاء التطبيق\napp = FastAPI(title=\"My FastAPI Server\")\n\n# نموذج بيانات باستخدام Pydantic\nclass Item(BaseModel):\n    name: str\n    price: float\n    in_stock: bool = True\n\n# الراوت الرئيسي\n@app.get(\"/\")\ndef read_root():\n    return {\"message\": \"مرحباً بك في خادم FastAPI 🚀\"}\n\n# إرجاع عنصر حسب معرفه\n@app.get(\"/items/{item_id}\")\ndef read_item(item_id: int, q: str | None = None):\n    return {\"item_id\": item_id, \"query\": q}\n\n# إنشاء عنصر جديد\n@app.post(\"/items/\")\ndef create_item(item: Item):\n    return {\"message\": \"تم إنشاء العنصر بنجاح\", \"item\": item}\n\n# تحديث عنصر\n@app.put(\"/items/{item_id}\")\ndef update_item(item_id: int, item: Item):\n    return {\"message\": f\"تم تحديث العنصر {item_id}\", \"item\": item}\n\n# حذف عنصر\n@app.delete(\"/items/{item_id}\")\ndef delete_item(item_id: int):\n    return {\"message\": f\"تم حذف العنصر {item_id}\"}\n```\n\n### تشغيل الخادم:\n1. احفظ الملف باسم `main.py`.\n2. شغّل السيرفر بالأمر:\n   ```bash\n   uvicorn main:app --reload\n   ```\n3. افتح المتصفح على:\n   - الواجهة الرئيسية: [http://127.0.0.1:8000](http://127.0.0.1:8000)  \n   - التوثيق التفاعلي (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)  \n\n---\n\nهل تحب أضيف لك **قاعدة بيانات SQLite** مع **SQLAlchemy** في الكود، ولا تفضل تبقى النسخة بسيطة بدون قواعد بيانات؟",
+      "role": "assistant",
+      "timestamp": "2025-09-01T19:16:56.711Z"
+    }
+  ],
+  "createdAt": "2025-09-01T19:16:59.761Z",
+  "updatedAt": "2025-09-01T19:16:59.761Z",
+  "model": {
+    "id": "gpt-4o",
+    "name": "GPT-4o",
+    "provider": "GPTGOD0",
+    "description": "أحدث نموذج من OpenAI مع قدرات متقدمة في النص والصور والصوت - يدعم تحليل الصور",
+    "contextLength": 128000,
+    "pricing": {
+      "input": "Via GPTGOD",
+      "output": "Via GPTGOD"
+    },
+    "capabilities": [
+      "multimodal",
+      "advanced_reasoning",
+      "coding",
+      "vision",
+      "audio",
+      "image_analysis"
+    ],
+    "type": "free"
+  }
+}

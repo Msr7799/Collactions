@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMCPClient } from '@/lib/mcp';
 
-export async function DELETE(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const { serverId } = await request.json();
     
@@ -12,33 +12,31 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.log(`🗑️ API Delete: Attempting to remove server: ${serverId}`);
+    console.log(`🔄 API Refresh: Attempting to refresh server: ${serverId}`);
     const mcpClient = getMCPClient();
     
-    const success = await mcpClient.removeServer(serverId);
+    const success = await mcpClient.refreshServer(serverId);
     
     if (success) {
-      console.log(`✅ API Delete: Successfully removed ${serverId}`);
+      console.log(`✅ API Refresh: Successfully refreshed ${serverId}`);
       return NextResponse.json({ 
         success: true, 
-        message: `Server ${serverId} removed successfully`
+        message: `Server ${serverId} refreshed successfully`,
+        status: 'connected'
       });
     } else {
-      console.error(`❌ API Delete: Failed to remove ${serverId}`);
+      console.error(`❌ API Refresh: Failed to refresh ${serverId}`);
       return NextResponse.json({ 
         success: false, 
-        error: `Failed to remove server ${serverId}`
+        error: `Failed to refresh server ${serverId}`,
+        status: 'error'
       });
     }
   } catch (error) {
-    console.error('Delete server error:', error);
+    console.error('Refresh server error:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
-}
-
-export async function POST(request: NextRequest) {
-  return DELETE(request);
 }

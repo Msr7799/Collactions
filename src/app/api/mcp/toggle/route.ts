@@ -32,14 +32,19 @@ export async function POST(request: NextRequest) {
       }
     } else if (action === 'disconnect') {
       // Stop the server
+      console.log(`🔄 API Toggle: Attempting to disconnect server: ${serverId}`);
       const success = await mcpClient.stopServer(serverId);
+      console.log(`🔄 API Toggle: stopServer result for ${serverId}:`, success);
+      
       if (success) {
+        console.log(`✅ API Toggle: Successfully disconnected ${serverId}`);
         return NextResponse.json({ 
           success: true, 
           message: `Server ${serverId} disconnected successfully`,
           status: 'disconnected'
         });
       } else {
+        console.error(`❌ API Toggle: Failed to disconnect ${serverId}`);
         return NextResponse.json({ 
           success: false, 
           error: `Failed to disconnect server ${serverId}`,

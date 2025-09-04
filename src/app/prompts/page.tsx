@@ -1,39 +1,27 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo, memo } from 'react';
 import dynamic from 'next/dynamic';
 
+// Dynamic imports for performance
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
+const ThinkingMessage = dynamic(() => import('@/components/ai/ThinkingMessage'), { ssr: false });
+const TypewriterEffect = dynamic(() => import('@/components/ai/TypewriterEffect'), { ssr: false });
+
+
 import remarkGfm from 'remark-gfm';
 // Temporarily disabled to fix Next.js 15 headers() error
 // import { useUser } from '@clerk/nextjs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 import Layout from '@/components/layout/Layout';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import ModelSelector from '@/components/ai/ModelSelector';
 import { AIModel, allModels, defaultModel } from '@/lib/models';
-import ThinkingMessage from '@/components/ai/ThinkingMessage';
-import TypewriterEffect from '@/components/ai/TypewriterEffect';
-// New simplified MCP types
-interface MCPServer {
-  id: string;
-  name: string;
-  description: string;
-  status: 'connected' | 'disconnected' | 'connecting' | 'error';
-  isConnected: boolean;
-  toolsCount: number;
-  tools?: any[];
-  category?: string;
-}
 
-interface MCPServerTemplate {
-  id: string;
-  name: string;
-  description: string;
-  command: string;
-  args: string[];
-  category: string;
-}
+// Import improved custom hooks and utilities
+import { useMcpServers, MCPServer, MCPServerTemplate } from '@/hooks/useMcpServers';
+import { useAutoSave } from '@/utils/autoSave';
 
 interface MCPPrompt {
   id: string;
@@ -45,7 +33,6 @@ interface MCPPrompt {
 
 import { getAIGateway, ChatMessage as APIChatMessage } from '@/lib/api';
 import { chatStorage, ChatSession } from './chatStorage';
-import MCPPanel from '@/components/mcp/MCPPanel';
 
 interface ChatMessage {
   id: string;
@@ -88,540 +75,18 @@ import {
   Save,
   XCircle,
   Menu,
-  X as CloseIcon
+  X as CloseIcon,
+  Calendar,
+  Clock,
+  Trash2,
+  Bot,
+  User,
+  Maximize,
+  Edit,
+  Play,
+  FolderOpen
 } from 'lucide-react';
-
-// Enhanced CodeBlock Component
-interface CodeBlockProps {
-  code: string;
-  language: string;
-  onCodeEdit?: (originalCode: string, editedCode: string) => void;
-  onPreviewHtml?: (code: string) => void;
-}
-
-const CodeBlock: React.FC<CodeBlockProps> = memo(({ code, language, onCodeEdit, onPreviewHtml }) => {
-  const [showCopySuccess, setShowCopySuccess] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedCode, setEditedCode] = useState(code);
-  const { language: currentLanguage } = useLanguage();
-  
-  // Local timeout refs for this component
-  const localTimeoutRefs = useRef<{
-    copySuccess?: NodeJS.Timeout,
-    urlCleanup?: NodeJS.Timeout[]
-  }>({urlCleanup: []});
-  
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (localTimeoutRefs.current.copySuccess) {
-        clearTimeout(localTimeoutRefs.current.copySuccess);
-      }
-      localTimeoutRefs.current.urlCleanup?.forEach(timeout => clearTimeout(timeout));
-    };
-  }, []);
-  
-  const lines = code.split('\n');
-  const shouldTruncate = lines.length > 15;
-
-  // Function to open HTML in new tab
-  const openHtmlInNewTab = (htmlCode: string) => {
-    const blob = new Blob([htmlCode], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const newTab = window.open(url, '_blank');
-    
-    // Cleanup URL after a delay to prevent memory leak
-    const cleanupTimeout = setTimeout(() => {
-      try {
-        URL.revokeObjectURL(url);
-      } catch (error) {
-        console.warn('Failed to revoke HTML blob URL:', error);
-      }
-    }, 5000); // 5 seconds should be enough for tab to load
-    
-    localTimeoutRefs.current.urlCleanup?.push(cleanupTimeout);
-  };
-
-  const copyCode = async () => {
-    const codeToCopy = isEditing ? editedCode : code;
-    
-    const copyToClipboard = async (text: string) => {
-      try {
-        // Modern clipboard API
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(text);
-          return true;
-        } else {
-          // Fallback for older browsers or non-secure contexts
-          const textArea = document.createElement('textarea');
-          textArea.value = text;
-          textArea.style.position = 'fixed';
-          textArea.style.left = '-999999px';
-          textArea.style.top = '-999999px';
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          
-          const success = document.execCommand('copy');
-          textArea.remove();
-          
-          if (!success) {
-            throw new Error('Copy command failed');
-          }
-          return true;
-        }
-      } catch (err) {
-        console.error('Failed to copy:', err);
-        return false;
-      }
-    };
-
-    const success = await copyToClipboard(codeToCopy);
-    if (success) {
-      setShowCopySuccess(true);
-      // Clear previous timeout if exists
-      if (localTimeoutRefs.current.copySuccess) {
-        clearTimeout(localTimeoutRefs.current.copySuccess);
-      }
-      localTimeoutRefs.current.copySuccess = setTimeout(() => setShowCopySuccess(false), 2000);
-    }
-  };
-
-  const downloadCode = () => {
-    const codeToCopy = isEditing ? editedCode : code;
-    const fileExtension = getFileExtension(language);
-    const fileName = `code.${fileExtension}`;
-    
-    const blob = new Blob([codeToCopy], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Cleanup URL to prevent memory leak
-    const cleanupTimeout = setTimeout(() => {
-      try {
-        URL.revokeObjectURL(url);
-      } catch (error) {
-        console.warn('Failed to revoke download URL:', error);
-      }
-    }, 1000); // Short delay to ensure download started
-    
-    localTimeoutRefs.current.urlCleanup?.push(cleanupTimeout);
-  };
-
-  const getFileExtension = (lang: string) => {
-    const extensions: { [key: string]: string } = {
-      javascript: 'js',
-      typescript: 'ts',
-      python: 'py',
-      java: 'java',
-      cpp: 'cpp',
-      c: 'c',
-      csharp: 'cs',
-      php: 'php',
-      ruby: 'rb',
-      go: 'go',
-      rust: 'rs',
-      kotlin: 'kt',
-      swift: 'swift',
-      html: 'html',
-      css: 'css',
-      scss: 'scss',
-      json: 'json',
-      xml: 'xml',
-      yaml: 'yml',
-      markdown: 'md',
-      bash: 'sh',
-      powershell: 'ps1',
-      sql: 'sql',
-      r: 'r',
-      matlab: 'm',
-      jsx: 'jsx',
-      tsx: 'tsx'
-    };
-    return extensions[lang] || 'txt';
-  };
-
-  // Handle keyboard shortcuts in edit mode
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.ctrlKey && e.key === 'Enter' && isEditing) {
-      e.preventDefault();
-      if (onCodeEdit) {
-        onCodeEdit(code, editedCode);
-      }
-      setIsEditing(false);
-    }
-    if (e.key === 'Escape' && isEditing) {
-      setIsEditing(false);
-      setEditedCode(code);
-    }
-  };
-
-  // Language display name with icons and colors
-  const getLanguageDisplayName = (lang: string) => {
-    const langMap: Record<string, { name: string; icon: string; color: string }> = {
-      javascript: { name: 'JavaScript', icon: '⚡', color: '#f7df1e' },
-      jsx: { name: 'React JSX', icon: '⚛️', color: '#61dafb' },
-      tsx: { name: 'React TSX', icon: '⚛️', color: '#61dafb' },
-      typescript: { name: 'TypeScript', icon: '🔷', color: '#3178c6' },
-      json: { name: 'JSON', icon: '📄', color: '#00d2ff' },
-      csv: { name: 'CSV', icon: '📊', color: '#00c851' },
-      md: { name: 'Markdown', icon: '📝', color: '#083fa1' },
-      python: { name: 'Python', icon: '🐍', color: '#3776ab' },
-      html: { name: 'HTML', icon: '🌐', color: '#e34c26' },
-      css: { name: 'CSS', icon: '🎨', color: '#1572b6' },
-      bash: { name: 'Bash', icon: '💻', color: '#4eaa25' },
-      shell: { name: 'Shell', icon: '🖥️', color: '#89e051' },
-      sql: { name: 'SQL', icon: '🗃️', color: '#336791' },
-      yaml: { name: 'YAML', icon: '⚙️', color: '#cb171e' },
-      xml: { name: 'XML', icon: '📋', color: '#005a9c' }
-    };
-    
-    const langInfo = langMap[lang.toLowerCase()];
-    return langInfo || { name: lang.toUpperCase(), icon: '📄', color: '#888' };
-  };
-  
-  const langInfo = getLanguageDisplayName(language);
-
-  // Enhanced syntax highlighting function (imported from ResponsiveAIChat.tsx)
-  const highlightSyntax = (line: string, language: string): string => {
-    let highlighted = line;
-    
-    // Escape HTML entities first
-    highlighted = highlighted
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    
-    const patterns = {
-      json: [
-        // Property names (keys) - bright cyan
-        { pattern: /"([^"]+)":/g, replacement: '<span style="color: #00d4ff; font-weight: 500">"$1"</span>:' },
-        // String values - warm yellow
-        { pattern: /:\s*"([^"]*)"/g, replacement: ': <span style="color: #ffd700">"$1"</span>' },
-        // Numbers - bright green
-        { pattern: /:\s*(\d+\.?\d*)/g, replacement: ': <span style="color: #00ff88; font-weight: 500">$1</span>' },
-        // Booleans and null - purple
-        { pattern: /:\s*(true|false|null)/g, replacement: ': <span style="color: #c792ea; font-weight: 500">$1</span>' },
-        // Brackets and braces - golden
-        { pattern: /([{}\[\],])/g, replacement: '<span style="color: #ffb86c; font-weight: bold">$1</span>' },
-      ],
-      javascript: [
-        // Keywords - bright blue
-        { pattern: /\b(const|let|var|function|return|if|else|for|while|import|export|class|extends|async|await|try|catch|finally|throw|new|this|super)\b/g, replacement: '<span style="color: #82aaff; font-weight: 600">$1</span>' },
-        // Strings - warm green
-        { pattern: /"([^"]*)"/g, replacement: '<span style="color: #c3e88d">"$1"</span>' },
-        { pattern: /'([^']*)'/g, replacement: '<span style="color: #c3e88d">\'$1\'</span>' },
-        { pattern: /`([^`]*)`/g, replacement: '<span style="color: #c3e88d">`$1`</span>' },
-        // Comments - soft gray
-        { pattern: /\/\/(.*)/g, replacement: '<span style="color: #546e7a; font-style: italic">//$1</span>' },
-        { pattern: /\/\*([\s\S]*?)\*\//g, replacement: '<span style="color: #546e7a; font-style: italic">/*$1*/</span>' },
-        // Numbers - bright orange
-        { pattern: /\b(\d+\.?\d*)\b/g, replacement: '<span style="color: #f78c6c; font-weight: 500">$1</span>' },
-        // Functions - yellow
-        { pattern: /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g, replacement: '<span style="color: #ffcb6b; font-weight: 500">$1</span>(' },
-        // Operators - pink
-        { pattern: /([+\-*/%=<>!&|]+)/g, replacement: '<span style="color: #ff5370; font-weight: 500">$1</span>' },
-      ],
-      typescript: [
-        // TypeScript specific keywords - purple
-        { pattern: /\b(interface|type|enum|namespace|declare|abstract|implements|public|private|protected|readonly|static)\b/g, replacement: '<span style="color: #c792ea; font-weight: 600">$1</span>' },
-        // Regular keywords - bright blue
-        { pattern: /\b(const|let|var|function|return|if|else|for|while|import|export|class|extends|async|await|try|catch|finally|throw|new|this|super)\b/g, replacement: '<span style="color: #82aaff; font-weight: 600">$1</span>' },
-        // Strings - warm green
-        { pattern: /"([^"]*)"/g, replacement: '<span style="color: #c3e88d">"$1"</span>' },
-        { pattern: /'([^']*)'/g, replacement: '<span style="color: #c3e88d">\'$1\'</span>' },
-        // Comments - soft gray
-        { pattern: /\/\/(.*)/g, replacement: '<span style="color: #546e7a; font-style: italic">//$1</span>' },
-        // Numbers - bright orange
-        { pattern: /\b(\d+\.?\d*)\b/g, replacement: '<span style="color: #f78c6c; font-weight: 500">$1</span>' },
-        // Types - cyan
-        { pattern: /:\s*([A-Z][a-zA-Z0-9_<>|\[\]]*)/g, replacement: ': <span style="color: #89ddff; font-weight: 500">$1</span>' },
-      ],
-      python: [
-        // Keywords - purple
-        { pattern: /\b(def|class|import|from|if|else|elif|for|while|try|except|finally|with|as|return|yield|lambda|and|or|not|in|is|None|True|False)\b/g, replacement: '<span style="color: #c792ea; font-weight: 600">$1</span>' },
-        // Strings - warm green
-        { pattern: /"([^"]*)"/g, replacement: '<span style="color: #c3e88d">"$1"</span>' },
-        { pattern: /'([^']*)'/g, replacement: '<span style="color: #c3e88d">\'$1\'</span>' },
-        // Comments - soft gray
-        { pattern: /#(.*)/g, replacement: '<span style="color: #546e7a; font-style: italic">#$1</span>' },
-        // Numbers - bright orange
-        { pattern: /\b(\d+\.?\d*)\b/g, replacement: '<span style="color: #f78c6c; font-weight: 500">$1</span>' },
-        // Functions - yellow
-        { pattern: /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g, replacement: '<span style="color: #ffcb6b; font-weight: 500">$1</span>(' },
-      ],
-      css: [
-        // Properties - cyan
-        { pattern: /([a-zA-Z-]+)\s*:/g, replacement: '<span style="color: #89ddff; font-weight: 500">$1</span>:' },
-        // Values - warm yellow
-        { pattern: /:\s*([^;{}]+)/g, replacement: ': <span style="color: #ffcb6b">$1</span>' },
-        // Selectors - orange
-        { pattern: /^([.#]?[a-zA-Z-_]+)/g, replacement: '<span style="color: #f78c6c; font-weight: 500">$1</span>' },
-        // Comments - soft gray
-        { pattern: /\/\*([\s\S]*?)\*\//g, replacement: '<span style="color: #546e7a; font-style: italic">/*$1*/</span>' },
-      ],
-      bash: [
-        // Commands - bright green like terminal
-        { pattern: /\b(curl|wget|ls|cd|mkdir|rm|cp|mv|grep|find|chmod|chown|sudo|apt|yum|pip|npm|git|docker|ssh|scp|rsync)\b/g, replacement: '<span style="color: #4eaa25; font-weight: 600">$1</span>' },
-        // Flags/options - cyan
-        { pattern: /(-{1,2}[a-zA-Z-]+)/g, replacement: '<span style="color: #00d4ff">$1</span>' },
-        // Strings - yellow
-        { pattern: /"([^"]*)"/g, replacement: '<span style="color: #ffd700">"$1"</span>' },
-        { pattern: /'([^']*)'/g, replacement: '<span style="color: #ffd700">\'$1\'</span>' },
-        // URLs and paths - light blue
-        { pattern: /(https?:\/\/[^\s]+)/g, replacement: '<span style="color: #89ddff">$1</span>' },
-        { pattern: /(\/[^\s]*)/g, replacement: '<span style="color: #89ddff">$1</span>' },
-        // Comments - gray
-        { pattern: /#(.*)/g, replacement: '<span style="color: #546e7a; font-style: italic">#$1</span>' },
-      ],
-      shell: [
-        // Same as bash
-        { pattern: /\b(curl|wget|ls|cd|mkdir|rm|cp|mv|grep|find|chmod|chown|sudo|apt|yum|pip|npm|git|docker|ssh|scp|rsync)\b/g, replacement: '<span style="color: #4eaa25; font-weight: 600">$1</span>' },
-        { pattern: /(-{1,2}[a-zA-Z-]+)/g, replacement: '<span style="color: #00d4ff">$1</span>' },
-        { pattern: /"([^"]*)"/g, replacement: '<span style="color: #ffd700">"$1"</span>' },
-        { pattern: /'([^']*)'/g, replacement: '<span style="color: #ffd700">\'$1\'</span>' },
-        { pattern: /(https?:\/\/[^\s]+)/g, replacement: '<span style="color: #89ddff">$1</span>' },
-        { pattern: /(\/[^\s]*)/g, replacement: '<span style="color: #89ddff">$1</span>' },
-        { pattern: /#(.*)/g, replacement: '<span style="color: #546e7a; font-style: italic">#$1</span>' },
-      ]
-    };
-
-    const langPatterns = patterns[language.toLowerCase() as keyof typeof patterns] || patterns.javascript;
-    if (langPatterns) {
-      langPatterns.forEach(({ pattern, replacement }) => {
-        highlighted = highlighted.replace(pattern, replacement);
-      });
-    }
-
-    return highlighted;
-  };
-
-  return (
-    <div className={`relative group my-6 rounded-lg overflow-hidden bg-gray-600 dark:bg-[#212121] border border-gray-400 dark:border-gray-800 shadow-2xl ${isFullscreen ? 'fixed inset-4 z-50' : ''}`}>
-      {/* Header - Beautiful modern design */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-600 via-gray-500 to-gray-600 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border-b border-gray-400 dark:border-gray-700">
-        <div className="flex items-center space-x-3">
-          {/* Traffic Light Buttons */}
-          <div className="flex space-x-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          </div>
-          
-          {/* Language indicator with icon and color */}
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-full border border-gray-300 dark:border-gray-700">
-              <span className="text-sm">{langInfo.icon}</span>
-              <FileText className="w-4 h-4" style={{ color: langInfo.color }} />
-              <span className="text-sm font-medium text-white">
-                {langInfo.name}
-              </span>
-            </div>
-            {lines.length > 1 && (
-              <div className="text-xs text-white bg-gray-500 dark:bg-gray-800 px-2 py-1 rounded border border-gray-300 dark:border-gray-700">
-                {lines.length} lines
-              </div>
-            )}
-          </div>
-          
-          {/* HTML Preview Button - Prominent Position */}
-          {(language.toLowerCase() === 'html' || 
-            language.toLowerCase() === 'htm' || 
-            code.trim().toLowerCase().startsWith('<!doctype') ||
-            code.trim().toLowerCase().startsWith('<html')) && (
-            <button
-              onClick={() => openHtmlInNewTab(code)}
-              className="ml-4 flex items-center space-x-2 px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-colors"
-              title={currentLanguage === 'ar' ? 'فتح في تاب جديد' : 'Open in new tab'}
-            >
-              <Eye className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                {currentLanguage === 'ar' ? 'معاينة' : 'Preview'}
-              </span>
-            </button>
-          )}
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          {/* Expand/Truncate button for long code */}
-          {shouldTruncate && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200 transform hover:scale-105"
-              title={isExpanded ? (currentLanguage === 'ar' ? 'إخفاء' : 'Hide') : (currentLanguage === 'ar' ? 'عرض الكامل' : 'Expand')}
-            >
-              {isExpanded ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          )}
-          
-          <button
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200 transform hover:scale-105"
-            title={isFullscreen ? (currentLanguage === 'ar' ? 'تصغير' : 'Minimize') : (currentLanguage === 'ar' ? 'ملء الشاشة' : 'Fullscreen')}
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-          
-          {/* Edit Button */}
-          {!isEditing ? (
-            <button
-              onClick={() => {
-                setIsEditing(true);
-                setEditedCode(code);
-              }}
-              className="p-1 text-gray-400 hover:text-yellow-400 transition-colors"
-              title={currentLanguage === 'ar' ? 'تحرير الكود' : 'Edit code'}
-            >
-              <Edit3 className="w-4 h-4" />
-            </button>
-          ) : (
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={() => {
-                  if (onCodeEdit) {
-                    onCodeEdit(code, editedCode);
-                  }
-                  setIsEditing(false);
-                }}
-                className="p-1 text-gray-400 hover:text-green-400 transition-colors"
-                title={currentLanguage === 'ar' ? 'حفظ التغييرات' : 'Save changes'}
-              >
-                <Save className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditedCode(code);
-                }}
-                className="p-1 text-gray-400 hover:text-red-400 transition-colors"
-                title={currentLanguage === 'ar' ? 'إلغاء التحرير' : 'Cancel editing'}
-              >
-                <XCircle className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 text-gray-400 hover:text-gray-200 transition-colors"
-            title={isExpanded ? (currentLanguage === 'ar' ? 'طي' : 'Collapse') : (currentLanguage === 'ar' ? 'توسيع' : 'Expand')}
-          >
-            {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={() => copyCode()}
-            className="flex items-center space-x-1 px-2 py-1 text-gray-400 hover:text-gray-200 transition-colors"
-            title={currentLanguage === 'ar' ? 'نسخ الكود' : 'Copy code'}
-          >
-            {showCopySuccess ? (
-              <Check className="w-4 h-4 text-green-400" />
-            ) : (
-              <Copy className="w-4 h-4" />
-            )}
-          </button>
-          <button
-            onClick={() => downloadCode()}
-            className="flex items-center space-x-1 px-2 py-1 text-gray-400 hover:text-gray-200 transition-colors"
-            title={currentLanguage === 'ar' ? 'تحميل الكود' : 'Download code'}
-          >
-            <Download className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Code Content - Pure black background with enhanced highlighting */}
-      <div className={`relative bg-gray-200 dark:bg-[#040404] ${shouldTruncate && !isExpanded && !isFullscreen ? 'max-h-96' : ''} overflow-auto`}>
-        {isEditing ? (
-          <div className="p-4">
-            <textarea
-              value={editedCode}
-              onChange={(e) => setEditedCode(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-full h-64 bg-gray-100 dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-200 text-sm font-mono border border-gray-400 dark:border-gray-600 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder={currentLanguage === 'ar' ? 'قم بتحرير الكود هنا...' : 'Edit your code here...'}
-              autoFocus
-            />
-            <div className="mt-2 text-xs text-gray-400 flex items-center justify-between">
-              <span>
-                {currentLanguage === 'ar' 
-                  ? `${editedCode.length} حرف` 
-                  : `${editedCode.length} characters`
-                }
-              </span>
-              <span>
-                {currentLanguage === 'ar' 
-                  ? 'استخدم Ctrl+Enter للحفظ السريع'
-                  : 'Use Ctrl+Enter for quick save'
-                }
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="p-5">
-            <pre className="text-sm font-mono leading-relaxed">
-              <code>
-                {lines.map((line, index) => (
-                  <div key={index} className="flex items-start hover:bg-gray-300/30 dark:hover:bg-gray-900/30 transition-colors duration-150 group/line">
-                    <span className="text-gray-500 dark:text-gray-600 text-xs mr-4 mt-0.5 select-none min-w-[3rem] text-right font-medium group-hover/line:text-gray-400 dark:group-hover/line:text-gray-500">
-                      {String(index + 1).padStart(3, ' ')}
-                    </span>
-                    <span 
-                      className="flex-1 text-gray-800 dark:text-gray-100" 
-                      dangerouslySetInnerHTML={{ 
-                        __html: highlightSyntax(line, language) 
-                      }} 
-                    />
-                  </div>
-                ))}
-              </code>
-            </pre>
-            
-            {/* Copy success indicator */}
-            {showCopySuccess && (
-              <div className="absolute top-5 right-5 bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium animate-pulse shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4" />
-                  <span>{currentLanguage === 'ar' ? 'تم النسخ!' : 'Copied!'}</span>
-                </div>
-              </div>
-            )}
-            
-            {/* Show more button for truncated code */}
-            {shouldTruncate && !isExpanded && !isFullscreen && (
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black via-black/95 to-transparent flex items-end justify-center pb-4">
-                <button
-                  onClick={() => setIsExpanded(true)}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm rounded-lg transition-all duration-200 shadow-lg transform hover:scale-105 font-medium"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Eye className="w-4 h-4" />
-                    <span>
-                      {currentLanguage === 'ar' 
-                        ? `عرض ${lines.length - 15} سطر إضافي`
-                        : `Show ${lines.length - 15} more lines`
-                      }
-                    </span>
-                  </div>
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-    </div>
-  );
-});
-
-CodeBlock.displayName = 'CodeBlock';
+import CodeBlock, { MessageContentRenderer } from './CodeBlock';
 
 // Responsive Table Component
 interface ResponsiveTableProps {
@@ -817,8 +282,9 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
       return null;
     }
 
-    // Handle images in markdown format
-    const imageRegex = /!\[([^\]]*)\]\((data:image\/[^)]+)\)/g;
+    // Handle images in markdown format - support both data:image and http/https URLs
+    const imageRegex = /!\[([^\]]*)\]\(((?:data:image\/[^)]+|https?:\/\/[^)]+))\)/g;
+    console.log('🔍 Checking for images in message:', message.content.substring(0, 200) + '...');
     let lastIndex = 0;
     const parts = [];
     let match;
@@ -897,6 +363,9 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
               // Code block - use CodeBlock component
               // Remove trailing newline only
               codeContent = codeContent.replace(/\n$/, '');
+              
+              // Debug: Log to console to check if this is reached
+              console.log('Creating CodeBlock:', { language, codeContent: codeContent.substring(0, 50) + '...', hasClass: !!className });
               
               return (
                 <CodeBlock 
@@ -1021,6 +490,9 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
 
 MessageContent.displayName = 'MessageContent';
 
+// Unified ID generator
+const genId = () => (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
+
 const PromptsPage: React.FC = () => {
   // Temporarily disabled to fix Next.js 15 headers() error
   // const { user } = useUser();
@@ -1028,6 +500,7 @@ const PromptsPage: React.FC = () => {
   const { language } = useLanguage();
   const [selectedModel, setSelectedModel] = useState<AIModel>(defaultModel);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [lastMessageId, setLastMessageId] = useState<string | null>(null);
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [sendingMessageId, setSendingMessageId] = useState<string | null>(null);
@@ -1043,13 +516,13 @@ const PromptsPage: React.FC = () => {
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
 
   // Image modal functions
-  const openImageModal = (src: string) => {
+  const openImageModal = useCallback((src: string) => {
     setImageModal({isOpen: true, src});
-  };
+  }, []);
 
-  const closeImageModal = () => {
+  const closeImageModal = useCallback(() => {
     setImageModal({isOpen: false, src: ''});
-  };
+  }, []);
 
 
   const [newServerData, setNewServerData] = useState({
@@ -1073,8 +546,6 @@ const PromptsPage: React.FC = () => {
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [mcpEnabled, setMcpEnabled] = useState(true);
-  const [showMCPPanel, setShowMCPPanel] = useState(false);
-  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [thinkingMessages, setThinkingMessages] = useState<{[key: string]: {thinking: string, response: string, isCompleted: boolean}}>({});
   const [fullscreenImage, setFullscreenImage] = useState<{index: number, url: string} | null>(null);
   const [attachedFile, setAttachedFile] = useState<{file: File, content: string, preview: string} | null>(null);
@@ -1106,11 +577,11 @@ const PromptsPage: React.FC = () => {
   // MCP data will be loaded via API calls
 
   // Function to refresh chat history from server
-  const refreshChatHistory = async () => {
+  const refreshChatHistory = useCallback(async () => {
     const sessions = await chatStorage.listSessions();
     setChatHistory(sessions);
     return sessions;
-  };
+  }, []);
 
   // Race condition protection for sendMessage
   const sendMessageRef = useRef<boolean>(false);
@@ -1204,129 +675,87 @@ const PromptsPage: React.FC = () => {
     }
   }, [selectedModel, isLoadingChat]);
 
-  // Auto-save when messages change
+  // Enhanced auto-save using custom hook with content hashing
+  const saveFunction = useCallback(async (sessionData: { messages: ChatMessage[], model: AIModel, session: ChatSession | null }) => {
+    const { messages, model, session } = sessionData;
+    
+    if (!session) {
+      // Create new session
+      const newSession = await chatStorage.createSession(model, messages);
+      setCurrentChatSession(newSession);
+      console.log('🆕 New chat session created');
+    } else {
+      // Update existing session  
+      const updatedSessionData = {
+        ...session,
+        messages,
+        model
+      };
+      const savedSession = await chatStorage.saveSession(updatedSessionData);
+      
+      // Only update state if ID changed to prevent loops
+      if (!currentChatSession || currentChatSession.id !== savedSession.id) {
+        setCurrentChatSession(savedSession);
+      }
+      console.log('💾 Chat session updated');
+    }
+  }, [currentChatSession]);
+
+  const { debouncedSave, getSaveState } = useAutoSave(saveFunction, {
+    debounceMs: 3000,
+    onSaveStart: () => console.log('🔄 Auto-save starting...'),
+    onSaveSuccess: () => console.log('✅ Auto-save completed'),
+    onSaveError: (error) => console.error('❌ Auto-save failed:', error),
+    onSaveSkipped: (reason) => console.log('⏭️ Auto-save skipped:', reason)
+  });
+
+  // Trigger auto-save when messages change
   useEffect(() => {
-    let saveTimeoutId: NodeJS.Timeout | undefined;
+    if (isLoadingChat || messages.length === 0 || sendMessageRef.current) return;
     
-    const autoSave = async () => {
-      if (isLoadingChat || messages.length === 0 || sendMessageRef.current) return;
-
-      let sessionToUpdate = currentChatSession;
-
-      // If there's no session, create one with the first message
-      if (!sessionToUpdate) {
-        const newSession = await chatStorage.createSession(selectedModel, messages);
-        setCurrentChatSession(newSession);
-        await refreshChatHistory();
-        return; 
-      }
-
-      // If session exists, update it
-      if (sessionToUpdate) {
-        const updatedSessionData = {
-          ...sessionToUpdate,
-          messages: messages,
-          model: selectedModel, // Also update the model
-        };
-        const savedSession = await chatStorage.saveSession(updatedSessionData);
-        setCurrentChatSession(savedSession); // Update state with the response from the server
-        await refreshChatHistory(); // Refresh history to show updated timestamp
-      }
+    const sessionData = {
+      messages,
+      model: selectedModel,
+      session: currentChatSession
     };
-
-    // Debounce auto-save to prevent race conditions
-    if (saveTimeoutId) clearTimeout(saveTimeoutId);
-    saveTimeoutId = setTimeout(autoSave, 500);
     
-    return () => {
-      if (saveTimeoutId) clearTimeout(saveTimeoutId);
-    };
-  }, [messages, isLoadingChat, currentChatSession, selectedModel]); // Dependencies updated
+    debouncedSave(sessionData);
+  }, [messages, selectedModel, currentChatSession, isLoadingChat, debouncedSave]);
 
-  // New MCP server management functions
-  const [serverOperationInProgress, setServerOperationInProgress] = useState<string | null>(null);
+  // Use improved MCP servers custom hook
+  const {
+    servers: mcpServers,
+    isLoading: isLoadingMCP,
+    error: mcpError,
+    addServer,
+    removeServer,
+    toggleServer,
+    refreshServers,
+    serverOperationInProgress
+  } = useMcpServers({
+    autoConnect: true,
+    retryAttempts: 3,
+    retryDelay: 2000
+  });
 
-  const addServer = async (template: MCPServerTemplate) => {
-    if (serverOperationInProgress) {
-      console.warn('Server operation already in progress, ignoring duplicate call');
-      return;
-    }
-    
-    setServerOperationInProgress('add');
-    setIsLoadingMCP(true);
-    try {
-      const response = await fetch('/api/mcp/servers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: template.name,
-          command: template.command,
-          args: template.args,
-          description: template.description,
-          category: template.category
-        })
-      });
+  // Memoized expensive computations
+  const connectedServersCount = useMemo(() => 
+    mcpServers.filter(server => server.isConnected).length, 
+    [mcpServers]
+  );
+  
+  const totalToolsCount = useMemo(() => 
+    mcpServers.reduce((total, server) => total + (server.toolsCount || 0), 0), 
+    [mcpServers]
+  );
 
-      if (!response.ok) {
-        throw new Error(`Failed to add server: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to add server');
-      }
-
-      // Refresh servers list
-      await loadMCPStatus();
-      setShowAddServer(false);
-    } catch (error: any) {
-      console.error('Error adding server:', error);
-      setError(`Failed to add server: ${error.message}`);
-    } finally {
-      setIsLoadingMCP(false);
-      setServerOperationInProgress(null);
-    }
-  };
-
-  const removeServer = async (serverId: string) => {
-    if (serverOperationInProgress) {
-      console.warn('Server operation already in progress, ignoring duplicate call');
-      return;
-    }
-    
-    setServerOperationInProgress('delete');
-    setIsLoadingMCP(true);
-    try {
-      const response = await fetch(`/api/mcp/servers/${serverId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete server: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to delete server');
-      }
-
-      // Refresh servers list
-      await loadMCPStatus();
-    } catch (error: any) {
-      console.error('Error deleting server:', error);
-      setError(`Failed to delete server: ${error.message}`);
-    } finally {
-      setIsLoadingMCP(false);
-      setServerOperationInProgress(null);
-    }
-  };
-
-  const refreshMCPServers = async () => {
-    await loadMCPStatus();
-  };
+  const sortedChatHistory = useMemo(() => 
+    [...chatHistory].sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()),
+    [chatHistory]
+  );
 
   // Generate image using Hugging Face FLUX.1-dev
-  const generateImage = async (prompt: string) => {
+  const generateImage = useCallback(async (prompt: string) => {
     setIsGeneratingImage(true);
     setError('');
     
@@ -1355,10 +784,10 @@ const PromptsPage: React.FC = () => {
     } finally {
       setIsGeneratingImage(false);
     }
-  };
+  }, []);
 
   // Enhance prompt only (without generating image)
-  const enhancePromptOnly = async (prompt: string) => {
+  const enhancePromptOnly = useCallback(async (prompt: string) => {
     setIsEnhancingPrompt(true);
     setError('');
     
@@ -1396,10 +825,10 @@ const PromptsPage: React.FC = () => {
     } finally {
       setIsEnhancingPrompt(false);
     }
-  };
+  }, []);
 
   // Translate Arabic text to English
-  const translatePrompt = async (text: string) => {
+  const translatePrompt = useCallback(async (text: string) => {
     setIsTranslating(true);
     setError('');
     
@@ -1432,72 +861,28 @@ const PromptsPage: React.FC = () => {
     } finally {
       setIsTranslating(false);
     }
-  };
+  }, []);
 
-  // New MCP system state  
+  // MCP system state  
   const [serverTemplates, setServerTemplates] = useState<MCPServerTemplate[]>([]);
-  const [isLoadingMCP, setIsLoadingMCP] = useState(false);
   const [isRefreshingMCP, setIsRefreshingMCP] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<MCPServerTemplate | null>(null);
 
-  // Load MCP servers function
-  const loadMCPServers = async () => {
-    setIsLoadingMCP(true);
+  // Add server from template
+  const addServerFromTemplate = useCallback(async (template: MCPServerTemplate) => {
+    if (!template) return;
+    
     try {
-      // Simple mock implementation for now
-      const mockServers: MCPServer[] = [
-        {
-          id: 'time',
-          name: 'Time Server',
-          description: 'معلومات الوقت والتاريخ',
-          status: 'disconnected',
-          isConnected: false,
-          toolsCount: 1,
-          category: 'utility'
-        },
-        {
-          id: 'fetch',
-          name: 'Fetch Server',
-          description: 'جلب محتوى من المواقع',
-          status: 'disconnected',
-          isConnected: false,
-          toolsCount: 1,
-          category: 'web'
-        }
-      ];
-      setMcpServers(mockServers);
+      await addServer(template);
+      setSelectedTemplate(null);
     } catch (error) {
-      console.error('Error loading MCP servers:', error);
-    } finally {
-      setIsLoadingMCP(false);
+      console.error('Failed to add server from template:', error);
     }
-  };
+  }, [addServer]);
 
-  // Load MCP status and templates
-  const loadMCPStatus = async () => {
-    setIsLoadingMCP(true);
-    try {
-      const response = await fetch('/api/mcp/status');
-      const data = await response.json();
-      
-      if (data.success) {
-        setMcpServers(data.activeServers || []);
-        setServerTemplates(data.serverTemplates || []);
-      }
-    } catch (error) {
-      console.error('Failed to load MCP status:', error);
-    } finally {
-      setIsLoadingMCP(false);
-    }
-  };
-
-  useEffect(() => {
-    loadMCPStatus();
-  }, []);
-
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -1550,10 +935,10 @@ const PromptsPage: React.FC = () => {
       return;
     }
     sendMessageRef.current = true;
-    let messageContent = inputMessage;
+    const messageContent = inputMessage;
     
     const userMessage: ChatMessage = {
-      id: Date.now().toString(),
+      id: genId(),
       content: messageContent,
       role: 'user',
       timestamp: new Date().toISOString()
@@ -1589,12 +974,22 @@ const PromptsPage: React.FC = () => {
       const hasImageKeywords = /(?:generate|create|make|draw|paint|sketch|design|توليد|إنشاء|ارسم|اصنع|صمم|اطلب|أريد)\s*(?:an?\s+)?(?:image|picture|photo|painting|drawing|artwork|صورة|رسمة|لوحة|تصميم)/i.test(lastMessage);
       const hasImageContext = /(?:FLUX|Stable\s*Diffusion|Hugging\s*Face|AI\s*art|digital\s*art|فن\s*رقمي|ذكاء\s*اصطناعي)/i.test(lastMessage);
       
-      
+      // Simple keyword detection for common image requests
+      const simpleImageKeywords = /(?:صورة|رسمة|لوحة|تصميم|image|picture|photo|drawing)/i.test(lastMessage);
       const hasDescriptiveContent = lastMessage.length > 50 && /(?:with|featuring|showing|في|يظهر|يحتوي|مع)/i.test(lastMessage);
       
       // If user selected specific models, treat any descriptive message as generation request
-      const isImageRequest = isImageModel || hasImageKeywords || hasImageContext || 
+      const isImageRequest = isImageModel || hasImageKeywords || hasImageContext || simpleImageKeywords ||
                             (hasDescriptiveContent && lastMessage.length > 100);
+      
+      console.log('🔍 Image request detection:', {
+        isImageModel,
+        hasImageKeywords,
+        hasImageContext, 
+        simpleImageKeywords,
+        isImageRequest,
+        messageLength: lastMessage.length
+      });
 
       let response: string;
 
@@ -1745,11 +1140,13 @@ ${language === 'ar'
             
             // حاول معالجة أي استجابة بها صورة
             if (imageData.image) {
+              console.log('📸 Image URL received:', imageData.image.substring(0, 100) + '...');
               responseContent = `🎨 **${language === 'ar' ? 'تم توليد الصورة' : 'Image Generated'}**
 
 ![Generated Image](${imageData.image})
 
 ${language === 'ar' ? 'تم توليد الصورة بنجاح' : 'Image generated successfully'}`;
+              console.log('✅ Response content prepared with image');
             } else {
               throw new Error(`Unexpected API response format. Keys: ${Object.keys(imageData).join(', ')}`);
             }
@@ -1812,12 +1209,28 @@ ${language === 'ar'
         }
 
         const enhancedData = await enhancedResponse.json();
+        console.debug('enhancedData', enhancedData);
         
         if (!enhancedData.success) {
           throw new Error(enhancedData.error || 'Enhanced API failed');
         }
         
-        response = enhancedData.message;
+        // Try common fallbacks: message | text | content | choices[0].message.content
+        const maybeMessage = enhancedData?.message
+          || enhancedData?.text
+          || enhancedData?.content
+          || (enhancedData?.choices && enhancedData.choices[0] && (enhancedData.choices[0].message?.content || enhancedData.choices[0].text))
+          || '';
+        response = maybeMessage;
+        console.debug('resolved response text', response);
+        
+        // Force non-empty response to prevent empty messages
+        if (!response || response.trim() === '') {
+          response = language === 'ar' 
+            ? 'عذراً، لم أتمكن من الحصول على رد مناسب. يرجى المحاولة مرة أخرى.'
+            : 'Sorry, I could not generate a proper response. Please try again.';
+          console.warn('Empty API response, using fallback message');
+        }
         
         // Log MCP usage if any
         if (enhancedData.mcpUsed && enhancedData.mcpResults) {
@@ -1826,7 +1239,7 @@ ${language === 'ar'
         
         // معالجة التفكير إذا كان متوفراً
         if (enhancedData.hasReasoning && enhancedData.thinking) {
-          const messageId = (Date.now() + 1).toString();
+          const messageId = genId();
           setThinkingMessages(prev => ({
             ...prev,
             [messageId]: {
@@ -1845,20 +1258,41 @@ ${language === 'ar'
             isThinking: true
           };
           
-          setMessages([...newMessages, thinkingMessage]);
+          setMessages(prev => [...prev, thinkingMessage]);
+          setLastMessageId(messageId);
+          
+          // Fallback timeout to ensure message appears even if ThinkingMessage fails
+          setTimeout(() => {
+            setThinkingMessages(prev => {
+              const entry = prev[messageId];
+              if (entry && !entry.isCompleted) {
+                setMessages(prevMsgs => prevMsgs.map(m => 
+                  m.id === messageId 
+                    ? { ...m, content: entry.response || '(No response returned)', isThinking: false } 
+                    : m
+                ));
+                const next = { ...prev };
+                delete next[messageId];
+                return next;
+              }
+              return prev;
+            });
+          }, 8000); // 8s guard
+          
           return; // الخروج مبكراً لعرض التفكير
         }
       }
       
       // Create storage-compatible assistant message
       const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: genId(),
         content: response,
         role: 'assistant',
         timestamp: new Date().toISOString()
       };
 
-      setMessages([...newMessages, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
+      setLastMessageId(assistantMessage.id);
     } catch (error: any) {
       console.error('Error sending message:', error);
       
@@ -1881,14 +1315,14 @@ ${language === 'ar'
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
-  };
+  }, [sendMessage]);
 
-  const copyChat = (messageIndex?: number) => {
+  const copyChat = useCallback((messageId?: string) => {
     if (messages.length === 0) {
       alert(language === 'ar' ? 'لا توجد محادثة لنسخها' : 'No conversation to copy');
       return;
@@ -1896,9 +1330,10 @@ ${language === 'ar'
 
     let textToCopy = '';
     
-    if (messageIndex !== undefined) {
+    if (messageId !== undefined) {
       // Copy single message
-      const message = messages[messageIndex];
+      const message = messages.find(m => m.id === messageId);
+      if (!message) return;
       textToCopy = message.content;
     } else {
       // Copy entire chat
@@ -1945,7 +1380,7 @@ ${language === 'ar'
 
     copyToClipboard(textToCopy).then((success) => {
       if (success) {
-        const successId = messageIndex !== undefined ? `message-${messageIndex}` : 'chat';
+        const successId = messageId !== undefined ? `message-${messageId}` : 'chat';
         setShowCopySuccess(successId);
         
         // Hide success message after 2 seconds
@@ -1959,33 +1394,33 @@ ${language === 'ar'
         alert(language === 'ar' ? 'فشل في النسخ' : 'Failed to copy');
       }
     });
-  };
+  }, [messages, language, selectedModel]);
 
-  const clearChat = () => {
+  const clearChat = useCallback(() => {
     setMessages([]);
     setError('');
     setCurrentChatSession(null);
-  };
+  }, []);
 
-  const resetChat = async () => {
+  const resetChat = useCallback(async () => {
     setMessages([]);
     setInputMessage('');
     setError('');
     setActiveMode('general');
     setCurrentChatSession(null);
     chatStorage.setCurrentSessionId(null);
-  };
+  }, []);
 
-  const startNewChat = async () => {
+  const startNewChat = useCallback(async () => {
     setMessages([]);
     setInputMessage('');
     setError('');
     setCurrentChatSession(null);
     chatStorage.setCurrentSessionId(null);
     await refreshChatHistory(); // Refresh to ensure list is up-to-date
-  };
+  }, [refreshChatHistory]);
 
-  const loadChatSession = async (sessionId: string) => {
+  const loadChatSession = useCallback(async (sessionId: string) => {
     setIsLoadingChat(true);
     const session = await chatStorage.getSession(sessionId);
     if (session) {
@@ -1996,22 +1431,22 @@ ${language === 'ar'
       setIsHistorySidebarVisible(false); // Close sidebar after selection
     }
     setIsLoadingChat(false);
-  };
+  }, []);
 
-  const deleteChatSession = async (sessionId: string) => {
+  const deleteChatSession = useCallback(async (sessionId: string) => {
     const isCurrent = currentChatSession?.id === sessionId;
     await chatStorage.deleteSession(sessionId);
     await refreshChatHistory();
     if (isCurrent) {
       await startNewChat();
     }
-  };
+  }, [currentChatSession?.id, refreshChatHistory, startNewChat]);
 
-  const toggleHistorySidebar = () => {
+  const toggleHistorySidebar = useCallback(() => {
     setIsHistorySidebarVisible(!isHistorySidebarVisible);
-  };
+  }, [isHistorySidebarVisible]);
 
-  const handleModeChange = (mode: 'general' | 'code' | 'creative') => {
+  const handleModeChange = useCallback((mode: 'general' | 'code' | 'creative') => {
     setActiveMode(mode);
     // Apply mode-specific system message
     const systemPrompts = {
@@ -2019,9 +1454,9 @@ ${language === 'ar'
       code: language === 'ar' ? 'أنت خبير برمجة متخصص في كتابة وشرح الكود.' : 'You are a programming expert specialized in writing and explaining code.',
       creative: language === 'ar' ? 'أنت مساعد إبداعي متخصص في الكتابة الإبداعية والأفكار المبتكرة.' : 'You are a creative assistant specialized in creative writing and innovative ideas.'
     };
-  };
+  }, [language]);
 
-  const handleCreateNewServer = async () => {
+  const handleCreateNewServer = useCallback(async () => {
     try {
       console.log('Creating new server...'); // Debug log
       // Server creation will be handled via API
@@ -2029,7 +1464,7 @@ ${language === 'ar'
 
       if (serverInputMode === 'json') {
         try {
-          let parsedJson = JSON.parse(serverJsonInput);
+          const parsedJson = JSON.parse(serverJsonInput);
           console.log('Parsed JSON input:', parsedJson); // Debug log
 
           // Check if the user pasted the format from GitHub { "mcpServers": { ... } }
@@ -2073,7 +1508,7 @@ ${language === 'ar'
         console.log('Server created'); // Debug log
         
         const updatedServers: MCPServer[] = [];
-        setMcpServers(updatedServers);
+        // Server updates handled by hook;
         
         // If user is logged in, save to their account
         if (user && userServersLoaded) {
@@ -2105,36 +1540,36 @@ ${language === 'ar'
       alert(language === 'ar' ? `خطأ في إنشاء الخادم: ${outerError}` : `Failed to create server: ${outerError}`);
       setError(`Failed to create server: ${outerError}`);
     }
-  };
+  }, [serverInputMode, serverJsonInput, newServerData, language]);
 
-  const handleAddArg = () => {
+  const handleAddArg = useCallback(() => {
     setNewServerData(prev => ({
       ...prev,
       args: [...prev.args, '']
     }));
-  };
+  }, []);
 
-  const handleUpdateArg = (index: number, value: string) => {
+  const handleUpdateArg = useCallback((index: number, value: string) => {
     setNewServerData(prev => ({
       ...prev,
       args: prev.args.map((arg, i) => i === index ? value : arg)
     }));
-  };
+  }, []);
 
-  const handleRemoveArg = (index: number) => {
+  const handleRemoveArg = useCallback((index: number) => {
     setNewServerData(prev => ({
       ...prev,
       args: prev.args.filter((_, i) => i !== index)
     }));
-  };
+  }, []);
 
   // Check if current model supports vision/images
-  const modelSupportsImages = () => {
+  const modelSupportsImages = useCallback(() => {
     return selectedModel.capabilities.includes('vision') || selectedModel.capabilities.includes('multimodal');
-  };
+  }, [selectedModel]);
 
   // Handle image upload
-  const handleImageUpload = () => {
+  const handleImageUpload = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -2152,37 +1587,37 @@ ${language === 'ar'
       }
     };
     input.click();
-  };
+  }, []);
 
   // Remove attached image
-  const removeImage = (index: number) => {
+  const removeImage = useCallback((index: number) => {
     // Revoke the old URL to prevent memory leaks
     URL.revokeObjectURL(imagePreviewUrls[index]);
     
     setAttachedImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
-  };
+  }, [imagePreviewUrls]);
 
   // Clear all images
-  const clearAllImages = () => {
+  const clearAllImages = useCallback(() => {
     imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
     setAttachedImages([]);
     setImagePreviewUrls([]);
     setFullscreenImage(null);
-  };
+  }, [imagePreviewUrls]);
 
   // Open image in fullscreen
-  const openFullscreenImage = (index: number, url: string) => {
+  const openFullscreenImage = useCallback((index: number, url: string) => {
     setFullscreenImage({index, url});
-  };
+  }, []);
 
   // Close fullscreen image
-  const closeFullscreenImage = () => {
+  const closeFullscreenImage = useCallback(() => {
     setFullscreenImage(null);
-  };
+  }, []);
 
   // Navigate to next/previous image in fullscreen
-  const navigateFullscreenImage = (direction: 'next' | 'prev') => {
+  const navigateFullscreenImage = useCallback((direction: 'next' | 'prev') => {
     if (!fullscreenImage || imagePreviewUrls.length <= 1) return;
     
     const currentIndex = fullscreenImage.index;
@@ -2198,7 +1633,7 @@ ${language === 'ar'
       index: newIndex,
       url: imagePreviewUrls[newIndex]
     });
-  };
+  }, [fullscreenImage, imagePreviewUrls]);
 
   // Download image function with memory cleanup
   const downloadImageFile = useCallback((url: string, filename: string) => {
@@ -2347,7 +1782,7 @@ ${language === 'ar'
   const allPrompts: any[] = [];
 
   return (
-    <Layout title="Collactions" showSearch={false} hideFooter={true}>
+    <Layout title="Collactions" showSearch={true} hideFooter={true}>
       <div className="h-screen text-foreground overflow-hidden relative">
 
         {/* Responsive Layout */}
@@ -2364,7 +1799,7 @@ ${language === 'ar'
               transform: isSidebarVisible ? 'translateX(0)' : 'translateX(-100%)'
             }}
           >
-            {/* Header */}
+            {/* MCP Sidebar */}
             <div className="p-3 lg:p-4 bg-bg-[#212121] border-b flex-shrink-0">
               <div className="flex items-center justify-between">
                 <h1 className="text-lg lg:text-xl font-semibold text-foreground flex items-center">
@@ -2407,11 +1842,8 @@ ${language === 'ar'
                           
                           await Promise.all(disconnectPromises);
                           
-                          // Refresh servers after all disconnections
-                          const refreshTimeout = setTimeout(async () => {
-                            await loadMCPServers();
-                          }, 500);
-                          timeoutRefs.current.mcpRefresh?.push(refreshTimeout);
+                          // Single refresh after all disconnections
+                          await refreshServers();
                           
                         } catch (error) {
                           console.error('Error disconnecting all servers:', error);
@@ -2429,7 +1861,7 @@ ${language === 'ar'
                   
                   {/* Refresh Button */}
                   <button
-                    onClick={refreshMCPServers}
+                    onClick={refreshServers}
                     disabled={isRefreshingMCP}
                     className="p-2 hover:bg-muted/50 rounded-lg transition-colors flex items-center justify-center"
                   >
@@ -2564,21 +1996,13 @@ ${language === 'ar'
                                   if (result.success) {
                                     // Immediate refresh for disconnect, delayed for connect
                                     if (action === 'disconnect') {
-                                      await loadMCPServers();
-                                      // Additional refresh to ensure state update
-                                      const refreshTimeout = setTimeout(async () => {
-                                        await loadMCPServers();
-                                      }, 300);
-                                      timeoutRefs.current.mcpRefresh?.push(refreshTimeout);
+                                      await refreshServers();
                                     } else {
-                                      // Multiple refreshes for connect
-                                      const refreshTimeout1 = setTimeout(async () => {
-                                        await loadMCPServers();
-                                      }, 1000);
-                                      const refreshTimeout2 = setTimeout(async () => {
-                                        await loadMCPServers();
-                                      }, 3000);
-                                      timeoutRefs.current.mcpRefresh?.push(refreshTimeout1, refreshTimeout2);
+                                      // Single refresh for connect with longer delay
+                                      const refreshTimeout = setTimeout(async () => {
+                                        await refreshServers();
+                                      }, 2000);
+                                      timeoutRefs.current.mcpRefresh?.push(refreshTimeout);
                                     }
                                   } else {
                                     console.error('Toggle failed:', result.message || result.error || 'Unknown error');
@@ -2625,7 +2049,7 @@ ${language === 'ar'
                                   });
                                   
                                   if (response.ok) {
-                                    await loadMCPServers();
+                                    await refreshServers();
                                   }
                                 } catch (err) {
                                   console.error('Refresh server error:', err);
@@ -2653,7 +2077,7 @@ ${language === 'ar'
                                   
                                   if (response.ok) {
                                     // Remove from local state
-                                    setMcpServers(servers => servers.filter(s => s.id !== server.id));
+                                    // Server removal handled by hook;
                                     
                                     // Also remove from user servers if logged in
                                     if (user && userServersLoaded) {
@@ -2680,7 +2104,7 @@ ${language === 'ar'
             </div>
 
             {/* Command Menu Hint & Add Servers */}
-            <div className="p-2 lg:p-4 border-t border-border">
+            <div className="p-2 lg:p-4 border-t-3 ">
               <div className="text-center text-xs lg:text-sm text-muted py-1 lg:py-2 mb-2 lg:mb-3 hidden lg:block">
                 {language === 'ar' ? 'أو اضغط' : 'or enter'} <kbd className="px-2 py-1 bg-bg-dark border border-border rounded text-xs mx-1">⌘K</kbd> {language === 'ar' ? 'لعرض قائمة الأوامر' : 'to view command menu'}
               </div>
@@ -2711,6 +2135,120 @@ ${language === 'ar'
                   {language === 'ar' ? 'إضافة خادم' : 'Add Server'}
                 </span>
               </button>
+
+              {/* Add Server Form */}
+              {showAddServer && (
+                <div className="mt-4 p-4 bg-card rounded-lg border border-border">
+                  <h3 className="font-medium mb-3 flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    {language === 'ar' ? 'إضافة خادم جديد' : 'Add New Server'}
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        {language === 'ar' ? 'معرف الخادم' : 'Server ID'}
+                      </label>
+                      <input
+                        type="text"
+                        value={newServerData.name}
+                        onChange={(e) => setNewServerData({...newServerData, name: e.target.value})}
+                        placeholder={language === 'ar' ? 'مثال: my-server' : 'Example: my-server'}
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        {language === 'ar' ? 'الأمر' : 'Command'}
+                      </label>
+                      <input
+                        type="text"
+                        value={newServerData.command}
+                        onChange={(e) => setNewServerData({...newServerData, command: e.target.value})}
+                        placeholder="npx"
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        {language === 'ar' ? 'المعاملات' : 'Arguments'}
+                      </label>
+                      <input
+                        type="text"
+                        value={newServerData.args.join(' ')}
+                        onChange={(e) => setNewServerData({...newServerData, args: e.target.value.split(' ').filter((arg: string) => arg.trim())})}
+                        placeholder="-y @modelcontextprotocol/server-time"
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm"
+                      />
+                    </div>
+                    
+                    <button
+                      onClick={async () => {
+                        if (!newServerData.name || !newServerData.command) {
+                          alert(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill in all required fields');
+                          return;
+                        }
+                        
+                        try {
+                          setConnectingServer(newServerData.name);
+                          console.log(`🔄 Adding custom server: ${newServerData.name}`);
+                          
+                          const response = await fetch('/api/mcp/servers', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              serverId: newServerData.name,
+                              command: newServerData.command,
+                              args: newServerData.args
+                            })
+                          });
+                          
+                          const result = await response.json();
+                          console.log('Add server result:', result);
+                          
+                          if (result.success) {
+                            // Clear form
+                            setNewServerData({
+                              name: '',
+                              command: '',
+                              args: [],
+                              env: {}
+                            });
+                            setShowAddServer(false);
+                            
+                            // Refresh server list
+                            await refreshServers();
+                            
+                            console.log(`✅ Server ${newServerData.name} added successfully`);
+                          } else {
+                            console.error('Failed to add server:', result.error);
+                            alert(language === 'ar' ? 
+                              `فشل في إضافة الخادم: ${result.error}` : 
+                              `Failed to add server: ${result.error}`
+                            );
+                          }
+                        } catch (err) {
+                          console.error('Add server error:', err);
+                          alert(language === 'ar' ? 'حدث خطأ في إضافة الخادم' : 'Error adding server');
+                        } finally {
+                          setConnectingServer(null);
+                        }
+                      }}
+                      disabled={!newServerData.name || !newServerData.command || connectingServer !== null}
+                      className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {connectingServer === newServerData.name ? (
+                        <Loader className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Plus className="w-4 h-4" />
+                      )}
+                      {language === 'ar' ? 'إضافة خادم' : 'Add Server'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -2772,16 +2310,13 @@ ${language === 'ar'
                   <Terminal className="h-3 w-3 lg:h-4 lg:w-4" />
                 </button>
                 <button 
-                  onClick={() => setShowMCPPanel(true)}
+                  onClick={() => setShowAddServer(true)}
                   className={`p-1.5 lg:p-2 transition-colors rounded ${
                     mcpEnabled 
                       ? 'text-blue-500 hover:text-blue-400' 
-                      : 'text-muted hover:text-foreground'
+                      : 'text-gray-400 hover:text-gray-300'
                   }`}
-                  title={language === 'ar' 
-                    ? `خوادم MCP ${mcpEnabled ? '(مفعل)' : '(معطل)'}` 
-                    : `MCP Servers ${mcpEnabled ? '(Enabled)' : '(Disabled)'}`
-                  }
+                  title={language === 'ar' ? 'إعدادات MCP' : 'MCP Settings'}
                 >
                   <Server className="h-3 w-3 lg:h-4 lg:w-4" />
                 </button>
@@ -2985,8 +2520,8 @@ ${language === 'ar'
               ) : (
                 <div className="p-3 lg:p-6 ">
                   <div className="space-y-3 lg:space-y-4 ">
-                    {messages && messages.map((message, index) => (
-                      <div key={index} className="flex items-start space-x-2 lg:space-x-3 ">
+                    {messages && messages.map((message) => (
+                      <div key={message.id} className="flex items-start space-x-2 lg:space-x-3 ">
                         {message.role === 'user' ? (
               <img src="/small_icon_cyen.svg" alt="Service icon" className="w-7 h-7 " />
             ) : (
@@ -3005,10 +2540,10 @@ ${language === 'ar'
                             }
                             </span>
                             <button   
-                              onClick={() => copyChat(index)}
+                              onClick={() => copyChat(message.id)}
                               className='p-1.5 lg:p-2 border-3 rounded-md text-white bg-[#1c2225]/50 !border-[#000]/10 transition-colors relative'
                             >
-                              {showCopySuccess === `message-${index}` ? (
+                              {showCopySuccess === `message-${message.id}` ? (
                                 <div className='flex items-center space-x-1 text-green-400'>
                                   <svg className='w-3 h-3 lg:w-3.5 lg:h-3.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
@@ -3023,6 +2558,17 @@ ${language === 'ar'
                             </button>
                           </div>
                           <div className="text-foreground prose max-w-none prose-code:text-primary text-sm lg:text-base [&>*]:text-foreground">
+                            {/* DEBUG: Log message for empty content */}
+                            {!message.content && (() => {
+                              console.warn('Empty message content:', {
+                                id: message.id,
+                                role: message.role,
+                                isThinking: message.isThinking,
+                                hasThinkingData: !!thinkingMessages[message.id],
+                                lastMessageId: lastMessageId
+                              });
+                              return null;
+                            })()}
                             {message.isThinking && thinkingMessages[message.id] ? (
                               <ThinkingMessage
                                 thinking={thinkingMessages[message.id].thinking}
@@ -3038,25 +2584,25 @@ ${language === 'ar'
                                   }));
                                 }}
                                 onResponseComplete={() => {
-                                  setMessages(prev => prev.map(msg => 
-                                    msg.id === message.id 
-                                      ? { ...msg, content: thinkingMessages[message.id].response, isThinking: false }
-                                      : msg
-                                  ));
                                   setThinkingMessages(prev => {
-                                    const newMessages = { ...prev };
-                                    delete newMessages[message.id];
-                                    return newMessages;
+                                    const entry = prev[message.id];
+                                    if (!entry) return prev;
+                                    const response = entry.response;
+                                    // Update messages with the captured response
+                                    setMessages(prevMsgs => prevMsgs.map(m => 
+                                      m.id === message.id 
+                                        ? { ...m, content: response, isThinking: false } 
+                                        : m
+                                    ));
+                                    // Remove thinking entry
+                                    const newPrev = { ...prev };
+                                    delete newPrev[message.id];
+                                    return newPrev;
                                   });
                                 }}
                               />
                             ) : (
-                              <TypewriterEffect
-                                text={message.content}
-                                speed={15}
-                                renderMarkdown={true}
-                                className="prose max-w-none [&>*]:text-foreground"
-                              />
+                              <MessageContentRenderer content={message.content || '[Empty Response]'} />
                             )}
                           </div>
                         </div>
@@ -3210,51 +2756,60 @@ ${language === 'ar'
               )}
               
               {/* Input Field - Main Focus */}
-              <div className="relative mb-3 mr-2 lg:mr-8">
-                <textarea
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={language === 'ar' ? 'اكتب رسالتك هنا... (اضغط Enter للإرسال)' : 'Type your message here... (Press Enter to send)'}
-                  className="w-full bg-input border-2 border-primary/30 rounded-lg px-3 py-3 lg:px-4 lg:py-4 pr-20 lg:pr-24 text-foreground placeholder-muted resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 shadow-lg text-sm lg:text-base"
-                  rows={1}
-                  style={{ minHeight: '48px', maxHeight: '100px' }}
-                />
-                <div className="absolute right-2 lg:right-4 top-2 lg:top-4 flex items-center space-x-1 lg:space-x-2">
-                  <div className="flex items-center space-x-1">
-                    {/* Image Upload Button */}
-                    <button 
-                      onClick={handleImageUpload}
-                      className={`p-1.5 lg:p-2 rounded transition-colors ${
-                        modelSupportsImages() 
-                          ? 'text-primary hover:text-primary/80 hover:bg-primary/10' 
-                          : 'text-muted/50 hover:text-muted cursor-not-allowed'
-                      }`}
-                      title={modelSupportsImages() 
-                        ? (language === 'ar' ? 'إرفاق صورة - مدعوم' : 'Attach image - Supported')
-                        : (language === 'ar' ? 'إرفاق صورة - غير مدعوم في هذا النموذج' : 'Attach image - Not supported by this model')
-                      }
-                    >
-                      <Image className="w-3 h-3 lg:w-4 lg:h-4" />
+              <div className="mb-3 mr-2 ml-8 lg:mr-4">
+                {/* Attachment Buttons - Above textarea */}
+                <div className="flex items-center space-x-2 mb-2">
+                  {/* Image Upload Button */}
+                  <button 
+                    onClick={handleImageUpload}
+                    className={`p-2 rounded-md transition-colors ${
+                      modelSupportsImages() 
+                        ? 'text-primary hover:text-primary/80 hover:bg-primary/10 border border-primary/30' 
+                        : 'text-muted/50 hover:text-muted cursor-not-allowed border border-muted/30'
+                    }`}
+                    title={modelSupportsImages() 
+                      ? (language === 'ar' ? 'إرفاق صورة - مدعوم' : 'Attach image - Supported')
+                      : (language === 'ar' ? 'إرفاق صورة - غير مدعوم في هذا النموذج' : 'Attach image - Not supported by this model')
+                    }
+                  >
+                    <Image className="w-4 h-4" />
+                  </button>
+                  
+                  <button 
+                    onClick={handleFileUpload}
+                    className="p-2 text-muted hover:text-primary transition-colors border border-muted/30 hover:border-primary/30 rounded-md"
+                    title={language === 'ar' ? 'إرفاق ملف نصي أو برمجي' : 'Attach text or code file'}
+                  >
+                    <Paperclip className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Textarea with action buttons inside */}
+                <div className="relative rounded-xl">
+                  <textarea
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={language === 'ar' ? 'اكتب رسالتك هنا... (اضغط Enter للإرسال)' : 'Type your message here... (Press Enter to send)'}
+                    className={`w-full h-33 bg-input border-2 border-primary/30 rounded-lg px-3 py-3 lg:px-4 lg:py-4 text-foreground placeholder-muted resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 shadow-lg text-sm lg:text-base ${language === 'ar' ? 'pl-20 lg:pl-24' : 'pr-20 lg:pr-24'}`}
+                    rows={1}
+                    style={{ minHeight: '48px', maxHeight: '100px' }}
+                  />
+                  
+                  {/* Action buttons positioned absolutely inside textarea */}
+                  <div className={`absolute  pl-2 bottom-6 flex items-center space-x-1 ${language === 'ar' ? 'left-2' : 'right-2'}`}>
+                    <button className="px-3.5 py-3.5  flex items-center text-black rounded-lg border bg-primary !border-foreground/40 border-2 backdrop-blur-sm space-x-1 lg:space-x-2 hidden lg:flex hover:bg-primary ">
+                      <Pause className="w-4 h-4 lg:w-4 lg:h-4" />
                     </button>
-                    
-                    <button 
-                      onClick={handleFileUpload}
-                      className="p-1.5 lg:p-2 text-muted hover:text-primary transition-colors"
-                      title={language === 'ar' ? 'إرفاق ملف نصي أو برمجي' : 'Attach text or code file'}
-                    >
-                      <Paperclip className='w-3 h-3 lg:w-4 lg:h-4' />
-                    </button>
-                    
-                    <button className='px-2 py-1.5 flex items-center rounded-lg border bg-bg-dark space-x-1 lg:space-x-2 hidden disabled:opacity-50 lg:flex'>
-                      <Pause className="w-3 h-3 lg:h-4" />
-                    </button>
+                    <div className='w-2'>
+
+                    </div>
                     <button 
                       onClick={inputMessage.trim() ? sendMessage : startNewChat}
                       disabled={(!inputMessage.trim() && messages.length === 0) || isLoading}
-                      className="px-2 py-1.5 flex items-center rounded-lg border bg-bg-dark space-x-1 lg:space-x-2 disabled:text-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="px-3.5 py-3 pl-3 flex items-center rounded-lg border bg-[#00212b] border-2 !border-foreground/40  backdrop-blur-sm space-x-1 lg:space-x-2  disabled:opacity-60 disabled:!cursor-not-allowed transition-colors text-white"
                     >
-                      <Send className="w-3 h-3 lg:w-4 lg:h-4  " />
+                      <Send className="w-5 h-5 lg:w-5 lg:h-5" />
                     </button>
                   </div>
                 </div>
@@ -3300,13 +2855,13 @@ ${language === 'ar'
                 </div>
                 
                 {/* Action Buttons on Right Side */}
-                <div className="flex flex-wrap items-center gap-2 mr-2 lg:mr-8">
+                <div className="flex flex-wrap items-center gap-2 ml-4 pl-7 lg:mr-4">
                   <button 
                     onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-                    className={`px-2 lg:px-3 py-1 lg:py-1.5 text-xs rounded-full transition-all duration-300 border-2 flex items-center space-x-1 ${
+                    className={`px-3 lg:px-4 py-1 lg:py-1.5 text-s rounded-full transition-all duration-300 border-2 flex items-center space-x-1 ${
                       webSearchEnabled 
-                        ? 'bg-primary/20 border-primary text-primary' 
-                        : 'border-border text-muted hover:text-foreground hover:border-primary/50'
+                        ? ' bg-foreground/20 border-primary text-bold text-[#f5f5f5]' 
+                        : 'border-border text-foreground  hover:!border-foreground/50'
                     }`}
                     title={language === 'ar' ? 'تفعيل البحث في الإنترنت' : 'Enable web search'}
                   >
@@ -3322,7 +2877,7 @@ ${language === 'ar'
                   <button 
                     onClick={() => enhancePromptOnly(inputMessage)}
                     disabled={!inputMessage.trim() || isEnhancingPrompt}
-                    className="px-2 lg:px-3 py-1 lg:py-1.5 text-xs rounded-full transition-all duration-300 border-2 border-border text-muted hover:text-foreground hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                    className="px-2 lg:px-3 py-1 lg:py-1.5 text-s rounded-full transition-all duration-300 border-2 border-border text-foreground/90  hover:!border-foreground/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
                     title={language === 'ar' ? 'تحسين البرومت' : 'Enhance prompt'}
                   >
                     {isEnhancingPrompt ? (
@@ -3341,7 +2896,7 @@ ${language === 'ar'
                   <button 
                     onClick={() => translatePrompt(inputMessage)}
                     disabled={!inputMessage.trim() || isTranslating || !/[\u0600-\u06FF]/.test(inputMessage)}
-                    className="px-2 lg:px-3 py-1 lg:py-1.5 text-xs rounded-full transition-all duration-300 border-2 border-border text-muted hover:text-foreground hover:border-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                    className="px-2 lg:px-3 py-1 lg:py-2.5 text-s rounded-full transition-all duration-300 border-2 border-border text-foreground hover:text-foreground hover:!border-foreground/50  disabled:cursor-not-allowed flex items-center space-x-1"
                     title={language === 'ar' ? 'ترجمة للإنجليزية' : 'Translate to English'}
                   >
                     {isTranslating ? (
@@ -3354,6 +2909,20 @@ ${language === 'ar'
                         ? (language === 'ar' ? 'ترجمة...' : 'Translate...')
                         : (language === 'ar' ? 'ترجمة' : 'Translate')
                       }
+                    </span>
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      setShowAddServer(true);
+                      refreshServers();
+                    }}
+                    className="px-2 lg:px-3 py-1 lg:py-1.5 text-s rounded-full transition-all duration-300 border-2 border-border text-foreground hover:text-foreground hover:!border-foreground/50 flex items-center space-x-1"
+                    title={language === 'ar' ? 'إدارة خوادم MCP' : 'Manage MCP Servers'}
+                  >
+                    <Server className='w-3 h-3' />
+                    <span className="hidden lg:inline">
+                      {language === 'ar' ? 'MCP' : 'MCP'}
                     </span>
                   </button>
                 </div>
@@ -3761,7 +3330,7 @@ ${language === 'ar'
                         if (result.success && result.image) {
                           // صورة فعلية من Hugging Face
                           const imageMessage: ChatMessage = {
-                            id: Date.now().toString(),
+                            id: genId(),
                             role: 'assistant',
                             content: `![Generated Image](${result.image})
 
@@ -3783,7 +3352,7 @@ ${result.gptDescription ? `**${language === 'ar' ? 'الوصف المحسن' : '
                         } else if (result.type === 'text' && result.text) {
                           // وصف نصي من GPTGOD (fallback)
                           const textMessage: ChatMessage = {
-                            id: Date.now().toString(),
+                            id: genId(),
                             role: 'assistant', 
                             content: `**${language === 'ar' ? 'وصف الصورة المطلوبة' : 'Image Description'}** 🎨
 
@@ -3966,11 +3535,7 @@ ${result.message ? `⚠️ ${result.message}` : ''}`,
         </div>
       )}
 
-      {/* MCP Panel */}
-      <MCPPanel 
-        isOpen={showMCPPanel} 
-        onClose={() => setShowMCPPanel(false)}
-      />
+   
     </Layout>
   );
 };

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMCPClient, addSpecificServer, removeSpecificServer, getAvailableServerTemplates } from '@/lib/mcp';
+import { getMCPClient, addCustomServer, removeCustomServer, getAvailableServerTemplates } from '@/lib/mcp';
 
 /**
  * GET /api/mcp/servers - قائمة الخوادم النشطة
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     // إضافة الخادم
-    const success = await addSpecificServer(serverId, { command, args });
+    const success = await addCustomServer(serverId, { command, args });
     
     if (success) {
       return NextResponse.json({
@@ -106,7 +106,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // حذف الخادم
-    await removeSpecificServer(serverId);
+    await removeCustomServer(serverId);
     
     return NextResponse.json({
       success: true,

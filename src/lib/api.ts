@@ -28,6 +28,7 @@ interface APIKeys {
   GPTGOD_API: string;
   GPTGOD_API2: string;
   OPEN_ROUTER_API: string;
+  OPEN_ROUTER_API2: string;
   HF_TOKEN: string; // Unified Hugging Face token name
 }
 
@@ -59,6 +60,7 @@ export class AIAPIGateway {
       GPTGOD_API: process.env.NEXT_PUBLIC_GPTGOD_API || '',
       GPTGOD_API2: process.env.NEXT_PUBLIC_GPTGOD_API2 || '',
       OPEN_ROUTER_API: process.env.NEXT_PUBLIC_OPEN_ROUTER_API || '',
+      OPEN_ROUTER_API2: process.env.NEXT_PUBLIC_OPEN_ROUTER_API2 || '',
       HF_TOKEN: process.env.NEXT_PUBLIC_HF_TOKEN || '' // Unified HF token name
     };
 
@@ -92,11 +94,14 @@ export class AIAPIGateway {
     console.log(`Getting access token for provider: ${provider}`); // Debug log
     switch (provider) {
       case 'GPTGOD0':
-        console.log('Using GPTGOD API'); // Debug log
-        // Use fallback key on retry
-        return attempt > 0 && this.apiKeys.GPTGOD_API2 
-          ? this.apiKeys.GPTGOD_API2 
-          : this.apiKeys.GPTGOD_API;
+        // Use primary key first, then fallback to backup key on retry
+        if (attempt > 0 && this.apiKeys.GPTGOD_API2) {
+          console.log('🔄 Primary GPTGOD API failed, switching to backup key (GPTGOD_API2)');
+          return this.apiKeys.GPTGOD_API2;
+        } else {
+          console.log('Using primary GPTGOD API key');
+          return this.apiKeys.GPTGOD_API;
+        }
       
       case 'Hugging Face':
         const token = this.apiKeys.HF_TOKEN;
@@ -104,8 +109,14 @@ export class AIAPIGateway {
         return token;
       
       default:
-        console.log('Using OpenRouter API'); // Debug log
-        return this.apiKeys.OPEN_ROUTER_API;
+        // Use primary OpenRouter key first, then fallback to backup key on retry
+        if (attempt > 0 && this.apiKeys.OPEN_ROUTER_API2) {
+          console.log('🔄 Primary OpenRouter API failed, switching to backup key (OPEN_ROUTER_API2)');
+          return this.apiKeys.OPEN_ROUTER_API2;
+        } else {
+          console.log('Using primary OpenRouter API key');
+          return this.apiKeys.OPEN_ROUTER_API;
+        }
     }
   }
 

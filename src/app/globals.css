@@ -9,8 +9,8 @@
   :root {
     /* Dark theme (default) */
     --background: #0c1012;
-    --high-light-bg: #0e0e0e;
-    --bg-dark: #0d1315;
+    --high-light-bg: #26161f;
+    --bg-dark: #030505;
     --foreground: #ededed;
     --primary: #f57c52;
     --primary-glow: rgba(255, 255, 255, 0.4);
@@ -18,13 +18,46 @@
     --secondary: #ffffff;
     --border: #2a2a2a;
     --muted: #4a4a4a;
-    --input: #1e1f1c;
+    --input: #1e1f1cc4;
   
     --danger: #e91822;
     --warning: #cdca00;
     --success: hsla(122, 48%, 56%, 0.976);
     --light: rgba(230, 237, 237, 0.862);
     --glow: 0 0 3px rgba(227, 237, 236, 0.625), 0 0 4px rgba(236, 240, 247, 0.667);
+    
+    /* Theme Button Gradient Colors */
+    --theme-cyan: #00e5ff;
+    --theme-teal: #00ffc3;
+    --theme-orange: #ff9800;
+    --theme-gradient: conic-gradient(from 315deg, var(--theme-cyan) 0deg, var(--theme-teal) 100deg, var(--theme-orange) 200deg, var(--theme-orange) 280deg, var(--theme-cyan) 360deg);
+    --theme-glow: 0 0 20px rgba(0, 229, 255, 0.4), 0 0 40px rgba(0, 255, 195, 0.2), 0 0 60px rgba(255, 152, 0, 0.1);
+    
+    /* Blue Neon Colors */
+    --blue-neon: #00d4ff;
+    --blue-neon-dark: #0099cc;
+    --blue-neon-gradient: linear-gradient(135deg, var(--blue-neon) 0%, var(--blue-neon-dark) 100%);
+    --blue-neon-glow: 0 0 20px rgba(0, 212, 255, 0.6), 0 0 40px rgba(0, 212, 255, 0.4), 0 0 60px rgba(0, 212, 255, 0.2);
+    
+    /* CodeBlock Colors - Dark Mode */
+    --codeblock-bg: #1e1e1e;
+    --codeblock-header-bg: #212121;
+    --codeblock-text: #e0e6ed;
+    --codeblock-text-muted: #b8b8b8;
+    --codeblock-border: #3e3e3e;
+    --codeblock-button-bg: #2d2d30;
+    --codeblock-button-hover: #3e3e42;
+    --codeblock-editor-bg: #1e1e1e;
+    
+    /* Syntax Highlighting - Dark Mode (VS Code Theme) */
+    --syntax-keyword: #569cd6;
+    --syntax-string: #ce9178;
+    --syntax-comment: #87ceeb;
+    --syntax-number: #b5cea8;
+    --syntax-function: #dcdcaa;
+    --syntax-variable: #53bfb8;
+    --syntax-operator: #d4d4d4;
+    --syntax-bracket: #d4d4d4;
   }
 
   /* Light theme */
@@ -42,10 +75,37 @@
     --input: #ffffff;
   
     --danger: #dc2626;
-    --warning: #d97706;
+    --warning: #dadd20;
     --success: #16a34a;
     --light: #1f2937;
     --glow: 0 0 3px rgba(31, 41, 55, 0.4), 0 0 4px rgba(55, 65, 81, 0.3);
+    
+    /* Theme Button Gradient Colors - Light Mode (more subtle) */
+    --theme-cyan: #06b6d4;
+    --theme-teal: #14b8a6;
+    --theme-orange: #f59e0b;
+    --theme-gradient: conic-gradient(from 315deg, var(--theme-cyan) 0deg, var(--theme-teal) 100deg, var(--theme-orange) 200deg, var(--theme-orange) 280deg, var(--theme-cyan) 360deg);
+    --theme-glow: 0 0 15px rgba(6, 182, 212, 0.3), 0 0 30px rgba(20, 184, 166, 0.2), 0 0 45px rgba(245, 158, 11, 0.1);
+    
+    /* CodeBlock Colors - Light Mode */
+    --codeblock-bg: #ffffff;
+    --codeblock-header-bg: #f6f8fa;
+    --codeblock-text: #24292f;
+    --codeblock-text-muted: #656d76;
+    --codeblock-border: #d0d7de;
+    --codeblock-button-bg: #f6f8fa;
+    --codeblock-button-hover: #f3f4f6;
+    --codeblock-editor-bg: #ffffff;
+    
+    /* Syntax Highlighting - Light Mode */
+    --syntax-keyword: #0066cc;
+    --syntax-string: #d73a49;
+    --syntax-comment: #6a737d;
+    --syntax-number: #005cc5;
+    --syntax-function: #6f42c1;
+    --syntax-variable: #24292e;
+    --syntax-operator: #d73a49;
+    --syntax-bracket: #24292e;
   }
 
   button {
@@ -399,4 +459,94 @@ input[type="text"]::placeholder {
 :root.dark input[type="text"],
 input[type="text"] {
   color: #ffffff !important;
+}
+
+/* Theme Gradient Utility Classes */
+.theme-gradient-bg {
+  background: var(--theme-gradient);
+}
+
+.theme-gradient-border {
+  border-image: var(--theme-gradient) 1;
+}
+
+.theme-gradient-text {
+  background: var(--theme-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--theme-cyan); /* fallback color */
+}
+
+.theme-glow {
+  box-shadow: var(--theme-glow);
+}
+
+.theme-text-glow {
+  text-shadow: var(--theme-glow);
+}
+
+/* Individual theme colors */
+.theme-cyan {
+  color: var(--theme-cyan);
+}
+
+.theme-teal {
+  color: var(--theme-teal);
+}
+
+.theme-orange {
+  color: var(--theme-orange);
+}
+
+.bg-theme-cyan {
+  background-color: var(--theme-cyan);
+}
+
+.bg-theme-teal {
+  background-color: var(--theme-teal);
+}
+
+.bg-theme-orange {
+  background-color: var(--theme-orange);
+}
+
+/* Button variants with theme colors */
+.btn-theme-gradient {
+  background: var(--theme-gradient);
+  box-shadow: var(--theme-glow);
+  transition: all 0.3s ease;
+}
+
+.btn-theme-gradient:hover {
+  box-shadow: var(--theme-glow), 0 0 80px rgba(0, 229, 255, 0.1);
+  transform: scale(1.02);
+}
+
+/* Blue Neon Utility Classes */
+.blue-neon-bg {
+  background: var(--blue-neon-gradient);
+}
+
+.blue-neon-text {
+  color: var(--blue-neon);
+}
+
+.blue-neon-glow {
+  box-shadow: var(--blue-neon-glow);
+}
+
+.blue-neon-border {
+  border-color: var(--blue-neon);
+}
+
+.btn-blue-neon {
+  background: var(--blue-neon-gradient);
+  box-shadow: var(--blue-neon-glow);
+  transition: all 0.3s ease;
+}
+
+.btn-blue-neon:hover {
+  box-shadow: var(--blue-neon-glow), 0 0 80px rgba(0, 212, 255, 0.1);
+  transform: scale(1.02);
 }

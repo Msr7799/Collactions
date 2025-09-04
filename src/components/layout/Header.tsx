@@ -8,7 +8,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import CollactionsLogo from '@/components/logo/CollactionsLogo';
 import { useRouter } from 'next/navigation';
-import { useClerk, useUser, SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
+// Temporarily disabled to fix Next.js 15 headers() iteration warnings
+// import { useClerk, useUser, SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 import TypingAnimation from '@/components/ui/TypingAnimation';
 import { getTranslation } from '@/lib/translations';
 
@@ -21,14 +22,18 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle }) => {
   const { language, setLanguage, isRTL } = useLanguage();
   const { theme } = useTheme();
-  const { openSignIn, loaded } = useClerk();
-  const { isSignedIn, user } = useUser();
+  // Temporarily disabled to fix ClerkInstanceContext error
+  // const { openSignIn, loaded } = useClerk();
+  // const { isSignedIn, user } = useUser();
+  const loaded = true;
+  const isSignedIn = false;
+  const user = null;
   const router = useRouter();
   
   const isDark = theme === 'dark';
 
   useEffect(() => {
-    console.log('🔐 Clerk Status:', {
+    console.log('🔐 Auth Status (disabled):', {
       loaded,
       isSignedIn,
       userExists: !!user,
@@ -37,16 +42,9 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
   }, [loaded, isSignedIn, user]);
 
   const handleSignIn = () => {
-    console.log('🔐 Login clicked, loaded:', loaded);
-    if (!loaded) {
-      console.error('❌ Clerk not loaded');
-      return;
-    }
-    try {
-      openSignIn();
-    } catch (error) {
-      console.error('❌ Login error:', error);
-    }
+    console.log('🔐 Login clicked (disabled)');
+    // Authentication temporarily disabled
+    alert(language === 'ar' ? 'المصادقة معطلة مؤقتاً' : 'Authentication temporarily disabled');
   };
 
   return (
@@ -86,31 +84,31 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           <button
           title={getTranslation('terminal', language)}
           onClick={() => router.push('/terminal')}
-          className="p-3 text-white/80 hover:text-primary transition-colors duration-300 ease-in-out">
+          className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out">
             <Terminal className="h-4 w-4" />
           </button>
           <button 
           title={getTranslation('prompts', language)}
           onClick={() => router.push('/prompts')}
-          className="p-3 text-white/80 hover:text-primary transition-colors duration-300 ease-in-out">
+          className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out">
             <MessageSquare className="h-4 w-4" />
           </button>
           <button
           title={getTranslation('dashboard', language)}
           onClick={() => router.push('/dashboard')}
-          className="p-3 text-white/80 hover:text-primary transition-colors duration-300 ease-in-out">
+          className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out">
             <Activity className="h-4 w-4" />
           </button>
           <button
           title={getTranslation('settings', language)}
           onClick={() => router.push('/settings')}
-          className="p-3 text-white/80 hover:text-primary transition-colors duration-300 ease-in-out">
+          className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out">
             <Settings className="h-4 w-4" />
           </button>
           <button
           title={getTranslation('profile', language)}
           onClick={() => router.push('/profile')}
-          className="p-3 text-white/80 hover:text-primary transition-colors duration-300 ease-in-out">
+          className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out">
             <User className="h-4 w-4" />
           </button>
           
@@ -118,48 +116,45 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           {/* Language Toggle */}
           <button 
             onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
-            className="p-5 text-white/80 hover:text-primary transition-colors"
+            className="p-5 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out"
             title={language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
           >
             <span className=" text-xs">
             <Globe className="h-4 w-4" />
-              {language === 'ar' ? 'EN' : 'ع'}
-
             </span>
           </button>
           
           {/* Authentication */}
           <div className={`flex items-center !mr-0 ${isRTL ? 'space-x-reverse space-x-1' : 'space-x-2 ml-2'}`} style={{marginRight: '0px'}}>
-            <SignedOut>
-              <button 
+            {!isSignedIn ? (
+              <button
                 onClick={handleSignIn}
-                className="px-4 py-2 bg-[#EF7E1CFF] hover:bg-muted  text-black rounded-md font-medium transition-colors disabled:opacity-50"
-                disabled={!loaded}
+                className="text-text-primary hover:text-accent transition-colors flex items-center space-x-2"
               >
-                {!loaded ? 'Loading...' : `${getTranslation('sign_in', language)} / تسجيل الدخول`}
+                <User className="w-5 h-5" />
+                <span className="hidden lg:inline">{language === 'ar' ? 'تسجيل الدخول' : 'Sign In'}</span>
               </button>
-            </SignedOut>
-            <SignedIn>
-              <div className="flex items-center space-x-2">
-                <div className="flex-shrink-0">
-                  <TypingAnimation 
-                    text={language === 'ar' ? `مرحباً ${user?.firstName || 'User'} 👋` : `Hello ${user?.firstName || 'User'} 👋 `}
-                    speed={80}
-                    className="text-lg text-white/90 "
-                    startDelay={500}
-                    pauseDuration={3000}
-                    isRTL={isRTL}
-                  />
+            ) : (
+              <div className="flex items-center space-x-2 text-text-primary">
+                <span className="text-sm">
+                  {language === 'ar' ? 'مستخدم' : 'User'}
+                </span>
+                <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
                 </div>
-                <UserButton 
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-8 h-8"
-                    }
-                  }}
-                />
               </div>
-            </SignedIn>
+            )}
+            
+            {/* Navigation Menu */}
+            {isSignedIn && (
+              <button
+                title={language === 'ar' ? 'القائمة' : 'Menu'}
+                onClick={onMenuToggle}
+                className="p-3 text-white/80 hover:text-primary transition-colors"
+              >
+                <Menu className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>

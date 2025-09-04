@@ -161,6 +161,7 @@ storybook-static
 next-env.d.ts
 
 # Local development
+.env
 .env*.local
 
 
@@ -187,4 +188,5 @@ next-env.d.ts
 # Chat logs (specific to your project)
 chats/
 *.json.bak
+
 

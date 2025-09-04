@@ -23,7 +23,8 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-markdown": "^9.1.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -33,7 +34,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.4.7",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4"
   }
 }

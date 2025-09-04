@@ -6,6 +6,58 @@ import remarkGfm from 'remark-gfm';
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 
+// Enhanced CodeBlock with proper styling and features
+const EnhancedCodeBlock = ({ language, children }: { language: string, children: any }) => {
+  let codeContent = '';
+  if (Array.isArray(children)) {
+    codeContent = children.join('');
+  } else {
+    codeContent = String(children || '');
+  }
+  codeContent = codeContent.replace(/\n$/, '');
+
+  return (
+    <div className="relative group my-4">
+      {/* Header with three dots and language */}
+      <div className="flex items-center justify-between bg-gray-800 px-4 py-2 rounded-t-lg border-b border-gray-700">
+        <div className="flex items-center space-x-2">
+          {/* Three colored dots */}
+          <div className="flex space-x-1.5">
+            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          </div>
+          <span className="text-gray-400 text-sm font-mono ml-3">{language}</span>
+        </div>
+        
+        {/* Copy button */}
+        <button
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(codeContent);
+            } catch (err) {
+              console.error('Failed to copy:', err);
+            }
+          }}
+          className="text-gray-400 hover:text-gray-200 transition-colors p-1.5 rounded hover:bg-gray-700"
+          title="Copy code"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+        </button>
+      </div>
+      
+      {/* Code content */}
+      <pre className="bg-gray-900 p-4 rounded-b-lg overflow-x-auto">
+        <code className={`language-${language} text-sm leading-relaxed text-gray-100`}>
+          {codeContent}
+        </code>
+      </pre>
+    </div>
+  );
+};
+
 interface TypewriterEffectProps {
   text: string;
   speed?: number;
@@ -13,6 +65,7 @@ interface TypewriterEffectProps {
   className?: string;
   isThinking?: boolean;
   renderMarkdown?: boolean;
+  shouldAnimate?: boolean;
 }
 
 export default function TypewriterEffect({ 
@@ -21,7 +74,8 @@ export default function TypewriterEffect({
   onComplete, 
   className = '',
   isThinking = false,
-  renderMarkdown = true
+  renderMarkdown = true,
+  shouldAnimate = true
 }: TypewriterEffectProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -37,6 +91,17 @@ export default function TypewriterEffect({
                              text.includes('[') && text.includes('](');
 
   useEffect(() => {
+    // If shouldAnimate is false, show text immediately without animation
+    if (!shouldAnimate) {
+      setDisplayedText(text);
+      setCurrentIndex(text.length);
+      setIsComplete(true);
+      if (onComplete) {
+        setTimeout(onComplete, 100);
+      }
+      return;
+    }
+
     // If text has complex markdown, skip typing animation
     if (hasComplexMarkdown && renderMarkdown && !isThinking) {
       setDisplayedText(text);
@@ -61,7 +126,7 @@ export default function TypewriterEffect({
         onComplete();
       }
     }
-  }, [currentIndex, text, speed, onComplete, displayedText.length, isComplete, hasComplexMarkdown, renderMarkdown, isThinking]);
+  }, [currentIndex, text, speed, onComplete, displayedText.length, isComplete, hasComplexMarkdown, renderMarkdown, isThinking, shouldAnimate]);
 
   // Reset when text changes
   useEffect(() => {
@@ -103,7 +168,9 @@ export default function TypewriterEffect({
           components={{
             code: ({ className, children, ...props }) => {
               const match = /language-(\w+)/.exec(className || '');
+              const language = match ? match[1] : 'text';
               
+              // Handle inline code (no className)
               if (!className) {
                 return (
                   <code className="bg-gray-800 text-gray-200 px-2 py-1 rounded text-sm font-mono">
@@ -112,22 +179,19 @@ export default function TypewriterEffect({
                 );
               }
               
-              return (
-                <pre className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                  <code className={className} {...props}>
-                    {children}
-                  </code>
-                </pre>
-              );
+              // Use enhanced code block with three dots and proper styling
+              return <EnhancedCodeBlock language={language} children={children} />;
             },
             img: ({src, alt, ...props}) => (
-              <img 
-                src={src}
-                alt={alt || 'Image'}
-                className="max-w-full h-auto rounded-lg shadow-lg cursor-pointer"
-                style={{ maxHeight: '500px', objectFit: 'contain' }}
-                {...props}
-              />
+              src && typeof src === 'string' && src.trim() !== '' ? (
+                <img 
+                  src={src}
+                  alt={alt || 'Image'}
+                  className="max-w-full h-auto rounded-lg shadow-lg cursor-pointer"
+                  style={{ maxHeight: '500px', objectFit: 'contain' }}
+                  {...props}
+                />
+              ) : null
             )
           }}
         >

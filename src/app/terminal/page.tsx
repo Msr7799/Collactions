@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Layout from '@/components/layout/Layout';
 import { Terminal, X, Minimize2, Maximize2, Copy } from 'lucide-react';
 import { chatStorage, ChatSession } from '../prompts/chatStorage';
-import { userMCPService, UserMCPServer } from '@/lib/userMCPService';
+// MCP operations now handled via API routes
 
 interface Command {
   input: string;
@@ -274,22 +274,18 @@ const TerminalPage: React.FC = () => {
 
   const listMcpFiles = async (): Promise<string> => {
     try {
-      const servers = await userMCPService.loadUserServers();
+      const response = await fetch('/api/mcp/servers');
+      const data = await response.json();
+      const servers = data.servers || [];
       const serverList = servers.length > 0 ? 
-        servers.map((server: UserMCPServer) => {
-          const status = server.status === 'connected' ? '🟢' : 
-                        server.status === 'connecting' ? '🟡' : '🔴';
-          return `${server.name.padEnd(20)} ${status} ${server.status || 'disconnected'}`;
-        }).join('\n') :
-        (language === 'ar' ? 'لا توجد خوادم MCP محفوظة' : 'No saved MCP servers');
+        servers.map((server: any) => {
+          return `${server.name} (${server.status}) - ${server.toolsCount} tools`;
+        }).join('\n') : 
+        (language === 'ar' ? 'لا توجد خوادم MCP نشطة' : 'No active MCP servers');
       
-      return language === 'ar' ? 
-        `📁 إعدادات MCP:\n\nMCP.json    📄 ملف الإعدادات\n\n🔌 الخوادم المحفوظة:\n${'الاسم'.padEnd(20)} الحالة\n${'-'.repeat(35)}\n${serverList}` :
-        `📁 MCP settings:\n\nMCP.json    📄 Settings file\n\n🔌 Saved servers:\n${'Name'.padEnd(20)} Status\n${'-'.repeat(35)}\n${serverList}`;
+      return `📂 ${language === 'ar' ? 'خوادم MCP:' : 'MCP Servers:'}\n${serverList}`;
     } catch (error) {
-      return language === 'ar' ? 
-        `خطأ في تحميل إعدادات MCP: ${error instanceof Error ? error.message : 'خطأ غير معروف'}` :
-        `Error loading MCP settings: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      return `❌ ${language === 'ar' ? 'خطأ في جلب خوادم MCP:' : 'Error fetching MCP servers:'} ${error}`;
     }
   };
 
@@ -405,27 +401,24 @@ const TerminalPage: React.FC = () => {
   const handleMcpCommand = async (args: string[]): Promise<string> => {
     if (args.length === 0 || args[0] === 'list') {
       try {
-        const servers = await userMCPService.loadUserServers();
+        const response = await fetch('/api/mcp/servers');
+        const data = await response.json();
+        const servers = data.servers || [];
         if (servers.length === 0) {
           return language === 'ar' ? 
-            '🔌 لا توجد خوادم MCP محفوظة' :
-            '🔌 No saved MCP servers';
+            '❌ لا توجد خوادم MCP متصلة.\nاستخدم: mcp add <server-name> لإضافة خادم' :
+            '❌ No MCP servers connected.\nUse: mcp add <server-name> to add a server';
         }
         
-        const serverList = servers.map((server: UserMCPServer) => {
-          const status = server.status === 'connected' ? '🟢' : 
-                        server.status === 'connecting' ? '🟡' : '🔴';
-          const tools = server.tools?.length || 0;
-          return `${status} ${server.name.padEnd(20)} ${server.status?.padEnd(12)} ${tools} tools`;
-        }).join('\n');
+        const serverDetails = servers.map((server: any) => {
+          const status = server.isConnected ? '🟢 متصل' : '🔴 منقطع';
+          const tools = server.toolsCount > 0 ? `\n  🔧 الأدوات: ${server.toolsCount}` : '';
+          return `📡 ${server.name}\n  📊 الحالة: ${status}${tools}`;
+        }).join('\n\n');
         
-        return language === 'ar' ? 
-          `🔌 خوادم MCP المحفوظة (${servers.length}):\n\n${'الاسم'.padEnd(20)} ${'الحالة'.padEnd(12)} الأدوات\n${'-'.repeat(45)}\n${serverList}\n\nاستخدم "mcp status <name>" لمزيد من التفاصيل` :
-          `🔌 Saved MCP Servers (${servers.length}):\n\n${'Name'.padEnd(20)} ${'Status'.padEnd(12)} Tools\n${'-'.repeat(45)}\n${serverList}\n\nUse "mcp status <name>" for more details`;
+        return `🔌 ${language === 'ar' ? 'خوادم MCP النشطة:' : 'Active MCP Servers:'}\n\n${serverDetails}`;
       } catch (error) {
-        return language === 'ar' ? 
-          'خطأ في تحميل خوادم MCP' :
-          'Error loading MCP servers';
+        return `❌ ${language === 'ar' ? 'خطأ في جلب خوادم MCP:' : 'Error fetching MCP servers:'} ${error}`;
       }
     }
     
@@ -456,49 +449,51 @@ const TerminalPage: React.FC = () => {
 
   const getMcpServerStatus = async (serverName: string): Promise<string> => {
     try {
-      const servers = await userMCPService.loadUserServers();
-      const server = servers.find((s: UserMCPServer) => s.name === serverName);
+      const response = await fetch('/api/mcp/servers');
+      const data = await response.json();
+      const servers = data.servers || [];
+      const server = servers.find((s: any) => s.name === serverName);
       
-      if (server) {
-        const statusIcon = server.status === 'connected' ? '🟢' : 
-                          server.status === 'connecting' ? '🟡' : '🔴';
-        
-        return language === 'ar' ? 
-          `📊 حالة الخادم "${server.name}":\n\n${statusIcon} الحالة: ${server.status || 'منقطع'}\n🔧 الأمر: ${server.command}\n📝 الوصف: ${server.description || 'لا يوجد وصف'}\n🛠️  الأدوات: ${server.tools?.length || 0}\n📄 المقترحات: ${server.prompts?.length || 0}\n📦 الموارد: ${server.resources?.length || 0}` :
-          `📊 Server "${server.name}" Status:\n\n${statusIcon} Status: ${server.status || 'disconnected'}\n🔧 Command: ${server.command}\n📝 Description: ${server.description || 'No description'}\n🛠️  Tools: ${server.tools?.length || 0}\n📄 Prompts: ${server.prompts?.length || 0}\n📦 Resources: ${server.resources?.length || 0}`;
-      } else {
-        return language === 'ar' ? 
-          `الخادم "${serverName}" غير موجود` :
-          `Server "${serverName}" not found`;
+      if (!server) {
+        return `❌ ${language === 'ar' ? 'خادم غير موجود:' : 'Server not found:'} ${serverName}`;
       }
+      
+      const status = server.isConnected ? '🟢 متصل' : '🔴 منقطع';
+      const tools = server.toolsCount > 0 ? `\n🔧 الأدوات المتاحة: ${server.toolsCount}` : '\n⚠️ لا توجد أدوات متاحة';
+      
+      return `📡 ${server.name}\n📊 الحالة: ${status}${tools}`;
     } catch (error) {
-      return language === 'ar' ? 
-        'خطأ في تحميل حالة الخادم' :
-        'Error loading server status';
+      return `❌ ${language === 'ar' ? 'خطأ في جلب حالة الخادم:' : 'Error fetching server status:'} ${error}`;
     }
   };
 
   const toggleMcpServer = async (serverName: string, enable: boolean): Promise<string> => {
     try {
-      const servers = await userMCPService.loadUserServers();
-      const serverIndex = servers.findIndex((s: UserMCPServer) => s.name === serverName);
+      const response = await fetch('/api/mcp/servers');
+      const data = await response.json();
+      const servers = data.servers || [];
+      const server = servers.find((s: any) => s.name === serverName);
       
-      if (serverIndex === -1) {
-        return language === 'ar' ? 
-          `الخادم "${serverName}" غير موجود` :
-          `Server "${serverName}" not found`;
+      if (!server) {
+        return `❌ ${language === 'ar' ? 'خادم غير موجود:' : 'Server not found:'} ${serverName}`;
       }
-
-      servers[serverIndex].status = enable ? 'connected' : 'disconnected';
-      await userMCPService.saveUserServers(servers);
       
-      return language === 'ar' ? 
-        `✅ تم ${enable ? 'تفعيل' : 'إلغاء تفعيل'} الخادم "${serverName}" بنجاح` :
-        `✅ Successfully ${enable ? 'enabled' : 'disabled'} server "${serverName}"`;
+      const toggleResponse = await fetch('/api/mcp/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serverId: server.id,
+          action: enable ? 'connect' : 'disconnect'
+        })
+      });
+      
+      if (toggleResponse.ok) {
+        return `✅ ${language === 'ar' ? (enable ? 'تم تفعيل الخادم:' : 'تم إيقاف الخادم:') : (enable ? 'Server enabled:' : 'Server disabled:')} ${serverName}`;
+      } else {
+        return `❌ ${language === 'ar' ? 'فشل في تغيير حالة الخادم' : 'Failed to toggle server'}`;
+      }
     } catch (error) {
-      return language === 'ar' ? 
-        `خطأ في ${enable ? 'تفعيل' : 'إلغاء تفعيل'} الخادم` :
-        `Error ${enable ? 'enabling' : 'disabling'} server`;
+      return `❌ ${language === 'ar' ? 'خطأ في تغيير حالة الخادم:' : 'Error toggling server:'} ${error}`;
     }
   };
 

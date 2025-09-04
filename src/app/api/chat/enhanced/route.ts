@@ -35,8 +35,10 @@ export async function POST(request: NextRequest) {
       servers = mcpClient.getServersStatus() || [];
       console.log('🔧 MCP Processing - useMCP:', useMCP, 'servers:', servers.length);
       mcpResults = await processMCPRequests(message, mcpClient);
+      console.log('🎯 MCP processing completed successfully:', mcpResults.length, 'results');
     } catch (mcpError) {
       console.warn('⚠️ MCP not available:', mcpError);
+      console.error('MCP Error details:', mcpError);
       servers = [];
       mcpResults = [];
     }
@@ -73,6 +75,7 @@ export async function POST(request: NextRequest) {
 
     // إرسال الرسالة المحسنة إلى النموذج
     console.log('📤 Sending to AI model:', aiModel.name);
+    console.log('📤 Enhanced message length:', enhancedMessage.length);
     
     const aiGateway = getAIGateway();
     const chatMessages: ChatMessage[] = [
@@ -83,10 +86,14 @@ export async function POST(request: NextRequest) {
     let aiResponse;
     let thinking = '';
     
+    console.log('📤 Prepared chat messages:', chatMessages.length, 'messages');
+    
     if (supportsReasoning) {
       // للنماذج التي تدعم الـ reasoning، محاولة استخراج التفكير
       console.log('🧠 Processing reasoning model...');
-      const fullResponse = await aiGateway.sendMessage(chatMessages, aiModel);
+      try {
+        const fullResponse = await aiGateway.sendMessage(chatMessages, aiModel);
+        console.log('🧠 Reasoning model response received, length:', fullResponse?.length || 0);
       
       // محاولة فصل التفكير عن الإجابة
       const thinkingMatch = fullResponse.match(/<thinking>([\s\S]*?)<\/thinking>/);
@@ -131,8 +138,25 @@ export async function POST(request: NextRequest) {
           aiResponse = fullResponse;
         }
       }
+    } catch (reasoningError) {
+      console.error('🧠 Reasoning model error:', reasoningError);
+      throw new Error(`Reasoning model failed: ${reasoningError instanceof Error ? reasoningError.message : String(reasoningError)}`);
+    }
     } else {
-      aiResponse = await aiGateway.sendMessage(chatMessages, aiModel);
+      try {
+        console.log('📤 Sending to standard model...');
+        aiResponse = await aiGateway.sendMessage(chatMessages, aiModel);
+        console.log('📤 Standard model response received, length:', aiResponse?.length || 0);
+      } catch (standardError) {
+        console.error('📤 Standard model error:', standardError);
+        throw new Error(`Standard model failed: ${standardError instanceof Error ? standardError.message : String(standardError)}`);
+      }
+    }
+
+    // التحقق من صحة الرد قبل المعالجة
+    if (!aiResponse || typeof aiResponse !== 'string') {
+      console.error('❌ Invalid AI response:', aiResponse);
+      aiResponse = 'عذراً، حدث خطأ في معالجة الرد من النموذج.';
     }
 
     console.log('✅ Enhanced API Success', { hasThinking: thinking.length > 0 });
@@ -151,11 +175,32 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Enhanced chat error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
+    // More detailed error response
+    let errorMessage = 'Chat processing failed';
+    let errorDetails = 'Unknown error';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      errorDetails = error.stack || error.message;
+      
+      // Check for specific API errors
+      if (error.message.includes('insufficient credits')) {
+        errorMessage = 'API credits exhausted. Please check your API configuration.';
+      } else if (error.message.includes('rate limit')) {
+        errorMessage = 'API rate limit exceeded. Please try again later.';
+      } else if (error.message.includes('401') || error.message.includes('403')) {
+        errorMessage = 'API authentication failed. Please check your API keys.';
+      }
+    }
+    
     return NextResponse.json(
       { 
-        error: 'Chat processing failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        success: false 
+        error: errorMessage,
+        details: errorDetails,
+        success: false,
+        timestamp: new Date().toISOString()
       },
       { status: 500 }
     );
@@ -167,6 +212,13 @@ export async function POST(request: NextRequest) {
  */
 async function processMCPRequests(message: string, mcpClient: any): Promise<any[]> {
   const results: any[] = [];
+  
+  // التحقق من صحة الرسالة قبل المعالجة
+  if (!message || typeof message !== 'string') {
+    console.warn('⚠️ Invalid message for MCP processing:', message);
+    return results;
+  }
+  
   const lowerMessage = message.toLowerCase();
 
   try {

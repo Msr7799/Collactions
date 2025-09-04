@@ -15,31 +15,87 @@ const ThemeToggle: React.FC = () => {
     <button
       onClick={toggleTheme}
       className={`
-        relative flex items-center justify-center w-10 h-10 rounded-full
-        focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-transparent
+        relative flex items-center justify-center w-12 h-12 rounded-full
+        transition-all duration-500 ease-in-out
+        focus:outline-none
         ${isDark 
-          ? `bg-gradient-to-br from-white via-cyan-50 to-blue-50 
-             border-2 border-cyan-300/40 
-             shadow-[0_0_8px_rgba(34,211,238,0.3),inset_0_1px_2px_rgba(255,255,255,0.5)]
-             focus:ring-cyan-300/50` 
-          : `bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 
-             border-2 border-gray-600/60 backdrop-blur-md
-             shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),0_2px_8px_rgba(0,0,0,0.4)]
-             focus:ring-gray-400/30`
+          ? `shadow-[0_8px_32px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.05)]` 
+          : `shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.6)]`
         }
       `}
+      style={{
+        background: isDark ? '#1a1a1a' : '#e0e0e0'
+      }}
     >
-      {/* Main icon */}
-      <div className="relative z-10">
-        {isDark ? (
-          <Moon className="h-5 w-5 text-gray-800/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]" />
-        ) : (
-          <Sun className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
-        )}
+      {/* الهالة الضوئية المتدرجة */}
+      <div 
+        className={`absolute inset-[-2px] rounded-full transition-opacity duration-500 ${
+          isDark ? 'opacity-100' : 'opacity-60'
+        }`}
+        style={{
+          background: `conic-gradient(
+            from 315deg,
+            #00e5ff 0deg,
+            #00ffc3 120deg,
+            #ff9800 240deg,
+            #00e5ff 360deg
+          )`,
+          filter: 'blur(1px)'
+        }}
+      />
+      
+      {/* الخلفية الداخلية */}
+      <div 
+        className="absolute inset-[2px] rounded-full"
+        style={{
+          background: isDark ? '#1a1a1a' : '#e0e0e0'
+        }}
+      />
+      
+      {/* رمز الطاقة */}
+      <div className="relative z-10 flex items-center justify-center">
+        <svg 
+          width="28" 
+          height="28" 
+          viewBox="0 0 24 24" 
+          className={`transition-all duration-500 ${
+            isDark 
+              ? 'text-[#cccccc] drop-shadow-[0_0_8px_rgba(204,204,204,0.6)]' 
+              : 'text-[#333333]'
+          }`}
+        >
+          {/* Power Symbol (⏻) */}
+          <circle
+            cx="12"
+            cy="12"
+            r="5.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeDasharray="13.2 2.9"
+            strokeDashoffset="1.45"
+          />
+          <line
+            x1="12"
+            y1="4"
+            x2="12"
+            y2="12"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
       
-      {/* Glassmorphism overlay */}
-      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-40 pointer-events-none" />
+      {/* إضاءة داخلية خفيفة */}
+      <div 
+        className={`absolute inset-0 rounded-full pointer-events-none transition-opacity duration-500 ${
+          isDark ? 'opacity-20' : 'opacity-40'
+        }`}
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%)'
+        }}
+      />
     </button>
   );
 };

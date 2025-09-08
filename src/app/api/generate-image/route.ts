@@ -91,11 +91,6 @@ export async function POST(request: NextRequest) {
 
         const enhancedDescription = await aiGateway.sendMessage(messages, selectedModel);
 
-        // Add validation for enhanced description
-        if (!enhancedDescription || typeof enhancedDescription !== 'string') {
-          throw new Error('Invalid enhancement response: description is null or not a string');
-        }
-
         gptDescription = enhancedDescription;
         finalPrompt = enhancedDescription.trim();
         console.log(`Enhanced description from ${selectedModel.name}:`, finalPrompt);
@@ -114,20 +109,7 @@ export async function POST(request: NextRequest) {
         }
         
       } catch (enhancementError: any) {
-        console.warn(`${descriptionModel} enhancement failed, using original prompt:`, enhancementError?.message || 'Unknown error');
-        
-        // If this was an enhanceOnly request that failed, return the error
-        if (enhanceOnly) {
-          return NextResponse.json({
-            success: false,
-            error: 'Prompt enhancement failed',
-            message: enhancementError?.message || 'Unknown enhancement error',
-            originalPrompt: prompt,
-            descriptionModel: descriptionModel,
-            type: 'enhancement_error'
-          }, { status: 500 });
-        }
-        
+        console.warn(`${descriptionModel} enhancement failed, using original prompt:`, enhancementError.message);
         // استخدم الـ prompt الأصلي في حالة فشل النموذج
         usedDescriptionModel = null;
       }

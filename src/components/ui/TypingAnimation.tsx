@@ -31,7 +31,13 @@ const TypingAnimation: React.FC<TypingAnimationProps> = ({
       if (!isDeleting) {
         // Typing phase
         if (index < text.length) {
-          setDisplayedText(text.substring(0, index + 1));
+          if (isRTL) {
+            // For RTL, show text from right to left by revealing characters from the end
+            setDisplayedText(text.substring(text.length - index - 1));
+          } else {
+            // For LTR, normal behavior
+            setDisplayedText(text.substring(0, index + 1));
+          }
           setIsTyping(true);
           index++;
           timeoutRef.current = setTimeout(animate, speed);
@@ -46,7 +52,13 @@ const TypingAnimation: React.FC<TypingAnimationProps> = ({
       } else {
         // Deleting phase
         if (index > 0) {
-          setDisplayedText(text.substring(0, index - 1));
+          if (isRTL) {
+            // For RTL, delete from left to right (hide characters from the beginning)
+            setDisplayedText(text.substring(text.length - index + 1));
+          } else {
+            // For LTR, normal behavior
+            setDisplayedText(text.substring(0, index - 1));
+          }
           setIsTyping(true);
           index--;
           timeoutRef.current = setTimeout(animate, speed / 2);
@@ -79,7 +91,7 @@ const TypingAnimation: React.FC<TypingAnimationProps> = ({
       }}
     >
       {displayedText}
-      <span className="animate-pulse text-primary ml-1">|</span>
+      <span className={`animate-pulse text-primary ${isRTL ? 'mr-1' : 'ml-1'}`}>|</span>
     </span>
   );
 };

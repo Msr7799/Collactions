@@ -3,14 +3,9 @@
   "buildCommand": "pnpm build",
   "outputDirectory": ".next",
   "installCommand": "pnpm install",
-  "devCommand": "next dev",
+  "devCommand": "pnpm dev",
   "env": {
     "NEXT_PUBLIC_APP_URL": "https://collaction.vercel.app"
-  },
-  "functions": {
-    "app/**/*.js": {
-      "runtime": "nodejs20.x"
-    }
   },
   "regions": ["iad1"]
 }

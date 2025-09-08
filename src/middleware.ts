@@ -1,35 +1,31 @@
-// Temporarily disabled to fix Next.js 15 headers() iteration warnings
-// The authMiddleware from Clerk causes headers() iteration issues in Next.js 15
-// Since authentication is disabled in components, middleware is also disabled
+import { authMiddleware } from '@clerk/nextjs';
 
-// import { authMiddleware } from '@clerk/nextjs';
-
-// export default authMiddleware({
-//   // Public routes that don't require authentication
-//   publicRoutes: [
-//     '/',
-//     '/services(.*)',
-//     '/service(.*)',
-//     '/prompts',
-//     '/api/mcp(.*)',
-//     '/api/chat(.*)'
-//   ],
-//   // Skip authentication for API routes and static files
-//   ignoredRoutes: [
-//     '/api/mcp(.*)',
-//     '/api/chat(.*)',
-//     '/_next(.*)',
-//     '/favicon.ico'
-//   ]
-// });
-
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-
-// Simple pass-through middleware to avoid headers() warnings
-export function middleware(request: NextRequest) {
-  return NextResponse.next();
-}
+export default authMiddleware({
+  // Public routes that don't require authentication
+  publicRoutes: [
+    '/',
+    '/services(.*)',
+    '/service(.*)',
+    '/prompts',
+    '/api/mcp(.*)',
+    '/api/chat(.*)',
+    '/sign-in(.*)',
+    '/sign-up(.*)',
+    '/font(.*)',
+    '/fonts(.*)',
+    '/favicon.ico'
+  ],
+  // Skip authentication for API routes and static files
+  ignoredRoutes: [
+    '/api/mcp(.*)',
+    '/api/chat(.*)',
+    '/_next(.*)',
+    '/favicon.ico',
+    '/font(.*)',
+    '/fonts(.*)',
+    '/(.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp|css|js|woff|woff2|ttf|otf)$)'
+  ]
+});
 
 export const config = {
   matcher: [

@@ -8,8 +8,35 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 
 const SettingsPage: React.FC = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const { language, isRTL } = useLanguage();
+
+  // Early return if user is not loaded yet
+  if (!isLoaded) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="mt-2 text-gray-600">Loading settings...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-gray-600">Please sign in to access settings.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   const settingsCategories = [
     {

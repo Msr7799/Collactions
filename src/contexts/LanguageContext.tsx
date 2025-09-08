@@ -13,10 +13,12 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('ar');
+  const [isClient, setIsClient] = useState(false);
 
   const isRTL = language === 'ar';
 
   useEffect(() => {
+    setIsClient(true);
     // Load saved language from localStorage
     const savedLang = localStorage.getItem('language') as Language;
     if (savedLang && (savedLang === 'ar' || savedLang === 'en')) {
@@ -25,11 +27,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   useEffect(() => {
-    // Save language to localStorage and update document direction
-    localStorage.setItem('language', language);
-    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
-    document.documentElement.lang = language;
-  }, [language, isRTL]);
+    if (isClient) {
+      // Save language to localStorage and update document direction
+      localStorage.setItem('language', language);
+      document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+      document.documentElement.lang = language;
+    }
+  }, [language, isRTL, isClient]);
 
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
@@ -49,6 +53,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (context === undefined) {
+    // Return default values during SSR
+    if (typeof window === 'undefined') {
+      return {
+        language: 'ar' as Language,
+        setLanguage: () => {},
+        isRTL: true
+      };
+    }
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;

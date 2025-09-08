@@ -189,4 +189,13 @@ next-env.d.ts
 chats/
 *.json.bak
 
+# Project specific logs
+keyring_issue.log
+windsurf.log
+windsurt.log
+workload-install.sh
+test-mcp.html
+mcp-control.html
+mcp-manual-control.html
+
 

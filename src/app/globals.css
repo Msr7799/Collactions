@@ -38,6 +38,28 @@
   /* Mobile padding adjustments */
   .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
   .py-8 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+  
+  /* Model selector improvements */
+  .model-selector-dropdown {
+    max-height: 70vh !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+  
+  /* Text truncation for long model names */
+  .model-name-mobile {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Capability tags mobile sizing */
+  .capability-tag-mobile {
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 

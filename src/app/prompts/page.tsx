@@ -60,6 +60,7 @@ import {
   Search, 
   AlertCircle, 
   Zap,
+  Sparkles,
   Copy,
   Download,
   Maximize2,
@@ -2883,7 +2884,7 @@ ${language === 'ar'
                     {isEnhancingPrompt ? (
                       <Loader className='w-3 h-3 animate-spin' />
                     ) : (
-                      <Zap className='w-3 h-3' />
+                      <Sparkles className='w-3 h-3' />
                     )}
                     <span className="hidden lg:inline">
                       {isEnhancingPrompt

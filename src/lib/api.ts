@@ -319,9 +319,19 @@ export class AIAPIGateway {
    * Transform Hugging Face response to standard format
    */
   private transformHuggingFaceResponse(hfResponse: any): APIResponse {
+    // Validate hfResponse exists
+    if (!hfResponse) {
+      throw new Error('Hugging Face response is null or undefined');
+    }
+
     // HF text generation returns array format
     if (Array.isArray(hfResponse) && hfResponse.length > 0) {
-      const generatedText = hfResponse[0].generated_text || hfResponse[0].text || '';
+      const firstResponse = hfResponse[0];
+      if (!firstResponse) {
+        throw new Error('First element in Hugging Face response array is null');
+      }
+      
+      const generatedText = firstResponse.generated_text || firstResponse.text || '';
       return {
         choices: [{
           message: {
@@ -348,7 +358,7 @@ export class AIAPIGateway {
     }
     
     // Fallback for unexpected format
-    throw new Error('Unexpected Hugging Face response format');
+    throw new Error(`Unexpected Hugging Face response format: ${JSON.stringify(hfResponse)}`);
   }
 
   /**
@@ -459,7 +469,17 @@ export class AIAPIGateway {
         const isHuggingFace = model.provider === 'Hugging Face';
         const response = await this.makeRequest(endpoint, headers, payload, attempt, isHuggingFace);
         
-        return response.choices[0]?.message?.content || 'No response generated';
+        // Add proper null checks for response structure
+        if (!response || !response.choices || !Array.isArray(response.choices) || response.choices.length === 0) {
+          throw new Error('Invalid API response structure: no choices found');
+        }
+        
+        const choice = response.choices[0];
+        if (!choice || !choice.message) {
+          throw new Error('Invalid API response structure: no message in choice');
+        }
+        
+        return choice.message.content || 'No response generated';
       } catch (error) {
         console.error(`Primary API attempt ${attempt + 1} failed:`, error);
         
@@ -493,8 +513,18 @@ export class AIAPIGateway {
 
           const response = await this.makeRequest(endpoint, headers, payload, attempt);
           
+          // Add proper null checks for fallback response structure  
+          if (!response || !response.choices || !Array.isArray(response.choices) || response.choices.length === 0) {
+            throw new Error('Invalid fallback API response structure: no choices found');
+          }
+          
+          const choice = response.choices[0];
+          if (!choice || !choice.message) {
+            throw new Error('Invalid fallback API response structure: no message in choice');
+          }
+          
           console.log('Fallback API successful!');
-          return response.choices[0]?.message?.content || 'No response generated';
+          return choice.message.content || 'No response generated';
         } catch (error) {
           console.error(`Fallback API attempt ${attempt + 1} failed:`, error);
           
@@ -646,15 +676,27 @@ export class AIAPIGateway {
    * Generate image using Hugging Face models
    */
   async generateImageHF(prompt: string, modelId: string): Promise<Blob> {
+    // Input validation
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+      throw new Error('Invalid prompt: prompt must be a non-empty string');
+    }
+    
+    if (!modelId || typeof modelId !== 'string') {
+      throw new Error('Invalid modelId: modelId must be a non-empty string');
+    }
+
     const accessToken = this.getAccessToken('Hugging Face');
     const endpoint = `https://api-inference.huggingface.co/models/${modelId}`;
     const headers = this.buildHeaders('Hugging Face', accessToken);
     
     const payload = {
-      inputs: prompt
+      inputs: prompt.trim()
     };
 
     try {
+      console.log(`Generating image with model: ${modelId}`);
+      console.log(`Prompt: ${prompt.substring(0, 100)}...`);
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers,
@@ -662,10 +704,20 @@ export class AIAPIGateway {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`HF API Error (${response.status}):`, errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
-      return await response.blob();
+      const blob = await response.blob();
+      
+      // Validate that we actually got a blob with content
+      if (!blob || blob.size === 0) {
+        throw new Error('Received empty image data from Hugging Face API');
+      }
+      
+      console.log(`Image generated successfully, size: ${blob.size} bytes`);
+      return blob;
     } catch (error) {
       console.error('Error generating image:', error);
       throw error;

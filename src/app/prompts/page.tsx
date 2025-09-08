@@ -61,6 +61,7 @@ import {
   AlertCircle, 
   Zap,
   Sparkles,
+  Wand2,
   Copy,
   Download,
   Maximize2,
@@ -79,8 +80,6 @@ import {
   X as CloseIcon,
   Calendar,
   Clock,
-  Trash2,
-  Bot,
   User,
   Maximize,
   Edit,
@@ -2884,7 +2883,7 @@ ${language === 'ar'
                     {isEnhancingPrompt ? (
                       <Loader className='w-3 h-3 animate-spin' />
                     ) : (
-                      <Sparkles className='w-3 h-3' />
+                      <Wand2 className='w-3 h-3' />
                     )}
                     <span className="hidden lg:inline">
                       {isEnhancingPrompt

@@ -9,8 +9,6 @@ export default authMiddleware({
     '/prompts',
     '/api/mcp(.*)',
     '/api/chat(.*)',
-    '/sign-in(.*)',
-    '/sign-up(.*)',
     '/font(.*)',
     '/fonts(.*)',
     '/favicon.ico'

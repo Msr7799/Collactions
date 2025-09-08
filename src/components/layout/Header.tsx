@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Menu, X, Bell, Search, Moon, Sun, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useUser } from '@clerk/nextjs';
+import { useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import CollactionsLogo from '@/components/logo/CollactionsLogo';
 
 interface HeaderProps {
@@ -40,10 +40,6 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
 
   const toggleLanguage = () => {
     setLanguage(language === 'ar' ? 'en' : 'ar');
-  };
-
-  const handleSignIn = () => {
-    router.push('/sign-in');
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -157,21 +153,20 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           {isLoaded && (
             <div className="flex items-center space-x-2">
               {isSignedIn ? (
-                <div className="flex items-center space-x-2">
-                  <div className="hidden md:block text-sm">
-                    <div className="font-medium">{user?.fullName || user?.firstName}</div>
-                  </div>
-                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-medium">
-                    {(user?.firstName?.[0] || user?.fullName?.[0] || 'U').toUpperCase()}
-                  </div>
-                </div>
+                <UserButton 
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8"
+                    }
+                  }}
+                />
               ) : (
-                <button
-                  onClick={handleSignIn}
-                  className="px-3 py-1.5 md:px-4 md:py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-                >
-                  {language === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
-                </button>
+                <SignInButton mode="modal">
+                  <button className="px-3 py-1.5 md:px-4 md:py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+                    {language === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
+                  </button>
+                </SignInButton>
               )}
             </div>
           )}

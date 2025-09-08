@@ -1,16 +1,13 @@
 {
   "framework": "nextjs",
-  "buildCommand": "next build",
-  "outputDirectory": ".next",
+  "buildCommand": "pnpm build",
   "installCommand": "pnpm install",
-  "devCommand": "next dev",
   "env": {
     "NEXT_PUBLIC_APP_URL": "https://collaction.vercel.app"
   },
   "functions": {
-    "src/app/api/**/*.ts": {
+    "app/api/**/*.ts": {
       "runtime": "nodejs20.x"
     }
-  },
-  "regions": ["iad1"]
+  }
 }

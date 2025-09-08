@@ -1,8 +1,8 @@
 {
   "version": 2,
   "functions": {
-    "app/api/**/*.js": {
-      "runtime": "@vercel/node@3.0.0"
+    "app/api/**/*.ts": {
+      "runtime": "now-node@20.0.0"
     }
   }
 }

@@ -1,4 +1,8 @@
 {
   "version": 2,
-  "framework": "nextjs"
+  "functions": {
+    "app/api/**/*.js": {
+      "runtime": "@vercel/node@3.0.0"
+    }
+  }
 }

@@ -136,9 +136,16 @@ export async function POST(request: NextRequest) {
       // تحويل Blob إلى Base64 للعرض في Frontend
       const arrayBuffer = await imageBlob.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const base64Image = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+      
+      // تحديد نوع الصورة بناءً على المحتوى أو استخدام PNG كافتراضي
+      const contentType = imageBlob.type || 'image/png';
+      const base64Image = `data:${contentType};base64,${buffer.toString('base64')}`;
 
-      console.log('Image generated successfully, size:', buffer.length, 'bytes');
+      console.log('Image generated successfully:', {
+        size: buffer.length,
+        contentType: contentType,
+        base64Preview: base64Image.substring(0, 100) + '...'
+      });
 
       return NextResponse.json({
         success: true,

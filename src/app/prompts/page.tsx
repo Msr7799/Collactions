@@ -414,6 +414,7 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
     return parts.length > 0 ? parts : (
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[]}
         components={{
           code: ({ className, children, ...props }) => {
             const match = /language-(\w+)/.exec(className || '');
@@ -459,6 +460,13 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
             const imageSrc = typeof src === 'string' ? src : String(src);
             if (!imageSrc.trim()) return null;
             
+            // تحقق من صحة base64 data
+            const isBase64Image = imageSrc.startsWith('data:image/');
+            if (!isBase64Image && !imageSrc.startsWith('http')) {
+              console.error('Invalid image source:', imageSrc.substring(0, 100) + '...');
+              return null;
+            }
+            
             return (
               <div className="my-4">
                 <img 
@@ -468,11 +476,18 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
                   onClick={() => onImageClick && onImageClick(imageSrc)}
                   style={{ maxHeight: '500px', objectFit: 'contain' }}
                   onError={(e) => {
-                    console.error('Image failed to load:', imageSrc.substring(0, 100));
+                    console.error('❌ Image failed to load:', {
+                      src: imageSrc.substring(0, 100) + '...',
+                      isBase64: isBase64Image,
+                      length: imageSrc.length
+                    });
                     e.currentTarget.style.display = 'none';
                   }}
                   onLoad={() => {
-                    console.log('✅ Image loaded successfully');
+                    console.log('✅ Image loaded successfully:', {
+                      isBase64: isBase64Image,
+                      size: imageSrc.length
+                    });
                   }}
                 />
               </div>
@@ -1036,10 +1051,23 @@ const PromptsPage: React.FC = () => {
 
 ![Generated Image](${imageData.image})
 
+<div class="image-container" style="margin: 16px 0;">
+  <img src="${imageData.image}" alt="Generated Image" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #444; cursor: pointer;" onclick="window.open('${imageData.image}', '_blank')" />
+</div>
+
 ${language === 'ar' 
   ? `✨ تم توليد هذه الصورة باستخدام ${imageData.model}${imageData.enhanced ? ` مع تحسين الوصف بواسطة ${enhancementInfo}` : ''}`
   : `✨ This image was generated using ${imageData.model}${imageData.enhanced ? ` with description enhanced by ${enhancementInfo}` : ''}`
 }`;
+
+            // طباعة تفاصيل الصورة للتشخيص
+            console.log('🖼️ Image data debug:', {
+              hasImage: !!imageData.image,
+              imageType: imageData.image?.substring(0, 30),
+              imageLength: imageData.image?.length,
+              isBase64: imageData.image?.startsWith('data:image/'),
+              contentPreview: responseContent.substring(0, 200) + '...'
+            });
 
           } else if (fetchResponse.ok && !imageData.success && imageData.fallback && imageData.text) {
             // فشل توليد الصورة لكن حصلنا على وصف محسن (حالة fallback)

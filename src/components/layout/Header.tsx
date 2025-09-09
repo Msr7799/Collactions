@@ -50,15 +50,15 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
 
   return (
     <header 
-      className="top-0 left-0 right-0 z-50 w-full border-b backdrop-blur-md supports-[backdrop-filter]:bg-background/85 shadow-sm"
+      className="relative  top-0 left-0 right-0 z-[50] w-full border-b-3  bg-input backdrop-blur-md supports-[backdrop-filter]:bg-background/85 shadow-lg "
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className={`w-full flex h-16 md:h-18 items-center px-4 md:px-6 ${isRTL ? 'flex-row' : 'flex-row'}`}>
+      <div className={`w-full flex h-15 md:h-18 items-center px-4 md:px-6 ${isRTL ? 'flex-row' : 'flex-row'}`}>
         
         {/* Mobile Menu Button */}
         <button
           onClick={toggleMobileMenu}
-          className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
+          className={`md:hidden p-2 border-2 !border-[#212121]/40 rounded-lg bg-muted/30 z-50 transition-colors ${isRTL ? 'ml-3' : 'mr-3'}`}
           aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? (
@@ -76,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           <img 
             src="/app-icon.svg" 
             alt="Collactions Logo" 
-            className="w-8 h-8 md:w-10 md:h-10 pointer-events-none drop-shadow-sm"
+            className="w-11 h-11 md:w-10 md:h-10 pointer-events-none drop-shadow-sm"
           />
           <div className="hidden sm:block">
             <CollactionsLogo size="sm" />
@@ -85,7 +85,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
       
         {/* Search Bar - Desktop */}
         {showSearch && (
-          <div className={`hidden md:flex flex-1 max-w-md ${isRTL ? 'ml-8 mr-4' : 'mx-8'}`}>
+          <div className={`hidden md:flex  flex-1 max-w-md ${isRTL ? 'ml-8 mr-4' : 'mx-8'}`}>
             <form onSubmit={handleSearch} className="w-full relative">
               <Search className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground ${isRTL ? 'right-3' : 'left-3'}`} />
               <input
@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                 placeholder={getTranslation('search_placeholder', language)}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm ${isRTL ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4 text-left'}`}
+                className={`w-full py-2 bg-background border border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm ${isRTL ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4 text-left'}`}
                 dir={isRTL ? 'rtl' : 'ltr'}
               />
             </form>
@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
         {/* Desktop Navigation & Actions */}
         <div className={`hidden md:flex items-center ${isRTL ? 'mr-auto ml-0' : 'ml-auto mr-0'} ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
           {/* Theme Toggle */}
-          <div className="px-2">
+          <div className={`px-2 ${isRTL ? 'ml-5' : 'mr-5'}`}>
             <ThemeToggle />
           </div>
           
@@ -111,50 +111,80 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           <button
             title={getTranslation('terminal', language)}
             onClick={() => router.push('/terminal')}
-            className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out"
+            className="p-3 group relative transition-all duration-300 ease-in-out"
           >
-            <Terminal className="h-4 w-4" />
+            <span
+              className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
+              aria-hidden="true"
+            />
+            <Terminal className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <span className="sr-only">{getTranslation('terminal', language)}</span>
           </button>
           
           <button 
             title={getTranslation('prompts', language)}
             onClick={() => router.push('/prompts')}
-            className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out"
+            className="p-3 group relative transition-all duration-300 ease-in-out"
           >
-            <MessageSquare className="h-4 w-4" />
+            <span
+              className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
+              aria-hidden="true"
+            />
+            <MessageSquare className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <span className="sr-only">{getTranslation('prompts', language)}</span>
           </button>
           
           <button
             title={getTranslation('dashboard', language)}
             onClick={() => router.push('/dashboard')}
-            className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out"
+            className="p-3 group relative transition-all duration-300 ease-in-out"
           >
-            <Activity className="h-4 w-4" />
+            <span
+              className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
+              aria-hidden="true"
+            />
+            <Activity className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <span className="sr-only">{getTranslation('dashboard', language)}</span>
           </button>
           
           <button
             title={getTranslation('settings', language)}
             onClick={() => router.push('/settings')}
-            className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out"
+            className="p-3 group relative transition-all duration-300 ease-in-out"
           >
-            <Settings className="h-4 w-4" />
+            <span
+              className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
+              aria-hidden="true"
+            />
+            <Settings className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <span className="sr-only">{getTranslation('settings', language)}</span>
           </button>
           
           <button
             title={getTranslation('profile', language)}
             onClick={() => router.push('/profile')}
-            className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out"
+            className="p-3 group relative transition-all duration-300 ease-in-out"
           >
-            <User className="h-4 w-4" />
+            <span
+              className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
+              aria-hidden="true"
+            />
+            <User className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <span className="sr-only">{getTranslation('profile', language)}</span>
           </button>
           
           {/* Language Toggle */}
           <button 
             onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
-            className="p-3 theme-gradient-text hover:theme-glow transition-all duration-300 ease-in-out"
+            className="p-3 group relative transition-all duration-300 ease-in-out"
             title={language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
           >
-            <Globe className="h-4 w-4" />
+            <span
+              className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
+              aria-hidden="true"
+            />
+            <Globe className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <span className="sr-only">{language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}</span>
           </button>
           
           {/* Spacer between Language and Profile */}
@@ -197,7 +227,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
         </div>
 
         {/* Mobile Actions */}
-        <div className={`md:hidden flex items-center ${isRTL ? 'mr-auto ml-0' : 'ml-auto mr-0'} ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
+        <div className={`md:hidden  flex items-center ${isRTL ? 'mr-auto ml-0' : 'ml-auto mr-0'} ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
           
           {/* Search Button - Mobile */}
           {showSearch && (
@@ -249,8 +279,16 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-md border-b shadow-lg">
-          <div className="px-4 py-6 space-y-4">
+        <>
+          {/* Backdrop overlay to close menu when clicking outside */}
+          <div 
+            className="md:hidden fixed  z-[55]" 
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          
+          {/* Menu content */}
+          <div className="md:hidden absolute top-full left-0 right-0 !bg-background border shadow-lg z-60">
+            <div className="px-4 py-6 space-y-4">
             
             {/* Mobile Search */}
             {showSearch && (
@@ -268,7 +306,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
             )}
 
             {/* Mobile Navigation */}
-            <nav className="space-y-3">
+            <nav className="space-y-3 ">
               <button 
                 onClick={() => {
                   router.push('/dashboard');
@@ -351,6 +389,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
             )}
           </div>
         </div>
+        </>
       )}
     </header>
   );

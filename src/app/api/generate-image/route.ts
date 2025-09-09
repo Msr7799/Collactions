@@ -1,6 +1,42 @@
+// src/app/api/generate-image/route.ts
+// API route to generate images using GPT-4o for description and Hugging Face for image generation
+// يدعم تحسين الوصف، الترجمة، وتحسين الوصف فقط بدون توليد صورة
+
 import { NextRequest, NextResponse } from 'next/server';
 import { AIAPIGateway } from '@/lib/api';
 import { gptGodModels, huggingFaceModels, openRouterModels, AIModel } from '@/lib/models';
+import { saveImageAsBase64, saveImageAsFile, saveImageWithResponsive } from '@/utils/saveImage';
+import { validateImageBlob, validateImageRequest, validateImage } from '@/utils/validateImage';
+import { generateResponsive, extractImageMetadata } from '@/utils/generateResponsive';
+import { 
+  imageGenerationLimiter, 
+  enhancePromptLimiter, 
+  getClientIdentifier, 
+  createRateLimitResponse 
+} from '@/utils/rateLimiter';
+
+/**
+ * Helper function to create consistent response headers
+ */
+function createResponseHeaders(options: {
+  cacheControl?: string;
+  rateLimit?: { remaining: number; resetTime: number };
+} = {}) {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+  
+  if (options.cacheControl) {
+    headers['Cache-Control'] = options.cacheControl;
+  }
+  
+  if (options.rateLimit) {
+    headers['X-RateLimit-Remaining'] = options.rateLimit.remaining.toString();
+    headers['X-RateLimit-Reset'] = options.rateLimit.resetTime.toString();
+  }
+  
+  return headers;
+}
 
 /**
  * POST /api/generate-image
@@ -9,6 +45,19 @@ import { gptGodModels, huggingFaceModels, openRouterModels, AIModel } from '@/li
  */
 export async function POST(request: NextRequest) {
   try {
+    // 🛡️ Rate limiting - Check if client is within allowed limits
+    const clientId = getClientIdentifier(request);
+    const rateLimit = imageGenerationLimiter.isAllowed(clientId);
+    
+    if (!rateLimit.allowed) {
+      console.log(`🚫 Rate limit exceeded for client: ${clientId}`);
+      return createRateLimitResponse(
+        rateLimit.remaining, 
+        rateLimit.resetTime,
+        'Too many image generation requests. Please wait before trying again | طلبات كثيرة لتوليد الصور، يرجى الانتظار قبل المحاولة مرة أخرى'
+      );
+    }
+    
     const body = await request.json();
     const { 
       prompt,
@@ -24,10 +73,30 @@ export async function POST(request: NextRequest) {
     if (!prompt) {
       return NextResponse.json(
         { 
-          error: 'Prompt is required | النص المطلوب مطلوب',
-          message: 'Please provide a text prompt for image generation | يرجى تقديم نص لتوليد الصورة'
+          error: 'Prompt is required | النص المطلوب مطلوب'
         }, 
-        { status: 400 }
+        { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    }
+
+    // التحقق من صحة معاملات الطلب
+    const validation = validateImageRequest(prompt, model);
+    if (!validation.isValid) {
+      return NextResponse.json(
+        { 
+          error: validation.error
+        }, 
+        { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
     }
 
@@ -97,6 +166,9 @@ export async function POST(request: NextRequest) {
 
         // إذا كان المطلوب تحسين الوصف فقط، أرجع النتيجة هنا
         if (enhanceOnly) {
+          // Use more lenient rate limit for text enhancement
+          const enhanceRateLimit = enhancePromptLimiter.isAllowed(clientId);
+          
           return NextResponse.json({
             success: true,
             finalPrompt: finalPrompt,
@@ -105,6 +177,11 @@ export async function POST(request: NextRequest) {
             model: selectedModel.id,
             provider: selectedModel.provider,
             type: 'enhancement'
+          }, {
+            headers: createResponseHeaders({
+              cacheControl: 'no-cache, must-revalidate',
+              rateLimit: enhanceRateLimit
+            })
           });
         }
         
@@ -120,10 +197,14 @@ export async function POST(request: NextRequest) {
     if (!imageModel || !imageModel.capabilities.includes('text_to_image')) {
       return NextResponse.json(
         { 
-          error: 'Image generation model not found | نموذج توليد الصور غير موجود',
-          message: `Model ${model} not found or doesn't support image generation | النموذج ${model} غير موجود أو لا يدعم توليد الصور`
+          error: `Model ${model} not found or doesn't support image generation | النموذج ${model} غير موجود أو لا يدعم توليد الصور`
         }, 
-        { status: 400 }
+        { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
     }
 
@@ -133,40 +214,84 @@ export async function POST(request: NextRequest) {
       
       const imageBlob = await aiGateway.generateImageHF(finalPrompt, model);
       
-      // تحويل Blob إلى Base64 للعرض في Frontend
-      const arrayBuffer = await imageBlob.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      // التحقق من صحة الصورة المولدة
+      const blobValidation = validateImageBlob(imageBlob);
+      if (!blobValidation.isValid) {
+        return NextResponse.json(
+          { 
+            error: blobValidation.error || 'Invalid generated image | صورة مولدة غير صحيحة'
+          }, 
+          { 
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      }
       
-      // تحديد نوع الصورة بناءً على المحتوى أو استخدام PNG كافتراضي
-      const contentType = imageBlob.type || 'image/png';
-      const base64Image = `data:${contentType};base64,${buffer.toString('base64')}`;
+      // حفظ الصورة مع توليد النسخ المتجاوبة للأداء الأفضل
+      try {
+        // تحديد امتداد الملف بناءً على نوع المحتوى
+        const extension = imageBlob.type === 'image/jpeg' ? 'jpg' : 
+                         imageBlob.type === 'image/webp' ? 'webp' : 'png';
+        
+        // تحويل Blob إلى Buffer
+        const arrayBuffer = await imageBlob.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        const savedImage = await saveImageWithResponsive(buffer, extension);
+        
+        // استخراج معلومات الصورة (اختياري)
+        const imageMetadata = extractImageMetadata(`data:${savedImage.contentType};base64,${buffer.toString('base64')}`);
 
-      console.log('Image generated successfully:', {
-        size: buffer.length,
-        contentType: contentType,
-        base64Preview: base64Image.substring(0, 100) + '...'
-      });
-
-      return NextResponse.json({
-        success: true,
-        image: base64Image, // صورة فعلية بصيغة base64
-        prompt: prompt,
-        finalPrompt: finalPrompt,
-        gptDescription: gptDescription,
-        model: imageModel.name,
-        provider: 'Hugging Face',
-        type: 'image',
-        enhanced: useGPT4Description && gptDescription !== null,
-        descriptionModel: usedDescriptionModel ? usedDescriptionModel.name : null,
-        metadata: {
-          originalPrompt: prompt,
-          enhancedPrompt: finalPrompt,
-          imageModel: model,
-          descriptionModel: usedDescriptionModel ? usedDescriptionModel.id : null,
-          size: size,
-          generatedAt: new Date().toISOString()
-        }
-      });
+        // إرجاع استجابة JSON مرتبة مع معلومات الصورة المتجاوبة
+        return NextResponse.json({
+          success: true,
+          url: savedImage.filePath,
+          srcset: savedImage.responsive.srcSet,
+          sizes: "(max-width: 600px) 100vw, 600px",
+          alt: "Generated AI Image",
+          prompt: prompt,
+          finalPrompt: finalPrompt,
+          gptDescription: gptDescription,
+          model: imageModel.name,
+          provider: 'Hugging Face',
+          type: 'image',
+          enhanced: useGPT4Description && gptDescription !== null,
+          descriptionModel: usedDescriptionModel ? usedDescriptionModel.name : null,
+          metadata: {
+            originalPrompt: prompt,
+            enhancedPrompt: finalPrompt,
+            imageModel: model,
+            descriptionModel: usedDescriptionModel ? usedDescriptionModel.id : null,
+            size: size,
+            generatedAt: new Date().toISOString(),
+            imageSize: savedImage.size,
+            contentType: savedImage.contentType,
+            fileName: savedImage.fileName,
+            imageMetadata: imageMetadata
+          }
+        }, {
+          headers: createResponseHeaders({
+            cacheControl: 'public, max-age=86400, s-maxage=86400',
+            rateLimit: rateLimit
+          })
+        });
+      } catch (validationError: any) {
+        console.error('🔒 Image validation failed:', validationError.message);
+        return NextResponse.json(
+          { 
+            error: validationError.message || 'Invalid image format or size | تنسيق أو حجم الصورة غير صحيح'
+          }, 
+          { 
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      }
 
     } catch (hfError: any) {
       console.error('Hugging Face image generation failed:', hfError);
@@ -175,10 +300,14 @@ export async function POST(request: NextRequest) {
       if (hfError.message?.includes('401') || hfError.message?.includes('unauthorized')) {
         return NextResponse.json(
           { 
-            error: 'Invalid Hugging Face token | مفتاح Hugging Face غير صحيح',
-            message: 'Please check your HF_TOKEN configuration | تحقق من إعداد مفتاح Hugging Face'
+            error: 'Invalid Hugging Face token | مفتاح Hugging Face غير صحيح'
           }, 
-          { status: 401 }
+          { 
+            status: 401,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
         );
       }
 
@@ -186,22 +315,28 @@ export async function POST(request: NextRequest) {
       if (hfError.message?.includes('402') || hfError.message?.includes('payment') || hfError.message?.includes('billing')) {
         return NextResponse.json(
           { 
-            error: 'Hugging Face subscription required | يتطلب اشتراك Hugging Face مدفوع',
-            message: 'Free tier limit exceeded. Please upgrade your Hugging Face account or try again later | تم تجاوز الحد المجاني، يرجى ترقية حسابك أو المحاولة لاحقاً',
-            type: 'payment_required',
-            fallback: true
+            error: 'Hugging Face subscription required | يتطلب اشتراك Hugging Face مدفوع'
           }, 
-          { status: 402 }
+          { 
+            status: 402,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
         );
       }
 
       if (hfError.message?.includes('503') || hfError.message?.includes('model') || hfError.message?.includes('loading')) {
         return NextResponse.json(
           { 
-            error: 'Model loading error | خطأ في تحميل النموذج',
-            message: 'The image generation model is loading. Please try again in a few minutes | النموذج قيد التحميل، حاول مرة أخرى خلال دقائق'
+            error: 'Model loading error | خطأ في تحميل النموذج'
           }, 
-          { status: 503 }
+          { 
+            status: 503,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
         );
       }
 
@@ -235,11 +370,14 @@ export async function POST(request: NextRequest) {
     console.error('Error in image generation pipeline:', error);
     return NextResponse.json(
       {
-        error: 'Internal server error | خطأ داخلي في الخادم',
-        message: error.message || 'Unknown error occurred | حدث خطأ غير معروف',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        error: error.message || 'Internal server error | خطأ داخلي في الخادم'
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     );
   }
 }

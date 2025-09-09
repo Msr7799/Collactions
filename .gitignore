@@ -6,6 +6,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Generated images - exclude from version control
+public/generated/
+!public/generated/.gitkeep
+
 # Runtime data
 pids
 *.pid
@@ -54,6 +58,13 @@ jspm_packages/
 
 # Optional REPL history
 .node_repl_history
+
+# Generated images (exclude generated files but keep structure)
+public/generated/*.png
+public/generated/*.jpg
+public/generated/*.jpeg
+public/generated/*.webp
+!public/generated/.gitkeep
 
 # Output of 'npm pack'
 *.tgz

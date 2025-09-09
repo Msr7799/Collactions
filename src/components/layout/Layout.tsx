@@ -14,10 +14,10 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, title, showSearch, hideFooter }) => {
   return (
-    <div className="relative min-h-screen text-foreground">
+    <div className="relative min-h-screen text-foreground m-0 p-0 title={title} s bg-background flex flex-col border-3">
       <AnimatedDotsBackground />
-      <Header title={title} showSearch={showSearch} />
-      <main className="flex-1 relative z-10">
+      <Header title={title} showSearch={showSearch}  />
+      <main className="flex-1 relative">
         {children}
       </main>
       {!hideFooter && <Footer />}

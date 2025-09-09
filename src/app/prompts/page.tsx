@@ -2,14 +2,14 @@
 
 import React, { useState, useCallback, useEffect, useRef, useMemo, memo } from 'react';
 import dynamic from 'next/dynamic';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 // Dynamic imports for performance
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 const ThinkingMessage = dynamic(() => import('@/components/ai/ThinkingMessage'), { ssr: false });
 const TypewriterEffect = dynamic(() => import('@/components/ai/TypewriterEffect'), { ssr: false });
 
-
-import remarkGfm from 'remark-gfm';
 // Temporarily disabled to fix Next.js 15 headers() error
 // import { useUser } from '@clerk/nextjs';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -276,14 +276,78 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
       
       // If there's remaining content after removing JSON, show it
       if (cleanContent) {
-        return <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanContent}</ReactMarkdown>;
+        return (
+          <ReactMarkdown 
+            remarkPlugins={[remarkGfm]} 
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              img: ({src, alt, ...props}) => {
+                if (!src) return null;
+                
+                const imageSrc = typeof src === 'string' ? src : String(src);
+                if (!imageSrc.trim()) return null;
+                
+                // دعم جميع أنواع الصور: base64, http/https, وروابط relative
+                const isValidImage = imageSrc.startsWith('data:image/') || 
+                                    imageSrc.startsWith('http') || 
+                                    imageSrc.startsWith('/generated/');
+                
+                console.log('🖼️ Processing image in clean content ReactMarkdown:', {
+                  src: imageSrc.substring(0, 50) + '...',
+                  alt: alt || 'Generated Image',
+                  isValid: isValidImage,
+                  type: imageSrc.startsWith('data:') ? 'base64' : 
+                        imageSrc.startsWith('/generated/') ? 'file' : 'url'
+                });
+                
+                if (!isValidImage) {
+                  console.error('❌ Invalid image source in clean content:', imageSrc.substring(0, 100) + '...');
+                  return null;
+                }
+
+                // استخراج srcset و sizes من props إذا كانت موجودة
+                const srcset = props.srcSet;
+                const sizes = props.sizes || '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw';
+                
+                return (
+                  <div className="flex justify-center my-4">
+                    <div className="max-w-full">
+                      <img 
+                        src={imageSrc}
+                        srcSet={srcset}
+                        sizes={srcset ? sizes : undefined}
+                        alt={alt || 'Generated Image'}
+                        className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => onImageClick && onImageClick(imageSrc)}
+                        style={{ maxHeight: '500px', objectFit: 'contain' }}
+                        loading="lazy"
+                        onError={(e) => {
+                          console.error('❌ Image failed to load in clean content:', {
+                            src: imageSrc.substring(0, 100) + '...',
+                            isBase64: imageSrc.startsWith('data:image/'),
+                            isGenerated: imageSrc.startsWith('/generated/'),
+                            length: imageSrc.length
+                          });
+                          e.currentTarget.style.display = 'none';
+                        }}
+                        {...props}
+                      />
+                    </div>
+                  </div>
+                );
+              }
+            }}
+          >
+            {cleanContent}
+          </ReactMarkdown>
+        );
       }
       // Otherwise just return empty content
       return null;
     }
 
-    // Handle images in markdown format - support both data:image and http/https URLs
-    const imageRegex = /!\[([^\]]*)\]\(((?:data:image\/[^)]+|https?:\/\/[^)]+))\)/g;
+    // Handle images in markdown format - support data:image, http/https URLs, and relative /generated/ URLs with parameters
+    const imageRegex = /!\[([^\]]*)\]\(((?:data:image\/[^)]+|https?:\/\/[^)]+|\/generated\/[^)]*?))\)/g;
     console.log('🔍 Checking for images in message:', message.content.substring(0, 200) + '...');
     let lastIndex = 0;
     const parts = [];
@@ -298,6 +362,7 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
           <ReactMarkdown 
             key={`text-${lastIndex}`} 
             remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
           >
             {textPart}
           </ReactMarkdown>
@@ -308,21 +373,24 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
       const altText = match[1];
       const imageSrc = match[2];
       parts.push(
-        <div key={`image-${match.index}`} className="my-4">
-          <img 
-            src={imageSrc}
-            alt={altText || 'Generated Image'}
-            className="max-w-full h-auto rounded-lg shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
-            style={{ maxHeight: '500px', objectFit: 'contain' }}
-            onClick={() => onImageClick && onImageClick(imageSrc)}
-            onError={(e) => {
-              console.error('Image failed to load:', imageSrc.substring(0, 100));
-              e.currentTarget.style.display = 'none';
-            }}
-            onLoad={() => {
-              console.log('✅ Image loaded successfully');
-            }}
-          />
+        <div key={`image-${match.index}`} className="my-4 flex justify-center">
+          <div className="max-w-full">
+            <img 
+              src={imageSrc}
+              alt={altText || 'Generated Image'}
+              className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
+              style={{ maxHeight: '500px', objectFit: 'contain' }}
+              loading="lazy"
+              onClick={() => onImageClick && onImageClick(imageSrc)}
+              onError={(e) => {
+                console.error('❌ Image failed to load:', imageSrc.substring(0, 100));
+                e.currentTarget.style.display = 'none';
+              }}
+              onLoad={() => {
+                console.log('✅ Image loaded successfully:', imageSrc.substring(0, 50) + '...');
+              }}
+            />
+          </div>
         </div>
       );
 
@@ -337,6 +405,7 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
         <ReactMarkdown 
           key={`text-${lastIndex}`} 
           remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw]}
           components={{
             code: ({ className, children, ...props }) => {
               const match = /language-(\w+)/.exec(className || '');
@@ -379,42 +448,79 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
               // Handle pre elements that contain code blocks
               return <div>{children}</div>;
             },
-            img: ({src, alt, ...props}) => {
-              if (!src) return null;
-              
-              const imageSrc = typeof src === 'string' ? src : String(src);
-              if (!imageSrc.trim()) return null;
-              
-              return (
-                <div className="my-4">
+          img: ({src, alt, ...props}) => {
+            if (!src) return null;
+            
+            const imageSrc = typeof src === 'string' ? src : String(src);
+            if (!imageSrc.trim()) return null;
+            
+            // دعم جميع أنواع الصور: base64, http/https, وروابط relative
+            const isValidImage = imageSrc.startsWith('data:image/') || 
+                                imageSrc.startsWith('http') || 
+                                imageSrc.startsWith('/generated/');
+            
+            console.log('🖼️ Processing image in ReactMarkdown:', {
+              src: imageSrc.substring(0, 50) + '...',
+              alt: alt || 'Generated Image',
+              isValid: isValidImage,
+              type: imageSrc.startsWith('data:') ? 'base64' : 
+                    imageSrc.startsWith('/generated/') ? 'file' : 'url',
+              hasProps: Object.keys(props).length > 0
+            });
+            
+            if (!isValidImage) {
+              console.error('❌ Invalid image source:', imageSrc.substring(0, 100) + '...');
+              return null;
+            }
+
+            // استخراج srcset و sizes من props إذا كانت موجودة
+            const srcset = props.srcSet;
+            const sizes = props.sizes || '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw';
+
+            return (
+              <div className="flex justify-center my-4">
+                <div className="max-w-full">
                   <img 
                     src={imageSrc}
+                    srcSet={srcset}
+                    sizes={srcset ? sizes : undefined}
                     alt={alt || 'Generated Image'}
                     className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => onImageClick && onImageClick(imageSrc)}
                     style={{ maxHeight: '500px', objectFit: 'contain' }}
+                    loading="lazy"
                     onError={(e) => {
-                      console.error('Image failed to load:', imageSrc.substring(0, 100));
+                      console.error('❌ Image failed to load:', {
+                        src: imageSrc.substring(0, 100) + '...',
+                        isBase64: imageSrc.startsWith('data:image/'),
+                        isGenerated: imageSrc.startsWith('/generated/'),
+                        length: imageSrc.length,
+                        hasSrcset: !!srcset
+                      });
                       e.currentTarget.style.display = 'none';
                     }}
                     onLoad={() => {
-                      console.log('✅ Image loaded successfully');
+                      console.log('✅ Image loaded successfully:', {
+                        src: imageSrc.substring(0, 50) + '...',
+                        responsive: !!srcset,
+                        alt: alt || 'Generated Image'
+                      });
                     }}
+                    {...props}
                   />
                 </div>
-              );
-            }
-          }}
-        >
-          {textPart}
-        </ReactMarkdown>
-      );
-    }
-
-    return parts.length > 0 ? parts : (
+              </div>
+            );
+          }
+        }}
+      >
+        {textPart}
+      </ReactMarkdown>
+    );
+  }    return parts.length > 0 ? parts : (
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[]}
+        rehypePlugins={[rehypeRaw]}
         components={{
           code: ({ className, children, ...props }) => {
             const match = /language-(\w+)/.exec(className || '');
@@ -450,46 +556,61 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
               />
             );
           },
-          pre: ({ children, ...props }) => {
-            // Handle pre elements that contain code blocks
-            return <div>{children}</div>;
-          },
           img: ({src, alt, ...props}) => {
             if (!src) return null;
             
             const imageSrc = typeof src === 'string' ? src : String(src);
             if (!imageSrc.trim()) return null;
             
-            // تحقق من صحة base64 data
-            const isBase64Image = imageSrc.startsWith('data:image/');
-            if (!isBase64Image && !imageSrc.startsWith('http')) {
-              console.error('Invalid image source:', imageSrc.substring(0, 100) + '...');
+            // دعم جميع أنواع الصور: base64, http/https, وروابط relative
+            const isValidImage = imageSrc.startsWith('data:image/') || 
+                                imageSrc.startsWith('http') || 
+                                imageSrc.startsWith('/generated/');
+            
+            console.log('🖼️ Processing main image in ReactMarkdown:', {
+              src: imageSrc.substring(0, 50) + '...',
+              alt: alt || 'Generated Image',
+              isValid: isValidImage,
+              type: imageSrc.startsWith('data:') ? 'base64' : 
+                    imageSrc.startsWith('/generated/') ? 'file' : 'url'
+            });
+            
+            if (!isValidImage) {
+              console.error('❌ Invalid main image source:', imageSrc.substring(0, 100) + '...');
               return null;
             }
+
+            // استخراج srcset و sizes من props إذا كانت موجودة
+            const srcset = props.srcSet;
+            const sizes = props.sizes || '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw';
             
             return (
-              <div className="my-4">
-                <img 
-                  src={imageSrc}
-                  alt={alt || 'Generated Image'}
-                  className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => onImageClick && onImageClick(imageSrc)}
-                  style={{ maxHeight: '500px', objectFit: 'contain' }}
-                  onError={(e) => {
-                    console.error('❌ Image failed to load:', {
-                      src: imageSrc.substring(0, 100) + '...',
-                      isBase64: isBase64Image,
-                      length: imageSrc.length
-                    });
-                    e.currentTarget.style.display = 'none';
-                  }}
-                  onLoad={() => {
-                    console.log('✅ Image loaded successfully:', {
-                      isBase64: isBase64Image,
-                      size: imageSrc.length
-                    });
-                  }}
-                />
+              <div className="flex justify-center my-4">
+                <div className="max-w-full">
+                  <img 
+                    src={imageSrc}
+                    srcSet={srcset}
+                    sizes={srcset ? sizes : undefined}
+                    alt={alt || 'Generated Image'}
+                    className="max-w-full h-auto rounded-lg shadow-lg border border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => onImageClick && onImageClick(imageSrc)}
+                    style={{ maxHeight: '500px', objectFit: 'contain' }}
+                    loading="lazy"
+                    onError={(e) => {
+                      console.error('❌ Main image failed to load:', {
+                        src: imageSrc.substring(0, 100) + '...',
+                        isBase64: imageSrc.startsWith('data:image/'),
+                        isGenerated: imageSrc.startsWith('/generated/'),
+                        length: imageSrc.length
+                      });
+                      e.currentTarget.style.display = 'none';
+                    }}
+                    onLoad={() => {
+                      console.log('✅ Main image loaded successfully:', imageSrc.substring(0, 50) + '...');
+                    }}
+                    {...props}
+                  />
+                </div>
               </div>
             );
           }
@@ -558,7 +679,7 @@ const PromptsPage: React.FC = () => {
   const [showImageGenerator, setShowImageGenerator] = useState(false);
   const [imagePrompt, setImagePrompt] = useState('');
   const [attachedImages, setAttachedImages] = useState<File[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const imagePreviewUrlsRef = useRef<string[]>([]);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [mcpEnabled, setMcpEnabled] = useState(true);
   const [thinkingMessages, setThinkingMessages] = useState<{[key: string]: {thinking: string, response: string, isCompleted: boolean}}>({});
@@ -589,6 +710,13 @@ const PromptsPage: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   // HTML preview now opens in new tab, no modal state needed
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // AbortController refs for cancelling fetch requests
+  const sendMessageAbortController = useRef<AbortController | null>(null);
+  const imageGenerationAbortController = useRef<AbortController | null>(null);
+  const enhancePromptAbortController = useRef<AbortController | null>(null);
+  const translatePromptAbortController = useRef<AbortController | null>(null);
+  
   // MCP data will be loaded via API calls
 
   // Function to refresh chat history from server
@@ -601,6 +729,31 @@ const PromptsPage: React.FC = () => {
   // Race condition protection for sendMessage
   const sendMessageRef = useRef<boolean>(false);
   
+  // Function to abort all active requests
+  const abortAllRequests = useCallback(() => {
+    console.log('🚫 Aborting all active requests...');
+    
+    if (sendMessageAbortController.current) {
+      sendMessageAbortController.current.abort();
+      sendMessageAbortController.current = null;
+    }
+    
+    if (imageGenerationAbortController.current) {
+      imageGenerationAbortController.current.abort();
+      imageGenerationAbortController.current = null;
+    }
+    
+    if (enhancePromptAbortController.current) {
+      enhancePromptAbortController.current.abort();
+      enhancePromptAbortController.current = null;
+    }
+    
+    if (translatePromptAbortController.current) {
+      translatePromptAbortController.current.abort();
+      translatePromptAbortController.current = null;
+    }
+  }, []);
+  
   // Timeout cleanup refs
   const timeoutRefs = useRef<{
     copySuccess?: NodeJS.Timeout,
@@ -612,14 +765,18 @@ const PromptsPage: React.FC = () => {
   // Cleanup image URLs and timeouts on component unmount to prevent memory leaks
   useEffect(() => {
     return () => {
+      // Abort all active requests first
+      abortAllRequests();
+      
       // Cleanup all image preview URLs on component unmount
-      imagePreviewUrls.forEach(url => {
+      imagePreviewUrlsRef.current.forEach(url => {
         try {
           URL.revokeObjectURL(url);
         } catch (error) {
           console.warn('Failed to revoke URL:', url);
         }
       });
+      imagePreviewUrlsRef.current = [];
       
       // Cleanup all timeouts
       const timeouts = timeoutRefs.current;
@@ -628,22 +785,26 @@ const PromptsPage: React.FC = () => {
       timeouts.urlCleanup?.forEach(timeout => clearTimeout(timeout));
       timeouts.mcpRefresh?.forEach(timeout => clearTimeout(timeout));
     };
-  }, []);
+  }, [abortAllRequests]);
 
   // Cleanup image URLs when changing conversations
   useEffect(() => {
     return () => {
-      if (imagePreviewUrls.length > 0) {
-        imagePreviewUrls.forEach(url => {
+      // Abort active requests when changing conversations
+      abortAllRequests();
+      
+      if (imagePreviewUrlsRef.current.length > 0) {
+        imagePreviewUrlsRef.current.forEach((url: string) => {
           try {
             URL.revokeObjectURL(url);
           } catch (error) {
             console.warn('Failed to revoke URL on conversation change:', url);
           }
         });
+        imagePreviewUrlsRef.current = [];
       }
     };
-  }, [currentChatSession?.id]);
+  }, [currentChatSession?.id, abortAllRequests]);
 
   // Auto-load last conversation and model on component mount
   useEffect(() => {
@@ -774,6 +935,14 @@ const PromptsPage: React.FC = () => {
     setIsGeneratingImage(true);
     setError('');
     
+    // Abort previous image generation request if exists
+    if (imageGenerationAbortController.current) {
+      imageGenerationAbortController.current.abort();
+    }
+    
+    // Create new AbortController for this request
+    imageGenerationAbortController.current = new AbortController();
+    
     try {
       const response = await fetch('/api/generate-image', {
         method: 'POST',
@@ -783,7 +952,8 @@ const PromptsPage: React.FC = () => {
         body: JSON.stringify({
           prompt: prompt,
           model: "black-forest-labs/FLUX.1-dev"
-        })
+        }),
+        signal: imageGenerationAbortController.current.signal
       });
 
       const data = await response.json();
@@ -794,10 +964,17 @@ const PromptsPage: React.FC = () => {
 
       return data;
     } catch (error: any) {
+      // Handle AbortError specifically - don't show to user
+      if (error.name === 'AbortError') {
+        console.log('🚫 Image generation request was cancelled');
+        return null;
+      }
+      
       console.error('Error generating image:', error);
       throw error;
     } finally {
       setIsGeneratingImage(false);
+      imageGenerationAbortController.current = null;
     }
   }, []);
 
@@ -805,6 +982,14 @@ const PromptsPage: React.FC = () => {
   const enhancePromptOnly = useCallback(async (prompt: string) => {
     setIsEnhancingPrompt(true);
     setError('');
+    
+    // Abort previous enhance request if exists
+    if (enhancePromptAbortController.current) {
+      enhancePromptAbortController.current.abort();
+    }
+    
+    // Create new AbortController for this request
+    enhancePromptAbortController.current = new AbortController();
     
     try {
       const response = await fetch('/api/generate-image', {
@@ -820,7 +1005,8 @@ const PromptsPage: React.FC = () => {
           descriptionModel: selectedModel?.id === 'flux-gpt4mini' ? 'gpt-4o-mini' : 
                           selectedModel?.id === 'flux-gpt35' ? 'gpt-3.5-turbo' : 
                           selectedModel?.id === 'flux-gpt4' ? 'gpt-4o' : 'gpt-4o-mini'
-        })
+        }),
+        signal: enhancePromptAbortController.current.signal
       });
 
       const data = await response.json();
@@ -835,10 +1021,17 @@ const PromptsPage: React.FC = () => {
         throw new Error(data.message || data.error || 'Enhancement failed');
       }
     } catch (error) {
+      // Handle AbortError specifically
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('🚫 Prompt enhancement request was cancelled');
+        return;
+      }
+      
       console.error('Prompt enhancement error:', error);
       setError(error instanceof Error ? error.message : 'Enhancement failed');
     } finally {
       setIsEnhancingPrompt(false);
+      enhancePromptAbortController.current = null;
     }
   }, []);
 
@@ -846,6 +1039,14 @@ const PromptsPage: React.FC = () => {
   const translatePrompt = useCallback(async (text: string) => {
     setIsTranslating(true);
     setError('');
+    
+    // Abort previous translate request if exists
+    if (translatePromptAbortController.current) {
+      translatePromptAbortController.current.abort();
+    }
+    
+    // Create new AbortController for this request
+    translatePromptAbortController.current = new AbortController();
     
     try {
       const response = await fetch('/api/generate-image', {
@@ -858,6 +1059,7 @@ const PromptsPage: React.FC = () => {
           translateOnly: true,
           descriptionModel: 'gpt-4o-mini'
         }),
+        signal: translatePromptAbortController.current.signal
       });
 
       const result = await response.json();
@@ -871,10 +1073,17 @@ const PromptsPage: React.FC = () => {
         throw new Error(result.message || result.error || 'Translation failed');
       }
     } catch (error) {
+      // Handle AbortError specifically
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('🚫 Translation request was cancelled');
+        return;
+      }
+      
       console.error('Translation error:', error);
       setError(error instanceof Error ? error.message : 'Translation failed');
     } finally {
       setIsTranslating(false);
+      translatePromptAbortController.current = null;
     }
   }, []);
 
@@ -950,6 +1159,15 @@ const PromptsPage: React.FC = () => {
       return;
     }
     sendMessageRef.current = true;
+    
+    // Abort previous sendMessage request if exists
+    if (sendMessageAbortController.current) {
+      sendMessageAbortController.current.abort();
+    }
+    
+    // Create new AbortController for this request
+    sendMessageAbortController.current = new AbortController();
+    
     const messageContent = inputMessage;
     
     const userMessage: ChatMessage = {
@@ -968,7 +1186,15 @@ const PromptsPage: React.FC = () => {
     // Clear attachments after sending
     setAttachedFile(null);
     setAttachedImages([]);
-    setImagePreviewUrls([]);
+    // Cleanup URLs before clearing ref
+    imagePreviewUrlsRef.current.forEach(url => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.warn('Failed to revoke URL during clear:', url);
+      }
+    });
+    imagePreviewUrlsRef.current = [];
 
     try {
       setActiveMode('general');
@@ -983,7 +1209,7 @@ const PromptsPage: React.FC = () => {
       const lastMessage = apiMessages[apiMessages.length - 1]?.content || '';
       
       // Check if selected model is for image generation
-      const isImageModel = selectedModel.capabilities.includes('text_to_image');
+      const isImageModel = selectedModel?.capabilities?.includes('text_to_image') || false;
       
       // Enhanced detection for image requests
       const hasImageKeywords = /(?:generate|create|make|draw|paint|sketch|design|توليد|إنشاء|ارسم|اصنع|صمم|اطلب|أريد)\s*(?:an?\s+)?(?:image|picture|photo|painting|drawing|artwork|صورة|رسمة|لوحة|تصميم)/i.test(lastMessage);
@@ -1017,6 +1243,24 @@ const PromptsPage: React.FC = () => {
         
         console.log('Generating image with prompt:', imagePrompt);
         
+        // إضافة رسالة مؤقتة مع placeholder للصورة
+        const placeholderMessage: ChatMessage = {
+          id: genId(),
+          content: `🎨 **${language === 'ar' ? 'جاري توليد الصورة...' : 'Generating image...'}**
+
+**${language === 'ar' ? 'الوصف المطلوب' : 'Requested Description'}:** ${imagePrompt}
+
+${language === 'ar' 
+  ? '⏳ يرجى الانتظار بينما يتم توليد الصورة باستخدام الذكاء الاصطناعي...'
+  : '⏳ Please wait while AI generates your image...'
+}
+}`,
+          role: 'assistant',
+          timestamp: new Date().toISOString()
+        };
+
+        setMessages(prev => [...prev, placeholderMessage]);
+        
         let responseContent: string = '';
         
         try {
@@ -1033,26 +1277,32 @@ const PromptsPage: React.FC = () => {
                               selectedModel?.id === 'flux-gpt35' ? 'gpt-3.5-turbo' : 
                               selectedModel?.id === 'flux-gpt4' ? 'gpt-4o' : 'gpt-4o-mini'
             }),
+            signal: sendMessageAbortController.current?.signal
           });
 
           const imageData = await fetchResponse.json();
           console.log('Image generation response:', imageData);
           
           // معالجة الاستجابة بناءً على النوع
-          if (fetchResponse.ok && imageData.success && imageData.image) {
+          if (fetchResponse.ok && imageData.success && imageData.url) {
             // نجح توليد الصورة الفعلية
             const enhancementInfo = imageData.descriptionModel ? 
               `${imageData.descriptionModel}` : 'GPT-4o';
+            
+            // إنشاء HTML للصورة مع دعم responsive
+            const imageHtml = imageData.srcset ? 
+              `<img src="${imageData.url}" srcset="${imageData.srcset}" sizes="${imageData.sizes || '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'}" alt="${imageData.alt || 'Generated Image'}" class="responsive-generated-image max-w-full h-auto rounded-lg shadow-lg border border-gray-600 cursor-pointer hover:opacity-90 transition-opacity" style="max-height: 500px; object-fit: contain;" />` :
+              `<img src="${imageData.url}" alt="${imageData.alt || 'Generated Image'}" class="responsive-generated-image max-w-full h-auto rounded-lg shadow-lg border border-gray-600 cursor-pointer hover:opacity-90 transition-opacity" style="max-height: 500px; object-fit: contain;" />`;
             
             responseContent = `🎨 **${language === 'ar' ? 'تم توليد الصورة بنجاح' : 'Image Generated Successfully'}**
 
 **${language === 'ar' ? 'الوصف المستخدم' : 'Used Description'}:** ${imageData.finalPrompt || imagePrompt}
 **${language === 'ar' ? 'النموذج' : 'Model'}:** ${imageData.model} (${imageData.provider})
 
-![Generated Image](${imageData.image})
-
-<div class="image-container" style="margin: 16px 0;">
-  <img src="${imageData.image}" alt="Generated Image" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #444; cursor: pointer;" onclick="window.open('${imageData.image}', '_blank')" />
+<div class="image-container flex justify-center my-4">
+  <div class="max-w-full">
+    ${imageHtml}
+  </div>
 </div>
 
 ${language === 'ar' 
@@ -1062,10 +1312,13 @@ ${language === 'ar'
 
             // طباعة تفاصيل الصورة للتشخيص
             console.log('🖼️ Image data debug:', {
-              hasImage: !!imageData.image,
-              imageType: imageData.image?.substring(0, 30),
-              imageLength: imageData.image?.length,
-              isBase64: imageData.image?.startsWith('data:image/'),
+              hasImage: !!imageData.url,
+              imageUrl: imageData.url,
+              srcset: imageData.srcset,
+              sizes: imageData.sizes,
+              alt: imageData.alt,
+              isFileUrl: imageData.url?.startsWith('/generated/'),
+              isResponsive: !!imageData.srcset,
               contentPreview: responseContent.substring(0, 200) + '...'
             });
 
@@ -1161,17 +1414,17 @@ ${language === 'ar'
             console.error('Unexpected response structure:', {
               ok: fetchResponse.ok,
               success: imageData.success,
-              hasImage: !!imageData.image,
+              hasImage: !!imageData.url,
               hasText: !!imageData.text,
               keys: Object.keys(imageData)
             });
             
             // حاول معالجة أي استجابة بها صورة
-            if (imageData.image) {
-              console.log('📸 Image URL received:', imageData.image.substring(0, 100) + '...');
+            if (imageData.url) {
+              console.log('📸 Image URL received:', imageData.url);
               responseContent = `🎨 **${language === 'ar' ? 'تم توليد الصورة' : 'Image Generated'}**
 
-![Generated Image](${imageData.image})
+![Generated Image](${imageData.url})
 
 ${language === 'ar' ? 'تم توليد الصورة بنجاح' : 'Image generated successfully'}`;
               console.log('✅ Response content prepared with image');
@@ -1229,7 +1482,8 @@ ${language === 'ar'
             messages: apiMessages.slice(0, -1), // Don't include the current message
             model: selectedModel,
             useMCP: mcpEnabled // Use MCP if enabled
-          })
+          }),
+          signal: sendMessageAbortController.current?.signal
         });
 
         if (!enhancedResponse.ok) {
@@ -1319,10 +1573,28 @@ ${language === 'ar'
         timestamp: new Date().toISOString()
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      if (isImageRequest) {
+        // لطلبات الصور، استبدل الرسالة المؤقتة بالنتيجة النهائية
+        setMessages(prev => {
+          const newMessages = [...prev];
+          // استبدال آخر رسالة (المؤقتة) بالنتيجة النهائية
+          newMessages[newMessages.length - 1] = assistantMessage;
+          return newMessages;
+        });
+      } else {
+        // للرسائل العادية، أضف رسالة جديدة
+        setMessages(prev => [...prev, assistantMessage]);
+      }
+      
       setLastMessageId(assistantMessage.id);
     } catch (error: any) {
       console.error('Error sending message:', error);
+      
+      // Handle AbortError specifically - don't show to user as error
+      if (error.name === 'AbortError') {
+        console.log('🚫 SendMessage request was cancelled');
+        return;
+      }
       
       if (error.message?.includes('rate limit') || error.message?.includes('429')) {
         setError(language === 'ar' 
@@ -1340,6 +1612,7 @@ ${language === 'ar'
     } finally {
       setIsLoading(false);
       sendMessageRef.current = false; // Reset race condition flag
+      sendMessageAbortController.current = null; // Clear controller reference
     }
   };
 
@@ -1593,7 +1866,7 @@ ${language === 'ar'
 
   // Check if current model supports vision/images
   const modelSupportsImages = useCallback(() => {
-    return selectedModel.capabilities.includes('vision') || selectedModel.capabilities.includes('multimodal');
+    return selectedModel?.capabilities?.includes('vision') || selectedModel?.capabilities?.includes('multimodal') || false;
   }, [selectedModel]);
 
   // Handle image upload
@@ -1609,9 +1882,9 @@ ${language === 'ar'
         
         setAttachedImages(prev => [...prev, ...imageFiles]);
         
-        // Create preview URLs
+        // Create preview URLs and add to ref
         const newPreviewUrls = imageFiles.map(file => URL.createObjectURL(file));
-        setImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
+        imagePreviewUrlsRef.current = [...imagePreviewUrlsRef.current, ...newPreviewUrls];
       }
     };
     input.click();
@@ -1620,19 +1893,21 @@ ${language === 'ar'
   // Remove attached image
   const removeImage = useCallback((index: number) => {
     // Revoke the old URL to prevent memory leaks
-    URL.revokeObjectURL(imagePreviewUrls[index]);
+    if (imagePreviewUrlsRef.current[index]) {
+      URL.revokeObjectURL(imagePreviewUrlsRef.current[index]);
+    }
     
     setAttachedImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
-  }, [imagePreviewUrls]);
+    imagePreviewUrlsRef.current = imagePreviewUrlsRef.current.filter((_, i) => i !== index);
+  }, []);
 
   // Clear all images
   const clearAllImages = useCallback(() => {
-    imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    imagePreviewUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
     setAttachedImages([]);
-    setImagePreviewUrls([]);
+    imagePreviewUrlsRef.current = [];
     setFullscreenImage(null);
-  }, [imagePreviewUrls]);
+  }, []);
 
   // Open image in fullscreen
   const openFullscreenImage = useCallback((index: number, url: string) => {
@@ -1646,22 +1921,22 @@ ${language === 'ar'
 
   // Navigate to next/previous image in fullscreen
   const navigateFullscreenImage = useCallback((direction: 'next' | 'prev') => {
-    if (!fullscreenImage || imagePreviewUrls.length <= 1) return;
+    if (!fullscreenImage || imagePreviewUrlsRef.current.length <= 1) return;
     
     const currentIndex = fullscreenImage.index;
     let newIndex;
     
     if (direction === 'next') {
-      newIndex = currentIndex + 1 >= imagePreviewUrls.length ? 0 : currentIndex + 1;
+      newIndex = currentIndex + 1 >= imagePreviewUrlsRef.current.length ? 0 : currentIndex + 1;
     } else {
-      newIndex = currentIndex - 1 < 0 ? imagePreviewUrls.length - 1 : currentIndex - 1;
+      newIndex = currentIndex - 1 < 0 ? imagePreviewUrlsRef.current.length - 1 : currentIndex - 1;
     }
     
     setFullscreenImage({
       index: newIndex,
-      url: imagePreviewUrls[newIndex]
+      url: imagePreviewUrlsRef.current[newIndex]
     });
-  }, [fullscreenImage, imagePreviewUrls]);
+  }, [fullscreenImage]);
 
   // Download image function with memory cleanup
   const downloadImageFile = useCallback((url: string, filename: string) => {
@@ -1811,6 +2086,69 @@ ${language === 'ar'
 
   return (
     <Layout title="Collactions" showSearch={true} hideFooter={true}>
+      {/* Responsive Image Styles */}
+      <style jsx global>{`
+        .image-container img {
+          max-width: 100% !important;
+          height: auto !important;
+          display: block;
+        }
+        
+        .image-container picture {
+          display: block;
+          width: 100%;
+        }
+        
+        /* Mobile responsive images */
+        @media (max-width: 768px) {
+          .image-container {
+            margin: 12px 0 !important;
+          }
+          
+          .image-container img {
+            max-width: 100% !important;
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 8px !important;
+          }
+        }
+        
+        /* Tablet responsive images */
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .image-container img {
+            max-width: 90% !important;
+          }
+        }
+        
+        /* Desktop responsive images */
+        @media (min-width: 1025px) {
+          .image-container img {
+            max-width: 600px !important;
+          }
+        }
+        
+        /* Loading placeholder animation */
+        .image-placeholder {
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200% 100%;
+          animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+          0% {
+            background-position: 200% 0;
+          }
+          100% {
+            background-position: -200% 0;
+          }
+        }
+        
+        .dark .image-placeholder {
+          background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+          background-size: 200% 100%;
+        }
+      `}</style>
+      
       <div className="h-screen text-foreground overflow-hidden relative">
 
         {/* Responsive Layout */}
@@ -2630,7 +2968,11 @@ ${language === 'ar'
                                 }}
                               />
                             ) : (
-                              <MessageContentRenderer content={message.content || '[Empty Response]'} />
+                              <MessageContent 
+                                message={{ content: message.content || '[Empty Response]' } as ChatMessage}
+                                onPreviewHtml={() => {}}
+                                onImageClick={openImageModal}
+                              />
                             )}
                           </div>
                         </div>
@@ -2718,7 +3060,7 @@ ${language === 'ar'
                   
                   {showImagePreview && (
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                      {imagePreviewUrls.map((url, index) => (
+                      {imagePreviewUrlsRef.current.map((url: string, index: number) => (
                         <div key={index} className="relative group">
                           <img
                             src={url}
@@ -3355,12 +3697,12 @@ ${language === 'ar'
                       try {
                         const result = await generateImage(imagePrompt);
                         
-                        if (result.success && result.image) {
+                        if (result.success && result.url) {
                           // صورة فعلية من Hugging Face
                           const imageMessage: ChatMessage = {
                             id: genId(),
                             role: 'assistant',
-                            content: `![Generated Image](${result.image})
+                            content: `![Generated Image](${result.url})
 
 **${language === 'ar' ? 'تم توليد الصورة بنجاح' : 'Image generated successfully'}** ✨
 
@@ -3449,14 +3791,14 @@ ${result.message ? `⚠️ ${result.message}` : ''}`,
               </button>
 
               {/* Image Counter */}
-              {imagePreviewUrls.length > 1 && (
+              {imagePreviewUrlsRef.current.length > 1 && (
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 bg-black/50 text-white rounded-full text-sm">
-                  {fullscreenImage.index + 1} / {imagePreviewUrls.length}
+                  {fullscreenImage.index + 1} / {imagePreviewUrlsRef.current.length}
                 </div>
               )}
 
               {/* Navigation Arrows */}
-              {imagePreviewUrls.length > 1 && (
+              {imagePreviewUrlsRef.current.length > 1 && (
                 <>
                   <button
                     onClick={() => navigateFullscreenImage('prev')}

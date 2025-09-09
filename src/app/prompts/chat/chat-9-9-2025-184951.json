@@ -1,0 +1,39 @@
+{
+  "id": "chat-9-9-2025-184951.json",
+  "filename": "chat-9-9-2025-184951.json",
+  "title": "\"Create an image that embodies the atmos",
+  "messages": [
+    {
+      "id": "41fb5497-7678-4caf-89af-9ddb8e02e2c3",
+      "content": "\"Create an image that embodies the atmosphere of the Day of Judgment, with majestic and impactful details as described in the Quran. Make the sky dark and filled with ominous clouds, with flashes of lightning. Show the earth cracking open, with tongues of fire emerging from it, while enormous creatures observe the scene. Add people in a state of shock and fear, with expressions that reflect awe and regret. Use dark colors with touches of red and orange to convey the terror and drama of this great day.\"",
+      "role": "user",
+      "timestamp": "2025-09-09T15:49:30.161Z"
+    },
+    {
+      "id": "acfeb5d9-1e52-49dc-a9f5-362ead7204d2",
+      "content": "🎨 **تم توليد الصورة بنجاح**\n\n**الوصف المستخدم:** \"that embodies the atmosphere of the Day of Judgment, with majestic and impactful details as described in the Quran. Make the sky dark and filled with ominous clouds, with flashes of lightning. Show the earth cracking open, with tongues of fire emerging from it, while enormous creatures observe the scene. Add people in a state of shock and fear, with expressions that reflect awe and regret. Use dark colors with touches of red and orange to convey the terror and drama of this great day.\"\n**النموذج:** FLUX.1-dev (Hugging Face)\n\n<div class=\"image-container flex justify-center my-4\">\n  <div class=\"max-w-full\">\n    <img src=\"/generated/796c4ae5-9a8c-489b-85a1-e9d5fa5b2fa2.jpg\" srcset=\"/generated/796c4ae5-9a8c-489b-85a1-e9d5fa5b2fa2-320.jpg 320w, /generated/796c4ae5-9a8c-489b-85a1-e9d5fa5b2fa2-640.jpg 640w, /generated/796c4ae5-9a8c-489b-85a1-e9d5fa5b2fa2-1024.jpg 1024w\" sizes=\"(max-width: 600px) 100vw, 600px\" alt=\"Generated AI Image\" class=\"responsive-generated-image max-w-full h-auto rounded-lg shadow-lg border border-gray-600 cursor-pointer hover:opacity-90 transition-opacity\" style=\"max-height: 500px; object-fit: contain;\" />\n  </div>\n</div>\n\n✨ تم توليد هذه الصورة باستخدام FLUX.1-dev",
+      "role": "assistant",
+      "timestamp": "2025-09-09T15:49:48.123Z"
+    }
+  ],
+  "createdAt": "2025-09-09T15:49:51.181Z",
+  "updatedAt": "2025-09-09T15:49:51.181Z",
+  "model": {
+    "id": "black-forest-labs/FLUX.1-dev",
+    "name": "FLUX.1-dev",
+    "provider": "Hugging Face",
+    "description": "نموذج متطور لتوليد الصور عالية الجودة من النص باستخدام تقنيات الذكاء الاصطناعي المتقدمة - مجاني",
+    "contextLength": 0,
+    "pricing": {
+      "input": "Via HF_TOKEN",
+      "output": "Via HF_TOKEN"
+    },
+    "capabilities": [
+      "text_to_image",
+      "high_quality",
+      "creative",
+      "artistic"
+    ],
+    "type": "free"
+  }
+}

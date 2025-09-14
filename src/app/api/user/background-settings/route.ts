@@ -1,12 +1,16 @@
+// src/app/api/user/background-settings/route.ts
+
+
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 
 // In-memory storage for demo - في التطبيق الحقيقي يجب استخدام قاعدة بيانات
 const userSettings = new Map<string, any>()
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const { userId } = await auth()
+    const { userId } = await auth();
     
     // الإعدادات الافتراضية للمستخدمين الجدد أو غير المسجلين
     const defaultSettings = {

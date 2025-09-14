@@ -5,7 +5,7 @@ import "@/styles/fonts.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import AnimatedBackground from '@/components/ui/AnimatedBackground';
+import { BackgroundProvider } from '@/contexts/BackgroundContext';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,10 +39,11 @@ export default function RootLayout({
         >
           <ThemeProvider>
             <LanguageProvider>
-              <AnimatedBackground />
-              <div className="relative z-10 min-h-screen">
-                {children}
-              </div>
+              <BackgroundProvider>
+                <div className="relative bg-[var(--user-bg)]  min-h-screen">
+                  {children}
+                </div>
+              </BackgroundProvider>
             </LanguageProvider>
           </ThemeProvider>
         </body>

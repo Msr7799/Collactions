@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 import { useBackground } from '@/contexts/BackgroundContext';
-import AnimatedBackground from '../ui/AnimatedBackground';
 
 interface ServiceType {
   id: string;
@@ -204,12 +203,11 @@ const ServiceGateway: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen z-0 relative">
+    <div className="h-screen-full relative">
       {/* Hero Section */}
-     <AnimatedBackground />      
       <div className="relative overflow-hidden">
         {/* Content */}
-        <div className="relative z-10 border-b-5 !border-[#EF7E1C] ">
+        <div className="relative border-b-5 !border-[#EF7E1C] ">
           <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
             <div className="text-center space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground">
@@ -222,7 +220,7 @@ const ServiceGateway: React.FC = () => {
               {/* Search */}
               <div className="max-w-2xl mx-auto pt-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground/90 z-10" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground/90 " />
                   <input
                     type="text"
                     placeholder={getTranslation('search_placeholder', language)}
@@ -236,29 +234,28 @@ const ServiceGateway: React.FC = () => {
           </div>
         </div>
       </div>
-                  {/* Background Animation */}
 
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto z-30 px-6 py-8">
+      <div className="max-w-7xl mx-auto  px-6 py-8">
         <div className="space-y-12">
           {filteredCategories.map((category) => (
             <div key={category.id} className="space-y-6">
               {/* Category Header */}
-              <div className="flex items-center z-30 justify-between">
+              <div className="flex items-center  justify-between">
                 <div>
-                  <h2 className="text-xl z-30 font-semibold text-foreground mb-2">
+                  <h2 className="text-xl  font-semibold text-foreground mb-2">
                     {category.name}
                   </h2>
-                  <p className="text-muted z-30 text-md">
+                  <p className="text-muted text-md">
                     {category.description}
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-md z-30 text-muted">
+                  <span className="text-md  text-muted">
                     View All
                   </span>
-                  <button className="text-foreground z-30 hover:text-primary/80 text-md">
+                  <button className="text-foreground  hover:text-primary/80 text-md">
                     →
                   </button>
                 </div>
@@ -266,7 +263,7 @@ const ServiceGateway: React.FC = () => {
     
 
               {/* Service Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-4">
                 {category.services.map((service) => (
                   <Link key={service.id} href={`/service/${service.id}`}>
                     <ServiceCard

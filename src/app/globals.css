@@ -8,10 +8,12 @@
 
   :root {
     /* Dark theme (default) */
+    --very-dark-bg: #000000c8;
+    --user-bg: #0a0a0a8f;
     --background: #0c1012;
     --high-light-bg: #26161f;
     --bg-dark: #030505;
-    --foreground: #ededed;
+    --foreground: #f0f0f0;
     --primary: #f57c52;
     --primary-glow: rgba(255, 255, 255, 0.4);
     --primary-hover: #fff017;
@@ -62,6 +64,8 @@
 
   /* Light theme */
   :root.light {
+    --very-dark-bg: #ffffffe9;
+    --user-bg: #f8f8f8;
     --background: #ffffff9f;
     --high-light-bg: #f8f9fa;
     --bg-dark: #f5f5f5;
@@ -134,6 +138,8 @@
   --color-glow: var(--glow);
   --color-primary-glow: var(--primary-glow);
   --color-bg-dark: var(--bg-dark);
+  --color-user-bg: var(--user-bg);
+  --color-very-dark-bg: var(--very-dark-bg);
   
 }
 

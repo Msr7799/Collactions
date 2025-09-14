@@ -13,15 +13,15 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, title, showSearch, hideFooter }) => {
   return (
-    <div className="relative min-h-screen z-50 text-foreground m-0 p-0 bg-background flex flex-col" title={title}>
-      <main className="flex-1 z-50 relative ">
-              <div className="z-50 relative">
-        <Header title={title} showSearch={showSearch} />
+    <div className="relative min-h-screen bg-very-dark-bg h-full text-foreground z-50 m-0 p-0 flex flex-col" title={title}>
+      <main className="flex-1 relative ">
+              <div className=" relative">
+        <Header title={title} showSearch={true} />
       </div>
       {children}
     </main>
     {!hideFooter && (
-      <div className="relative z-50">
+      <div className="relative ">
         <Footer />
         </div>
       )}

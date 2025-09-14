@@ -57,31 +57,30 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
 
   return (
     <div 
-      className="group p-4 border-3 z-30 !border-b-muted border-t-2 border-l-2 !border-r-muted !border-r-muted hover:bg-gray-700 rounded-lg shadow-lg duration-500 hover:scale-[1.02] cursor-pointer relative z-10"
+      className="group p-4 border-3 bg-[var(--user-bg)]  !border-b-muted border-t-2 border-l-2 !border-r-muted !border-r-muted hover:bg-[var(--user-bg)]/80 rounded-lg shadow-lg duration-500 hover:scale-[1.02] cursor-pointer relative z-10"
       style={{
-        backgroundColor: 'var(--user-bg)',
-        backdropFilter: 'none',
-        opacity: 1
+         backdropFilter: 'none',
+      
       }}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-3">
           {icon && (
-            <div className="w-12 h-12 rounded-md flex items-center justify-center">
+            <div className="w-12 h-12 bg-[var(--user-bg)] rounded-md flex items-center justify-center">
               <img src="/mcp_icon.svg" alt="Service icon" className="w-10 h-10" />
             </div>
           )}
           <div>
             <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+              <h3 className="font-semibold  text-foreground group-hover:text-primary transition-colors">
                 {name}
               </h3>
               {isVerified && (
                 <CheckCircle className="w-4 h-4 text-primary" />
               )}
             </div>
-            <div className="flex items-center space-x-2 mt-1">
+            <div className="flex items-center  space-x-2 mt-1">
               <span className={`px-2 py-0.5 text-xs rounded-full border ${getStatusConfig(status).className}`}>
                 <div className="flex items-center space-x-1">
                   {getStatusConfig(status).icon}

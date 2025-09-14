@@ -1,134 +1,169 @@
 'use client';
-import React, { useRef } from 'react';
-import { Parallax, ParallaxLayer, IParallax } from '@react-spring/parallax';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
+import { cubicCoordinates, stepsCoordinates } from 'easing-coordinates';
+import { useSpring, animated, to as interpolate, createInterpolator } from '@react-spring/web';
+import { useControls, Leva, folder } from 'leva';
+import { Palette, ChevronUp, ChevronDown } from 'lucide-react';
+import { useBackground } from '@/contexts/BackgroundContext';
+import SaveNotification from './SaveNotification';
 
-// الصور الأصلية من الـ sandbox
-const url = (name: string, wrap = false) =>
-  `${wrap ? 'url(' : ''}https://awv3node-homepage.surge.sh/build/assets/${name}.svg${wrap ? ')' : ''}`;
+const easeMap = {
+  'ease-in-out': { x1: 0.42, y1: 0, x2: 0.58, y2: 1 },
+  'ease-out': { x1: 0, y1: 0, x2: 0.58, y2: 1 },
+  'ease-in': { x1: 0.42, y1: 0, x2: 1, y2: 1 },
+  ease: { x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 },
+  linear: { x1: 0.25, y1: 0.25, x2: 0.75, y2: 0.75 },
+} as const
 
-export default function AnimatedBackground() {
-  const parallax = useRef<IParallax>(null!);
+export default function AnimatedColorBackground() {
+  const { backgroundSettings, updateBackgroundSettings, isLoaded } = useBackground()
+  const [showControls, setShowControls] = useState(false)
+  const [showNotification, setShowNotification] = useState(false)
+  const [notificationMessage, setNotificationMessage] = useState('')
   
+  // إضافة مستمع للإشعارات
+  useEffect(() => {
+    const handleSaveEvent = (event: CustomEvent) => {
+      setNotificationMessage(event.detail.message)
+      setShowNotification(true)
+    }
+
+    window.addEventListener('backgroundSettingsSaved', handleSaveEvent as EventListener)
+    
+    return () => {
+      window.removeEventListener('backgroundSettingsSaved', handleSaveEvent as EventListener)
+    }
+  }, [])
+
+  // استخدام leva للكنترول مع القيم من Context
+  const controls = useControls('Background Controls', {
+    Colors: folder({
+      from: { value: backgroundSettings.from, label: 'Start Color' },
+      mid: { value: backgroundSettings.mid, label: 'Middle Color' },
+      to: { value: backgroundSettings.to, label: 'End Color' },
+    }),
+    Animation: folder({
+      angle: {
+        value: backgroundSettings.angle,
+        min: 0,
+        max: 360,
+        step: 1,
+        label: 'Gradient Angle'
+      },
+      stops: {
+        value: backgroundSettings.stops,
+        min: 2,
+        max: 100,
+        step: 1,
+        label: 'Color Stops'
+      },
+      easing: {
+        value: backgroundSettings.easing,
+        options: ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out', 'steps'],
+        label: 'Easing Type'
+      },
+      easeCustom: {
+        value: backgroundSettings.easeCustom,
+        label: 'Custom Easing (x1,y1,x2,y2)'
+      },
+    }),
+  })
+
+  const { from, mid, to, angle, stops, easing, easeCustom } = controls
+
+  // حفظ التغييرات في Context مع debouncing
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  useEffect(() => {
+    if (!isLoaded) return
+
+    const newSettings = { from, mid, to, angle, stops, easing, easeCustom }
+    const currentSettings = JSON.stringify(backgroundSettings)
+    const newSettingsStr = JSON.stringify(newSettings)
+    
+    if (currentSettings !== newSettingsStr) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+      
+      timeoutRef.current = setTimeout(() => {
+        updateBackgroundSettings(newSettings)
+      }, 300)
+    }
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [from, mid, to, angle, stops, easing, easeCustom, isLoaded])
+
+  const { colorFrom, colorMid, colorTo } = useSpring({
+    colorFrom: from,
+    colorMid: mid,
+    colorTo: to,
+  })
+
+  const coordinates = useMemo(() => {
+    try {
+      const customBezier = easeCustom ? easeCustom.split(',').map(Number).filter((n: number) => !isNaN(n)) : []
+      
+      if (customBezier.length === 4) {
+        return cubicCoordinates(customBezier[0], customBezier[1], customBezier[2], customBezier[3], stops)
+      } else if (easing === 'steps') {
+        return stepsCoordinates(stops, 'skip-none')
+      } else {
+        const easingConfig = easeMap[easing as keyof typeof easeMap]
+        if (easingConfig) {
+          const { x1, y1, x2, y2 } = easingConfig
+          return cubicCoordinates(x1, y1, x2, y2, stops)
+        }
+      }
+      
+      return cubicCoordinates(0.25, 0.25, 0.75, 0.75, stops)
+    } catch (error) {
+      console.warn('Error calculating coordinates, using linear fallback:', error)
+      return cubicCoordinates(0.25, 0.25, 0.75, 0.75, stops)
+    }
+  }, [easing, easeCustom, stops])
+
+  const allStops = interpolate([colorFrom, colorMid, colorTo], (from, mid, to) => {
+    const blend = createInterpolator({ range: [0, 0.5, 1], output: [from, mid, to] })
+    return coordinates.map(({ x, y }) => {
+      const color = blend(y)
+      return `${color} ${x * 100}%`
+    })
+  })
+
   return (
-    <div style={{ 
-      width: '100%', 
-      height: '100vh', 
-      background: '#253237',
-      position: 'fixed' as const,
-      top: 0,
-      left: 0,
-      zIndex: -1
-    }}>
-      <Parallax ref={parallax} pages={3}>
-        <ParallaxLayer offset={1} speed={1} style={{ backgroundColor: '#805E73' }} />
-        <ParallaxLayer offset={2} speed={1} style={{ backgroundColor: '#87BCDE' }} />
-
-        {/* خلفية النجوم */}
-        <ParallaxLayer
-          offset={0}
-          speed={0}
-          factor={3}
-          style={{
-            backgroundImage: url('stars', true),
-            backgroundSize: 'cover',
-          }}
-        />
-
-        {/* القمر الصناعي */}
-        <ParallaxLayer offset={1.3} speed={-0.3} style={{ pointerEvents: 'none' }}>
-          <img src={url('satellite4')} style={{ width: '8%', marginLeft: '70%' }} alt="satellite" />
-        </ParallaxLayer>
-
-        {/* السحب */}
-        <ParallaxLayer offset={1} speed={0.8} style={{ opacity: 0.1 }}>
-          <img src={url('cloud')} style={{ display: 'block', width: '12%', marginLeft: '55%' }} alt="cloud" />
-          <img src={url('cloud')} style={{ display: 'block', width: '6%', marginLeft: '15%' }} alt="cloud" />
-        </ParallaxLayer>
-
-        <ParallaxLayer offset={1.75} speed={0.5} style={{ opacity: 0.1 }}>
-          <img src={url('cloud')} style={{ display: 'block', width: '12%', marginLeft: '70%' }} alt="cloud" />
-          <img src={url('cloud')} style={{ display: 'block', width: '12%', marginLeft: '40%' }} alt="cloud" />
-        </ParallaxLayer>
-
-        <ParallaxLayer offset={1} speed={0.2} style={{ opacity: 0.2 }}>
-          <img src={url('cloud')} style={{ display: 'block', width: '6%', marginLeft: '10%' }} alt="cloud" />
-          <img src={url('cloud')} style={{ display: 'block', width: '12%', marginLeft: '75%' }} alt="cloud" />
-        </ParallaxLayer>
-
-        <ParallaxLayer offset={1.6} speed={-0.1} style={{ opacity: 0.4 }}>
-          <img src={url('cloud')} style={{ display: 'block', width: '12%', marginLeft: '60%' }} alt="cloud" />
-          <img src={url('cloud')} style={{ display: 'block', width: '15%', marginLeft: '30%' }} alt="cloud" />
-          <img src={url('cloud')} style={{ display: 'block', width: '6%', marginLeft: '80%' }} alt="cloud" />
-        </ParallaxLayer>
-
-        <ParallaxLayer offset={2.6} speed={0.4} style={{ opacity: 0.6 }}>
-          <img src={url('cloud')} style={{ display: 'block', width: '12%', marginLeft: '5%' }} alt="cloud" />
-          <img src={url('cloud')} style={{ display: 'block', width: '9%', marginLeft: '75%' }} alt="cloud" />
-        </ParallaxLayer>
-
-        {/* كوكب الأرض */}
-        <ParallaxLayer
-          offset={2.5}
-          speed={-0.4}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            pointerEvents: 'none',
-          }}>
-          <img src={url('earth')} style={{ width: '35%' }} alt="earth" />
-        </ParallaxLayer>
-
-        {/* خلفية العملاء */}
-        <ParallaxLayer
-          offset={2}
-          speed={-0.3}
-          style={{
-            backgroundSize: '50%',
-            backgroundPosition: 'center',
-            backgroundImage: url('clients', true),
-          }}
-        />
-
-        {/* الصفحة الأولى - Server */}
-        <ParallaxLayer
-          offset={0}
-          speed={0.1}
-          onClick={() => parallax.current.scrollTo(1)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <img src={url('server')} style={{ width: '12%' }} alt="server" />
-        </ParallaxLayer>
-
-        {/* الصفحة الثانية - Terminal */}
-        <ParallaxLayer
-          offset={1}
-          speed={0.1}
-          onClick={() => parallax.current.scrollTo(2)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <img src={url('bash')} style={{ width: '25%' }} alt="terminal" />
-        </ParallaxLayer>
-
-        {/* الصفحة الثالثة - Clients */}
-        <ParallaxLayer
-          offset={2}
-          speed={0}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          onClick={() => parallax.current.scrollTo(0)}>
-          <img src={url('clients-main')} style={{ width: '25%' }} alt="clients" />
-        </ParallaxLayer>
-      </Parallax>
-    </div>
+    <>
+      <animated.div
+        className="fixed inset-0 w-full h-full -z-10 pointer-events-none"
+        style={{ 
+          backgroundImage: allStops.to((...args) => `linear-gradient(${angle}deg, ${args.join(', ')})`)
+        }}
+      />
+      
+      <button
+        onClick={() => setShowControls(!showControls)}
+        className="fixed bottom-5 right-5 z-[1000] bg-black/80 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/90 transition-all duration-200 flex items-center gap-2 shadow-lg"
+        aria-label="إعدادات الخلفية"
+      >
+        <Palette size={20} />
+        {showControls ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+      </button>
+      
+      {showControls && (
+        <div className="fixed bottom-20 right-5 z-[1000] animate-[slideUp_0.3s_ease-out]">
+          <Leva />
+        </div>
+      )}
+      
+      <SaveNotification 
+        show={showNotification}
+        message={notificationMessage}
+        onHide={() => setShowNotification(false)}
+      />
+    </>
   );
 }

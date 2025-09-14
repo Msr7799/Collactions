@@ -9,7 +9,7 @@ const AppIcon = () => {
             width={150}
             height={150}
     
-            className="border-8 bg-[#040708] z-50 !border-[var(--vdark-bg)]/90 rounded-4xl shadow-lg p-2"
+            className="border-8 bg-[#CBD0D0FF] z-50 !border-[var(--user-bg)]/80 rounded-4xl shadow-lg p-2"
         />
     );
 };

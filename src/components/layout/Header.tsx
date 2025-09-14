@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
 
   return (
     <header 
-      className="relative top-0 left-0 right-0 z-50 w-full border-b shadow-lg"
+      className="relative top-0 left-0 right-0  w-full border-b shadow-lg"
       style={{
         backgroundColor: 'var(--user-bg)',
         backdropFilter: 'none'
@@ -62,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
         {/* Mobile Menu Button */}
         <button
           onClick={toggleMobileMenu}
-          className={`md:hidden p-2 border-2 !border-[#212121]/40 rounded-lg bg-muted/30 z-50 transition-colors ${isRTL ? 'ml-3' : 'mr-3'}`}
+          className={`md:hidden p-2 border-2 !border-[#212121]/40 rounded-lg bg-muted/30  transition-colors ${isRTL ? 'ml-3' : 'mr-3'}`}
           aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? (
@@ -121,7 +121,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <Terminal className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <Terminal className="relative  text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('terminal', language)}</span>
           </button>
           
@@ -134,7 +134,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <MessageSquare className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <MessageSquare className="relative  text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('prompts', language)}</span>
           </button>
           
@@ -147,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <Activity className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <Activity className="relative  text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('dashboard', language)}</span>
           </button>
           
@@ -160,7 +160,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <Settings className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <Settings className="relative  text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('settings', language)}</span>
           </button>
           
@@ -173,7 +173,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <User className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <User className="relative  text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('profile', language)}</span>
           </button>
           
@@ -187,7 +187,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <Globe className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <Globe className="relative  text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}</span>
           </button>
           

@@ -50,14 +50,19 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
         return {
           text: language === 'ar' ? 'غير معروف' : 'Unknown',
           icon: <AlertCircle className="w-3 h-3" />,
-          className: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+          className: 'bg-[var(--user-bg)] text-foreground !border-[var(--user-bg)]'
         };
     }
   };
 
   return (
     <div 
-      className="group p-4 bg-background hover:bg-border border rounded-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+      className="group p-4 border-3 z-30 !border-b-muted border-t-2 border-l-2 !border-r-muted !border-r-muted hover:bg-gray-700 rounded-lg shadow-lg duration-500 hover:scale-[1.02] cursor-pointer relative z-10"
+      style={{
+        backgroundColor: 'var(--user-bg)',
+        backdropFilter: 'none',
+        opacity: 1
+      }}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -84,23 +89,23 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
                 </div>
               </span>
               {monthlyToolCalls && (
-                <span className="text-xs text-muted">
+                <span className="text-xs text-foreground">
                   {monthlyToolCalls}
                 </span>
               )}
             </div>
           </div>
         </div>
-        <ExternalLink className="w-4 h-4 text-muted group-hover:text-foreground opacity-0 group-hover:opacity-100 transition-all" />
+        <ExternalLink className="w-4 h-4 text-foreground " />
       </div>
 
       {/* Description */}
-      <p className="text-sm text-muted mb-4 line-clamp-2">
+      <p className="text-sm text-foreground mb-4 line-clamp-2">
         {description}
       </p>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-muted">
+      <div className="flex items-center justify-between text-xs text-foreground">
         <div className="flex items-center space-x-4">
           {successRate && (
             <div className="flex items-center space-x-1">

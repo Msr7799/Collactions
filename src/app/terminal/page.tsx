@@ -15,7 +15,7 @@ interface Command {
 }
 
 const TerminalPage: React.FC = () => {
-  const { user, isLoaded } = useUser();
+  const { user } = useUser();
   const { language } = useLanguage();
   const [commands, setCommands] = useState<Command[]>([]);
   const [currentCommand, setCurrentCommand] = useState('');
@@ -28,33 +28,6 @@ const TerminalPage: React.FC = () => {
   const [nanoFile, setNanoFile] = useState({ name: '', content: '', isNew: false });
   const inputRef = useRef<HTMLInputElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
-
-  // Early return if user is not loaded yet
-  if (!isLoaded) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Loading terminal...</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  // Redirect to login if not authenticated
-  if (!user) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <p className="text-gray-600">Please sign in to access the terminal.</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   // Available commands for tab completion
   const availableCommands = ['help', 'clear', 'pwd', 'ls', 'cd', 'chat', 'mcp', 'whoami', 'date', 'nano'];

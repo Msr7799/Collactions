@@ -10,13 +10,18 @@ import { getMCPClient } from '@/lib/mcp';
  */
 export async function POST(request: NextRequest) {
   try {
-    const { message, messages = [], model, useMCP = false } = await request.json();
+    const { message, messages = [], model, useMCP = false, webSearch = false } = await request.json();
 
     if (!message) {
       return NextResponse.json({ success: false, error: 'Message is required' }, { status: 400 });
     }
 
-    console.log('📨 Enhanced API Request:', { message: message.substring(0, 50), model: model?.name, useMCP });
+    console.log('📨 Enhanced API Request:', { 
+      message: message.substring(0, 50), 
+      model: model?.name, 
+      useMCP,
+      webSearch 
+    });
     
     // تحقق من دعم النموذج للـ reasoning
     const supportsReasoning = model?.capabilities?.includes('reasoning_visible') || 

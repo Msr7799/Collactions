@@ -18,6 +18,7 @@ import {
 // import { useUser } from '@clerk/nextjs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation, formatTranslation } from '@/lib/translations';
+// Background handled by layout.tsx
 
 const DashboardPage: React.FC = () => {
   // Temporarily disabled to fix Next.js 15 headers() error
@@ -98,7 +99,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <Layout title="Collactions" showSearch={true}>
-      <div className="min-h-screen bg-background text-foreground py-8">
+      <div className="min-h-screen z-10 bg-background text-foreground py-8">
         <div className="max-w-7xl mx-auto px-6">
           
           {/* Header */}
@@ -110,6 +111,7 @@ const DashboardPage: React.FC = () => {
               {getTranslation('dashboard_subtitle', language)}
             </p>
           </div>
+        
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

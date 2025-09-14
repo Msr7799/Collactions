@@ -6,10 +6,10 @@ const AppIcon = () => {
         <Image
             src="/app-icon-black.svg"
             alt="Collactions Logo"
-            width={100}
-            height={100}
+            width={150}
+            height={150}
     
-            className="border-2 bg-[#040708] rounded-4xl shadow-lg p-2"
+            className="border-8 bg-[#040708] z-50 !border-[var(--vdark-bg)]/90 rounded-4xl shadow-lg p-2"
         />
     );
 };

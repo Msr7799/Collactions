@@ -152,7 +152,7 @@ function ServiceDetail({ serviceName }: { serviceName: string }) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background z-50 text-foreground">
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column - Service Info */}

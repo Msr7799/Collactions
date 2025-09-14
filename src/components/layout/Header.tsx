@@ -50,10 +50,14 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
 
   return (
     <header 
-      className="relative  top-0 left-0 right-0 z-[50] w-full border-b-3  bg-input backdrop-blur-md supports-[backdrop-filter]:bg-background/85 shadow-lg "
+      className="relative top-0 left-0 right-0 z-50 w-full border-b shadow-lg"
+      style={{
+        backgroundColor: 'var(--user-bg)',
+        backdropFilter: 'none'
+      }}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className={`w-full flex h-15 md:h-18 items-center px-4 md:px-6 ${isRTL ? 'flex-row' : 'flex-row'}`}>
+      <div className={`w-full flex h-16 md:h-20 items-center px-4 md:px-6 ${isRTL ? 'flex-row' : 'flex-row'}`}>
         
         {/* Mobile Menu Button */}
         <button
@@ -117,7 +121,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <Terminal className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <Terminal className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('terminal', language)}</span>
           </button>
           
@@ -130,7 +134,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <MessageSquare className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <MessageSquare className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('prompts', language)}</span>
           </button>
           
@@ -143,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <Activity className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <Activity className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('dashboard', language)}</span>
           </button>
           
@@ -156,7 +160,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <Settings className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <Settings className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('settings', language)}</span>
           </button>
           
@@ -169,7 +173,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <User className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <User className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{getTranslation('profile', language)}</span>
           </button>
           
@@ -183,7 +187,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
               className="absolute inset-0 rounded-lg bg-gradient-to-tr from-[#00f3ff]/40 to-muted/30 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 blur-sm pointer-events-none"
               aria-hidden="true"
             />
-            <Globe className="relative z-10 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
+            <Globe className="relative z-50 text-foreground/60 group-hover:text-foreground/70 transition-colors duration-500 scale-100 group-hover:scale-110" />
             <span className="sr-only">{language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}</span>
           </button>
           
@@ -232,7 +236,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           {/* Search Button - Mobile */}
           {showSearch && (
             <button 
-              className="p-2 rounded-lg hover:bg-accent transition-colors"
+              className="p-2 rounded-lg hover:bg-[var(--user-bg)] transition-colors"
               onClick={() => router.push('/search')}
             >
               <Search className="w-5 h-5" />
@@ -282,12 +286,12 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
         <>
           {/* Backdrop overlay to close menu when clicking outside */}
           <div 
-            className="md:hidden fixed  z-[55]" 
+            className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-[9998]" 
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
           {/* Menu content */}
-          <div className="md:hidden absolute top-full left-0 right-0 !bg-background border shadow-lg z-60">
+          <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border shadow-lg z-[9999]">
             <div className="px-4 py-6 space-y-4">
             
             {/* Mobile Search */}
@@ -314,7 +318,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                 }}
                 className={`w-full flex items-center px-3 py-3 rounded-lg hover:bg-accent transition-colors font-medium ${isRTL ? 'flex-row-reverse space-x-reverse' : 'flex-row'} space-x-3`}
               >
-                <Activity className="w-5 h-5 theme-gradient-text" />
+                <Activity className="w-5 h-5 text-primary" />
                 <span>{getTranslation('dashboard', language)}</span>
               </button>
               
@@ -325,7 +329,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                 }}
                 className={`w-full flex items-center px-3 py-3 rounded-lg hover:bg-accent transition-colors font-medium ${isRTL ? 'flex-row-reverse space-x-reverse' : 'flex-row'} space-x-3`}
               >
-                <MessageSquare className="w-5 h-5 theme-gradient-text" />
+                <MessageSquare className="w-5 h-5 text-primary" />
                 <span>{getTranslation('prompts', language)}</span>
               </button>
               
@@ -336,7 +340,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                 }}
                 className={`w-full flex items-center px-3 py-3 rounded-lg hover:bg-accent transition-colors font-medium ${isRTL ? 'flex-row-reverse space-x-reverse' : 'flex-row'} space-x-3`}
               >
-                <Terminal className="w-5 h-5 theme-gradient-text" />
+                <Terminal className="w-5 h-5 text-primary" />
                 <span>{getTranslation('terminal', language)}</span>
               </button>
               
@@ -349,7 +353,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                     }}
                     className={`w-full flex items-center px-3 py-3 rounded-lg hover:bg-accent transition-colors font-medium ${isRTL ? 'flex-row-reverse space-x-reverse' : 'flex-row'} space-x-3`}
                   >
-                    <User className="w-5 h-5 theme-gradient-text" />
+                    <User className="w-5 h-5 text-primary" />
                     <span>{getTranslation('profile', language)}</span>
                   </button>
                   
@@ -360,7 +364,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                     }}
                     className={`w-full flex items-center px-3 py-3 rounded-lg hover:bg-accent transition-colors font-medium ${isRTL ? 'flex-row-reverse space-x-reverse' : 'flex-row'} space-x-3`}
                   >
-                    <Settings className="w-5 h-5 theme-gradient-text" />
+                    <Settings className="w-5 h-5 text-primary" />
                     <span>{getTranslation('settings', language)}</span>
                   </button>
                 </>
@@ -378,7 +382,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                     <div className="font-medium w-40 overflow-hidden">
                       <TypingAnimation 
                         text={`${language === 'ar' ? 'أهلاً' : 'Hello'}, ${user.firstName || user.fullName || 'User'}!`}
-                        className="text-sm theme-gradient-text whitespace-nowrap"
+                        className="text-md text-foreground  whitespace-nowrap"
                         isRTL={isRTL}
                       />
                     </div>

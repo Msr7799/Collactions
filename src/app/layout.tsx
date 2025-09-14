@@ -5,6 +5,7 @@ import "@/styles/fonts.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import AnimatedBackground from '@/components/ui/AnimatedBackground';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +16,6 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-
 
 export const metadata: Metadata = {
   icons: {
@@ -34,12 +34,15 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="ar" suppressHydrationWarning>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased relative min-h-screen`}
           suppressHydrationWarning
         >
           <ThemeProvider>
             <LanguageProvider>
-              {children}
+              <AnimatedBackground />
+              <div className="relative z-10 min-h-screen">
+                {children}
+              </div>
             </LanguageProvider>
           </ThemeProvider>
         </body>

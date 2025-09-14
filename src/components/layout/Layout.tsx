@@ -3,7 +3,6 @@
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import AnimatedDotsBackground from '../ui/AnimatedDotsBackground';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,13 +13,18 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, title, showSearch, hideFooter }) => {
   return (
-    <div className="relative min-h-screen text-foreground m-0 p-0 title={title} s bg-background flex flex-col border-3">
-      <AnimatedDotsBackground />
-      <Header title={title} showSearch={showSearch}  />
-      <main className="flex-1 relative">
-        {children}
-      </main>
-      {!hideFooter && <Footer />}
+    <div className="relative min-h-screen z-50 text-foreground m-0 p-0 bg-background flex flex-col" title={title}>
+      <main className="flex-1 z-50 relative ">
+              <div className="z-50 relative">
+        <Header title={title} showSearch={showSearch} />
+      </div>
+      {children}
+    </main>
+    {!hideFooter && (
+      <div className="relative z-50">
+        <Footer />
+        </div>
+      )}
     </div>
   );
 };

@@ -6,7 +6,8 @@ import ServiceCard from './ServiceCard';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
-import AnimatedDotsBackground from '../ui/AnimatedDotsBackground';
+import { useBackground } from '@/contexts/BackgroundContext';
+import AnimatedBackground from '../ui/AnimatedBackground';
 
 interface ServiceType {
   id: string;
@@ -203,9 +204,9 @@ const ServiceGateway: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen z-0 relative">
       {/* Hero Section */}
-        <AnimatedDotsBackground />
+     <AnimatedBackground />      
       <div className="relative overflow-hidden">
         {/* Content */}
         <div className="relative z-10 border-b-5 !border-[#EF7E1C] ">
@@ -235,31 +236,34 @@ const ServiceGateway: React.FC = () => {
           </div>
         </div>
       </div>
+                  {/* Background Animation */}
+
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto z-30 px-6 py-8">
         <div className="space-y-12">
           {filteredCategories.map((category) => (
             <div key={category.id} className="space-y-6">
               {/* Category Header */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center z-30 justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground mb-2">
+                  <h2 className="text-xl z-30 font-semibold text-foreground mb-2">
                     {category.name}
                   </h2>
-                  <p className="text-muted text-sm">
+                  <p className="text-muted z-30 text-md">
                     {category.description}
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs text-muted">
+                  <span className="text-md z-30 text-muted">
                     View All
                   </span>
-                  <button className="text-primary hover:text-primary/80 text-sm">
+                  <button className="text-foreground z-30 hover:text-primary/80 text-md">
                     →
                   </button>
                 </div>
               </div>
+    
 
               {/* Service Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -271,11 +275,15 @@ const ServiceGateway: React.FC = () => {
                   </Link>
                 ))}
               </div>
+
+
             </div>
           ))}
-        </div>
-      </div>
 
+        </div>
+       
+      </div>
+  
       {/* Footer */}
     
     </div>

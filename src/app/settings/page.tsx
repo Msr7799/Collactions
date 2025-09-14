@@ -133,12 +133,13 @@ const SettingsPage: React.FC = () => {
 
   return (
     <Layout title="Collactions" showSearch={false}>
-      <div className="min-h-screen bg-background text-foreground py-8">
-        <div className="max-w-4xl mx-auto px-6">
-          
+      <div className="min-h-screen bg-background border-3 border-[#000] text-foreground py-8">
+
+        <div className="max-w-4xl z-50 mx-auto px-6">
+
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">{getTranslation('settings', language)}</h1>
+            <h1 className="text-3xl font-bold z-10 text-foreground mb-2">{getTranslation('settings', language)}</h1>
             <p className="text-muted">
               {getTranslation('settings_subtitle', language)}
             </p>
@@ -146,19 +147,19 @@ const SettingsPage: React.FC = () => {
 
           {/* User Info Card */}
           {user && (
-            <div className="border rounded-lg p-6 mb-8">
+            <div className="border-3 !border-[var(--user-border)] bg-[var(--user-bg)] rounded-lg z-50 p-6 mb-8">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-[var(--bg-dark)] rounded-full border-3 !border-[var(--muted)]/90 flex items-center justify-center">
                   <User className="w-8 h-8 text-foreground" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">
+                  <h2 className="text-xl z-50 font-semibold text-foreground">
                     {user.fullName || 'المستخدم'}
                   </h2>
                   <p className="text-muted">
                     {user.primaryEmailAddress?.emailAddress}
                   </p>
-                  <span className="inline-block mt-2 px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">
+                  <span className="inline-block z-50 mt-2 px-2 py-1 bg-green-500/20 border border-green-500/50 text-green-400 rounded text-xs">
                     {getTranslation('connected', language)}
                   </span>
                 </div>
@@ -170,7 +171,7 @@ const SettingsPage: React.FC = () => {
           <div className="space-y-8">
             {settingsCategories.map((category, categoryIndex) => (
               <div key={categoryIndex} className="space-y-4">
-                <div className="flex items-center space-x-3 mb-4">
+                <div className="flex items-center  space-x-3 mb-4">
                   <div className="text-primary">
                     {category.icon}
                   </div>
@@ -178,10 +179,10 @@ const SettingsPage: React.FC = () => {
                     {category.title}
                   </h2>
                 </div>
-                
-                <div className="bg-bg-dark border rounded-lg divide-y">
+
+                <div className="bg-[var(--user-bg)] z-50 border-4 rounded-lg divide-y">
                   {category.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="p-4 hover:bg-border transition-colors">
+                    <div key={itemIndex} className="p-4 hover:bg-muted/40 border-2 transition-colors">
                       <button className="w-full text-left flex items-center justify-between">
                         <div>
                           <h3 className="font-medium text-foreground mb-1">
@@ -208,7 +209,7 @@ const SettingsPage: React.FC = () => {
               <Shield className="w-5 h-5" />
               <span>{getTranslation('danger_zone', language)}</span>
             </h2>
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+            <div className="bg-red-500/10 border !border-red-500/50 rounded-lg p-4">
               <h3 className="font-medium text-red-400 mb-2">{getTranslation('delete_account', language)}</h3>
               <p className="text-sm text-muted mb-4">
                 {getTranslation('delete_account_description', language)}

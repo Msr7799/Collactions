@@ -1,127 +1,49 @@
 {
-  "mcpServers": {
-    "sequential-thinking": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ],
-      "env": {},
-      "disabled": false
-    },
+  "servers": {
     "filesystem": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/home/msr/Desktop/ss/collactions"
-      ]
-    },
-    "context7": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp",
-        "--api-key",
-        "d69119af-ffd5-426a-babe-649f4b13269f"
-      ]
-    },
-    "memory": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-memory"
-      ],
-      "env": {
-        "MEMORY_FILE_PATH": ""
-      }
-    },
-    "git": {
-      "command": "uvx",
-      "args": [
-        "mcp-server-git"
-      ],
-      "env": {},
-      "disabled": false
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/msr/Desktop/ss/collactions"],
+      "env": {}
     },
     "fetch": {
       "command": "uvx",
-      "args": [
-        "mcp-server-fetch"
-      ],
-      "env": {},
-      "disabled": false
+      "args": ["mcp-server-fetch"],
+      "env": {}
+    },
+    "git": {
+      "command": "uvx",
+      "args": ["mcp-server-git"],
+      "env": {
+        "GIT_DIR": "/home/msr/Desktop/ss/collactions/.git"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {
+        "DEBUG": "true"
+      }
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_BACKEND": "sqlite",
+        "MEMORY_PATH": "/home/msr/Desktop/ss/collactions/memory.db"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": {
+        "API_KEY": "d69119af-ffd5-426a-babe-649f4b13269f",
+        "ENDPOINT": "https://api.upstash.com/context7"
+      }
     },
     "time-mcp": {
       "command": "npx",
       "args": ["-y", "time-mcp"],
-      "env": {},
-      "disabled": false
+      "env": {}
     }
-  },
-  "official_servers": [
-    {
-      "id": "sequential-thinking",
-      "name": "Sequential Thinking Server",
-      "description": "Dynamic and reflective problem-solving through thought sequences",
-      "category": "ai",
-      "status": "active",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
-    },
-    {
-      "id": "filesystem",
-      "name": "Filesystem Server",
-      "description": "Secure file operations with configurable access controls",
-      "category": "files",
-      "status": "active",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/msr/Desktop/ss/collactions"]
-    },
-    {
-      "id": "context7",
-      "name": "Context7 Server",
-      "description": "Upstash Context7 MCP integration",
-      "category": "context",
-      "status": "active",
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp", "--api-key", "d69119af-ffd5-426a-babe-649f4b13269f"]
-    },
-    {
-      "id": "memory",
-      "name": "Memory Server",
-      "description": "Knowledge graph-based persistent memory system",
-      "category": "memory",
-      "status": "active",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
-    },
-    {
-      "id": "git",
-      "name": "Git Server",
-      "description": "Tools to read, search, and manipulate Git repositories",
-      "category": "development",
-      "status": "active",
-      "command": "uvx",
-      "args": ["mcp-server-git"]
-    },
-    {
-      "id": "fetch",
-      "name": "Fetch Server",
-      "description": "Web content fetching and conversion for efficient LLM usage",
-      "category": "web",
-      "status": "active",
-      "command": "uvx",
-      "args": ["mcp-server-fetch"]
-    },
-    {
-      "id": "time-mcp",
-      "name": "Time Server",
-      "description": "Provides current time and date information",
-      "category": "utility",
-      "status": "active",
-      "command": "npx",
-      "args": ["-y", "time-mcp"]
-    }
-  ]
+  }
 }

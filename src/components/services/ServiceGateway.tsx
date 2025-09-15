@@ -6,7 +6,6 @@ import ServiceCard from './ServiceCard';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
-import { useBackground } from '@/contexts/BackgroundContext';
 
 interface ServiceType {
   id: string;
@@ -207,7 +206,7 @@ const ServiceGateway: React.FC = () => {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Content */}
-        <div className="relative border-b-5 !border-[#EF7E1C] ">
+        <div className="relative border-b-5 !border-primary ">
           <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
             <div className="text-center space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground">
@@ -247,15 +246,15 @@ const ServiceGateway: React.FC = () => {
                   <h2 className="text-xl  font-semibold text-foreground mb-2">
                     {category.name}
                   </h2>
-                  <p className="text-muted text-md">
+                  <p className="text-foreground/50 text-md">
                     {category.description}
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-md  text-muted">
+                  <span className="text-md  text-foreground/50">
                     View All
                   </span>
-                  <button className="text-foreground  hover:text-primary/80 text-md">
+                  <button className="text-muted  hover:text-primary/80 text-md">
                     →
                   </button>
                 </div>

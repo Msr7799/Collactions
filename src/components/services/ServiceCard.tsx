@@ -73,11 +73,11 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
           )}
           <div>
             <div className="flex items-center space-x-2">
-              <h3 className="font-semibold  text-foreground group-hover:text-primary transition-colors">
+              <h3 className="font-semibold  text-foreground group-hover:text-primary-hover transition-colors">
                 {name}
               </h3>
               {isVerified && (
-                <CheckCircle className="w-4 h-4 text-primary" />
+                <CheckCircle className="w-4 h-4 text-primary-hover" />
               )}
             </div>
             <div className="flex items-center  space-x-2 mt-1">

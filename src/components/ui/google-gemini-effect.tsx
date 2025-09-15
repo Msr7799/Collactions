@@ -5,6 +5,7 @@ import { cn } from "../../lib/utils";
 import CollactionsLogo from "../logo/CollactionsLogo";
 import { Search } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import AppIcon from "@/app/app-icon";
 
 const baseTransition: Transition = {
   duration: 0.9,
@@ -40,7 +41,7 @@ export const GoogleGeminiEffect = ({
   };
 
   return (
-    <div className={cn("sticky top-80", className)}>
+    <div className={cn("sticky top-100", className)}>
       {/* Hero Title */}
       <h1 className="text-4xl md:text-7xl font-bold pb-6 mt-20 text-center text-foreground mb-8">
         {language === 'ar' ? 'بوابة الوكيل إلى العالم' : 'Your Agent\'s Gateway to the World'}
@@ -64,7 +65,7 @@ export const GoogleGeminiEffect = ({
               placeholder={language === 'ar' ? 'البحث في الخدمات...' : 'Search services...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full py-4 bg-black/40 backdrop-blur-sm border-2 !border-neutral-700 rounded-xl focus:outline-none focus:ring-3 focus:ring-orange-500/50 focus:border-orange-500/50 text-white placeholder-neutral-400 transition-all duration-300 ${isRTL ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'}`}
+              className={`w-full py-4 bg-black/40 backdrop-blur-sm border-2 !border-neutral-700 rounded-xl focus:outline-none focus:ring-3 focus:ring-[#761800]/50 focus:border-orange-500/50 text-white placeholder-neutral-400 transition-all duration-300 ${isRTL ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'}`}
               dir={isRTL ? 'rtl' : 'ltr'}
             />
           </div>
@@ -72,20 +73,24 @@ export const GoogleGeminiEffect = ({
           {/* Search Button */}
           <button
             type="submit"
-            className={`absolute top-1/2 transform -translate-y-1/2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${isRTL ? 'left-2' : 'right-2'}`}
+            className={`absolute top-1/2 transform -translate-y-1/2 px-4 py-2 bg-[#761800] hover:bg-[#761800]/70 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${isRTL ? 'left-3' : 'right-3'}`}
           >
             {language === 'ar' ? 'بحث' : 'Search'}
           </button>
         </form>
       </div>
       <div className="w-full h-[890px] -top-60 md:-top-40  flex items-center justify-center bg-red-transparent absolute ">
-        <button className="font-bold bg-very-dark-bg backdrop-blur-md backdrop-brightness-0 rounded-full md:px-4 md:py-2 px-5 py-4 md:mt-24 mt-8 z-30 md:text-base border-3 border-foreground !border-foreground text-xs max-w-[500px] min-w-[400px] w-fit h-fit mb-2  mx-auto ">
+        <button className="font-bold bg-very-dark-bg backdrop-blur-md backdrop-brightness-0 rounded-full md:px-4 md:py-2 px-5 py-4 md:mt-24 mt-8 z-30 md:text-base border-3 border-foreground !border-foreground text-xs max-w-[500px] min-w-[400px]  w-fit h-fit mb-2  mx-auto ">
         <CollactionsLogo/>
          </button>
       </div>
+      <div className="w-[890px] h-[890px]  md:-top-60  flex items-center justify-self-center justify-center !bg-red-transparent relative ">
+        <AppIcon />
+      </div>
+      {/* SVG with animated paths */}
       <svg
-        width="1440"
-        height="890"
+                width="1440"
+                  height="890"
         viewBox="0 0 1440 890"
         xmlns="http://www.w3.org/2000/svg"
         className=" absolute -top-60  md:-top-40 w-full"

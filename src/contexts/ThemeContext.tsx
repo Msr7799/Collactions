@@ -41,13 +41,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     
     // Update CSS custom properties
     if (newTheme === 'light') {
+      root.style.setProperty('--user-bg', '#f7f8f9');
+      root.style.setProperty('--very-dark-bg', '#e8eaed');
       root.style.setProperty('--background', '#f7f8f9');
-      root.style.setProperty('--high-light-bg', '#d16206ff');
+      root.style.setProperty('--high-light-bg', '#761800');
       root.style.setProperty('--bg-dark', '#e8eaed');
-      root.style.setProperty('--foreground', '#202124');
-      root.style.setProperty('--primary', '#f57c52');
+      root.style.setProperty('--foreground', '#161515ff');
+      root.style.setProperty('--primary', '#761800');
       root.style.setProperty('--primary-glow', 'rgba(0, 0, 0, 0.4)');
-      root.style.setProperty('--primary-hover', '#e76a3f');
+      root.style.setProperty('--primary-hover', '#de4d29c7');
       root.style.setProperty('--secondary', '#000000');
       root.style.setProperty('--border', '#e0e0e0');
       root.style.setProperty('--muted', '#666666');
@@ -78,13 +80,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       root.style.setProperty('--syntax-operator', '#d73a49');
       root.style.setProperty('--syntax-bracket', '#24292e');
     } else {
+      root.style.setProperty('--user-bg', '#0c1012');
+      root.style.setProperty('--very-dark-bg', '#0a0a0a');
       root.style.setProperty('--background', '#0c1012');
       root.style.setProperty('--high-light-bg', '#0e0e0e');
       root.style.setProperty('--bg-dark', '#0d1315');
       root.style.setProperty('--foreground', '#ededed');
-      root.style.setProperty('--primary', '#f57c52');
+      root.style.setProperty('--primary', '#761800');
       root.style.setProperty('--primary-glow', 'rgba(255, 255, 255, 0.4)');
-      root.style.setProperty('--primary-hover', '#fff017');
+      root.style.setProperty('--primary-hover', '#e54d27bb');
       root.style.setProperty('--secondary', '#ffffff');
       root.style.setProperty('--border', '#2a2a2a');
       root.style.setProperty('--muted', '#4a4a4a');

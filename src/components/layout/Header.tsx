@@ -220,7 +220,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                 </div>
               ) : (
                 <SignInButton mode="modal">
-                  <button className={`flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
+                  <button className={`flex items-center px-4 py-2 bg-primary text-[#f8f8f8] rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
                     <User className="w-4 h-4" />
                     <span>{language === 'ar' ? 'تسجيل الدخول' : 'Sign In'}</span>
                   </button>

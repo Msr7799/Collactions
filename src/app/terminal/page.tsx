@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import Layout from '@/components/layout/Layout';
+import TransparentLayout from '@/components/layout/TransparentLayout';
+import { StarsLayout } from '@/components/layout/StarsLayout';
 import { Terminal, X, Minimize2, Maximize2, Copy } from 'lucide-react';
 import { chatStorage, ChatSession } from '../prompts/chatStorage';
 // MCP operations now handled via API routes
@@ -664,9 +665,10 @@ const TerminalPage: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gray-900 text-green-400 font-mono">
-        <div className={`transition-all duration-300 ${isMaximized ? 'fixed inset-0 z-50' : 'container mx-auto p-4'}`}>
+    <StarsLayout>
+      <TransparentLayout>
+        <div className="min-h-screen text-green-400 font-mono">
+          <div className={`transition-all duration-300 ${isMaximized ? 'fixed inset-0 z-50' : 'container mx-auto p-4'}`}>
           <div className={`bg-black border border-green-500 rounded-lg overflow-hidden shadow-2xl ${isMinimized ? 'h-12' : 'h-[600px]'}`}>
             {/* Terminal Header */}
             <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-green-500">
@@ -805,8 +807,9 @@ const TerminalPage: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
-    </Layout>
+        </div>
+      </TransparentLayout>
+    </StarsLayout>
   );
 };
 

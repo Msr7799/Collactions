@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import Layout from '@/components/layout/Layout';
+import TransparentLayout from '@/components/layout/TransparentLayout';
+import { StarsLayout } from '@/components/layout/StarsLayout';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -98,9 +99,10 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <Layout title="Collactions" showSearch={true}>
-      <div className="min-h-screen z-10 bg-background text-foreground py-8">
-        <div className="max-w-7xl mx-auto px-6">
+    <StarsLayout>
+      <TransparentLayout title="Collactions" showSearch={true}>
+        <div className="min-h-screen z-10 text-foreground py-8">
+          <div className="max-w-7xl mx-auto px-6">
           
           {/* Header */}
           <div className="mb-8">
@@ -249,10 +251,9 @@ const DashboardPage: React.FC = () => {
               </div>
             </div>
           </div>
+          </div>
         </div>
-      </div>
-    </Layout>
+      </TransparentLayout>
+    </StarsLayout>
   );
-};
-
-export default DashboardPage;
+};export default DashboardPage;

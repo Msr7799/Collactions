@@ -209,26 +209,26 @@ const ServiceGateway: React.FC = () => {
         <div className="relative border-b-5 !border-primary ">
           <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
             <div className="text-center space-y-6">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                {getTranslation('gateway_title', language)}
-              </h1>
+          
               <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
                 {getTranslation('gateway_subtitle', language)}
               </p>
               
-              {/* Search */}
-              <div className="max-w-2xl mx-auto pt-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground/90 " />
-                  <input
-                    type="text"
-                    placeholder={getTranslation('search_placeholder', language)}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#040708]/80 backdrop-blur-sm border-2 border-muted/30 rounded-lg px-4 py-3 pl-10 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300"
-                  />
+              {/* Search - مخفي */}
+              {false && (
+                <div className="max-w-2xl mx-auto pt-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground/90 " />
+                    <input
+                      type="text"
+                      placeholder={getTranslation('search_placeholder', language)}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full bg-[#040708]/80 backdrop-blur-sm border-2 border-muted/30 rounded-lg px-4 py-3 pl-10 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

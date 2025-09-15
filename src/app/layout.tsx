@@ -40,7 +40,7 @@ export default function RootLayout({
           <ThemeProvider>
             <LanguageProvider>
               <BackgroundProvider>
-                <div className="relative bg-[var(--user-bg)]  min-h-screen">
+                <div className="relative bg-[var(--user-bg)] min-h-screen w-full ">
                   {children}
                 </div>
               </BackgroundProvider>

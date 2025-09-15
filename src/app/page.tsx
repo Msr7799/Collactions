@@ -26,13 +26,13 @@ export default function Home() {
 
 
   return (
-    <Layout title="Collactions" >
-  <div className="flex flex-col mt-10 ">
+    <Layout title="Collactions " >
+  <div className="flex flex-col mt-10 !w-full items-center justify-center mb-20">
           <div
             className="h-[400vh] bg-very-dark-bg w-full  !border-white/[0.1] rounded-md relative pt-40 overflow-clip"
             ref={ref}
           >
-            <div className=" flex items-center justify-center space-x-2">
+            <div className=" flex items-center justify-center  !w-full">
       
             <AppIcon />
             </div>

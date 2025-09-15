@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import Layout from '@/components/layout/Layout';
+import TransparentLayout from '@/components/layout/TransparentLayout';
+import { StarsLayout } from '@/components/layout/StarsLayout';
 import { Settings, User, Bell, Shield, Globe, Palette, Database, Key } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -14,27 +15,27 @@ const SettingsPage: React.FC = () => {
   // Early return if user is not loaded yet
   if (!isLoaded) {
     return (
-      <Layout>
+      <TransparentLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <p className="mt-2 text-gray-600">Loading settings...</p>
           </div>
         </div>
-      </Layout>
+      </TransparentLayout>
     );
   }
 
   // Redirect to login if not authenticated
   if (!user) {
     return (
-      <Layout>
+      <TransparentLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <p className="text-gray-600">Please sign in to access settings.</p>
           </div>
         </div>
-      </Layout>
+      </TransparentLayout>
     );
   }
 
@@ -132,10 +133,11 @@ const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <Layout title="Collactions" showSearch={false}>
-      <div className="min-h-screen bg-background border-3 border-[#000] text-foreground py-8">
+    <StarsLayout>
+      <TransparentLayout title="Collactions" showSearch={false}>
+        <div className="min-h-screen text-foreground py-8">
 
-        <div className="max-w-4xl z-50 mx-auto px-6">
+          <div className="max-w-4xl z-50 mx-auto px-6">
 
           {/* Header */}
           <div className="mb-8">
@@ -220,8 +222,9 @@ const SettingsPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </Layout>
+        </div>
+      </TransparentLayout>
+    </StarsLayout>
   );
 };
 

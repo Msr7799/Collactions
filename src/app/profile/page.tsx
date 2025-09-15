@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import Layout from '@/components/layout/Layout';
+import TransparentLayout from '@/components/layout/TransparentLayout';
+import { StarsLayout } from '@/components/layout/StarsLayout';
 import { User, Mail, Calendar, Globe, Shield, Activity, Edit } from 'lucide-react';
 // Temporarily disabled to fix Next.js 15 headers() error
 // import { useUser } from '@clerk/nextjs';
@@ -43,9 +44,10 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <Layout title="Collactions" showSearch={false}>
-      <div className="min-h-screen bg-bg-dark text-foreground py-8">
-        <div className="max-w-6xl mx-auto px-6">
+    <StarsLayout>
+      <TransparentLayout title="Collactions" showSearch={false}>
+        <div className="min-h-screen text-foreground py-8">
+          <div className="max-w-6xl mx-auto px-6">
           
           {/* Header */}
           <div className="mb-8">
@@ -181,10 +183,9 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
           </div>
+          </div>
         </div>
-      </div>
-    </Layout>
+      </TransparentLayout>
+    </StarsLayout>
   );
-};
-
-export default ProfilePage;
+};export default ProfilePage;

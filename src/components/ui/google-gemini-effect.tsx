@@ -6,6 +6,8 @@ import CollactionsLogo from "../logo/CollactionsLogo";
 import { Search } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import AppIcon from "@/app/app-icon";
+import { useTheme } from '@/contexts/ThemeContext';
+
 
 const baseTransition: Transition = {
   duration: 0.9,
@@ -29,8 +31,28 @@ export const GoogleGeminiEffect = ({
   className?: string;
 }): React.JSX.Element => {
   const { language, isRTL } = useLanguage();
+  const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+
+  const isDark = theme === 'dark';
+
+  // مكون الشعار المخصص مع نفس الخط والمميزات
+  const CustomLogo = () => (
+    <span 
+      className="text-4xl md:text-7xl font-bold transition-all duration-300 hover:opacity-90"
+      style={{
+        fontFamily: 'BitingMyNails, Orbitron, monospace, Arial, sans-serif',
+        textShadow: isDark 
+          ? '0 0 8px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.8)' 
+          : '0 0 6px rgba(0, 0, 0, 0.2), 0 0 12px rgba(0, 0, 0, 0.1), 1px 1px 2px rgba(255, 255, 255, 0.8)',
+        filter: 'brightness(1.05)',
+        color: isDark ? '#ffffff' : '#111827'
+      }}
+    >
+      COLLACTIONS
+    </span>
+  );
   
   // Hook لمراقبة حجم الشاشة
   useEffect(() => {
@@ -59,63 +81,63 @@ export const GoogleGeminiEffect = ({
   };
 
   return (
-    <div className={cn("sticky top-100", className)}>
+    <div className={cn("sticky top-139", className)}>
       {/* Hero Title */}
-      <h1 className="text-4xl md:text-7xl font-bold pb-6 mt-20 text-center text-foreground mb-8">
+      <h1 className="text-4xl md:text-7xl z-40 font-bold pb-6 mt-40px text-center text-foreground mb-5">
+        <CustomLogo />
+      </h1>
+
+      <h1 className="text-4xl md:text-7xl z-50 font-bold pb-6 pt-4 mt-10 text-center text-foreground mb-10">
         {language === 'ar' ? 'بوابة الوكيل إلى العالم' : 'Your Agent\'s Gateway to the World'}
       </h1>
       
-      {/* Description */}
-      <p className="text-lg md:text-xl text-center text-foreground max-w-4xl mx-auto mb-12 leading-relaxed">
-        {language === 'ar' 
-          ? 'ادمج الذكاء الاصطناعي مع أكثر من 600 API وأدوات متقدمة لأتمتة المهام الشاملة'
-          : 'Integrate your AI with 600+ APIs and advanced tools for comprehensive task automation'
-        }
-      </p>
 
-      {/* Search Section - مخفي في الشاشات الصغيرة */}
-      {!isMobile && (
-        <div className="max-w-2xl mx-auto mb-16" dir={isRTL ? 'rtl' : 'ltr'}>
-          <form onSubmit={handleSearch} className="relative z-50">
-            <div className="relative">
-              <Search className={`absolute top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400 ${isRTL ? 'right-4' : 'left-4'}`} />
-              <input
-                type="text"
-                placeholder={language === 'ar' ? 'البحث في الخدمات...' : 'Search services...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full py-4 bg-black/40 backdrop-blur-sm border-2 !border-neutral-700 rounded-xl focus:outline-none focus:ring-3 focus:ring-[#761800]/50 focus:border-orange-500/50 text-white placeholder-neutral-400 transition-all duration-300 ${isRTL ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'}`}
-                dir={isRTL ? 'rtl' : 'ltr'}
-              />
-            </div>
-            
-            {/* Search Button */}
-            <button
-              type="submit"
-              className={`absolute top-1/2 transform -translate-y-1/2 px-4 py-2 bg-[#761800] hover:bg-[#761800]/70 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${isRTL ? 'left-3' : 'right-3'}`}
-            >
-              {language === 'ar' ? 'بحث' : 'Search'}
-            </button>
-          </form>
-        </div>
-      )}
-      
-      <div className="w-full h-[890px] -top-60 md:-top-40  flex items-center justify-center bg-red-transparent absolute ">
-        <button className="relative font-bold bg-very-dark-bg top-20 backdrop-blur-md backdrop-brightness-0 rounded-full md:px-4 md:py-2 px-5 py-4 md:mt-24 mt-8 z-30 md:text-base border-3 border-foreground !border-foreground text-xs max-w-[500px] min-w-[400px]  w-fit h-fit mb-2  mx-auto ">
-        <CollactionsLogo/>
-         </button>
+
+      {/* Search Section - مرئي في جميع الشاشات */}
+      <div className="max-w-2xl mx-auto mb-20" dir={isRTL ? 'rtl' : 'ltr'}>
+        <form onSubmit={handleSearch} className="relative z-20">
+          <div className="relative">
+            <Search className={`absolute z-40 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400 ${isRTL ? 'right-4' : 'left-4'}`} />
+            <input
+              type="text"
+              placeholder={language === 'ar' ? 'البحث في الخدمات...' : 'Search services...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={`w-full py-4 bg-black/40 backdrop-blur-sm border-5 !border-primary-hover/20 rounded-xl focus:outline-none focus:ring-3 focus:ring-[#761800]/50 focus:border-primary/40 text-white placeholder-neutral-400 transition-all duration-300 ${isRTL ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'}`}
+              dir={isRTL ? 'rtl' : 'ltr'}
+            />
+          </div>
+          
+          {/* Search Button */}
+          <button
+            type="submit"
+            className={`absolute top-1/2 transform -translate-y-1/2 px-4 py-2 bg-[#761800] hover:bg-[#761800]/70 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${isRTL ? 'left-3' : 'right-3'}`}
+          >
+            {language === 'ar' ? 'بحث' : 'Search'}
+          </button>
+        </form>
       </div>
-      <div className="w-[890px] h-[890px]  md:-top-60  flex items-center justify-self-center justify-center !bg-red-transparent relative ">
-        <AppIcon />
+ 
+      
+      {/* Container للأيقونة مع centering محسن - متوافق مع جميع المتصفحات */}
+      <div className={`absolute left-1/2 w-[890px] h-[890px] flex items-center justify-center ${
+        isMobile 
+          ? '-top-[660px] w-[200px] h-[200px]' 
+          : 'md:-top-160 -top-80'
+      }`} style={{ transform: 'translateX(-50%)' }}>
+        <div className="flex items-center justify-center w-full h-full">
+          <AppIcon />
+        </div>
       </div>
       
       {/* SVG with animated paths - إضاءة محسنة */}
       <svg
-        width="1800"
-        height="890"
+        width="1200"
+        height="1050"
         viewBox="0 0 1440 890"
         xmlns="http://www.w3.org/2000/svg"
-        className=" absolute -top-60  md:-top-40 w-full"
+        className="absolute -top-165 md: -top-40 w-full max-w-full"
+        preserveAspectRatio="xMidYMid meet"
       >
         {/* الخط الأول - وردي مضيء */}
         <motion.path

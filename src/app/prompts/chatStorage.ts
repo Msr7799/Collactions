@@ -52,7 +52,9 @@ export class ChatStorageManager {
         }
       }
     } catch (error) {
-      console.error('Error loading client chat metadata:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading client chat metadata:', error);
+      }
     }
   }
 
@@ -64,7 +66,9 @@ export class ChatStorageManager {
         localStorage.setItem(METADATA_KEY, JSON.stringify(this.metadata));
       }
     } catch (error) {
-      console.error('Error saving client chat metadata:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error saving client chat metadata:', error);
+      }
     }
   }
 
@@ -91,27 +95,31 @@ export class ChatStorageManager {
         body: JSON.stringify(session),
       });
       if (!response.ok) {
-        throw new Error('Failed to save session');
+        throw new Error(`Failed to save session: ${response.status}`);
       }
-      return await response.json(); // The API should return the saved session
+      const savedSession = await response.json();
+      return savedSession || session;
     } catch (error) {
-      console.error('Error saving chat session via API:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error saving chat session via API:', error);
+      }
       throw error;
     }
   }
 
-  // --- Public Methods ---
-
   // Get all session summaries from the server
-  async listSessions(): Promise<any[]> { // Returns summaries, not full ChatSession objects
+  async listSessions(): Promise<ChatSession[]> { // Returns summaries, not full ChatSession objects
     try {
       const response = await fetch('/api/chat');
       if (!response.ok) {
-        throw new Error('Failed to fetch sessions');
+        throw new Error(`Failed to fetch sessions: ${response.status}`);
       }
-      return await response.json();
+      const sessions = await response.json();
+      return Array.isArray(sessions) ? sessions : [];
     } catch (error) {
-      console.error('Error fetching all sessions:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching all sessions:', error);
+      }
       return [];
     }
   }
@@ -120,10 +128,16 @@ export class ChatStorageManager {
   async getSession(sessionId: string): Promise<ChatSession | null> {
     try {
       const response = await fetch(`/api/chat/${sessionId}`);
-      if (!response.ok) return null;
-      return await response.json();
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`Failed to get session: ${response.status}`);
+      }
+      const session = await response.json();
+      return session || null;
     } catch (error) {
-      console.error(`Error loading session ${sessionId}:`, error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Error loading session ${sessionId}:`, error);
+      }
       return null;
     }
   }
@@ -139,11 +153,14 @@ export class ChatStorageManager {
     try {
       const response = await fetch('/api/chat');
       if (!response.ok) {
-        throw new Error('Failed to fetch sessions');
+        throw new Error(`Failed to fetch sessions: ${response.status}`);
       }
-      return await response.json();
+      const sessions = await response.json();
+      return Array.isArray(sessions) ? sessions : [];
     } catch (error) {
-      console.error('Error fetching all sessions:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching all sessions:', error);
+      }
       return [];
     }
   }
@@ -152,14 +169,19 @@ export class ChatStorageManager {
   async loadSessionByFilename(filename: string): Promise<ChatSession | null> {
     try {
       const response = await fetch(`/api/chat/${filename}`);
-      if (!response.ok) return null;
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`Failed to load session: ${response.status}`);
+      }
       const session = await response.json();
       this.currentSession = session;
       this.metadata.currentSessionId = session.id;
       this.saveClientMetadata();
       return session;
     } catch (error) {
-      console.error(`Error loading session ${filename}:`, error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Error loading session ${filename}:`, error);
+      }
       return null;
     }
   }
@@ -179,20 +201,27 @@ export class ChatStorageManager {
       model: model,
     };
 
-    const savedSession = await this.saveSession(newSession);
-    this.currentSession = savedSession;
-    this.metadata.currentSessionId = savedSession.id;
-    this.setLastUsedModel(model);
-    this.saveClientMetadata();
-    
-    return savedSession;
+    try {
+      const savedSession = await this.saveSession(newSession);
+      this.currentSession = savedSession;
+      this.metadata.currentSessionId = savedSession.id;
+      this.saveClientMetadata();
+      return savedSession;
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error creating session:', error);
+      }
+      throw error;
+    }
   }
 
   // Add a message to the current session
   async addMessage(message: Omit<ChatMessage, 'id' | 'timestamp'>): Promise<void> {
     if (!this.currentSession) {
       // This case should ideally be handled by creating a session first
-      console.warn('No active session to add a message to.');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('No active session to add a message to.');
+      }
       return;
     }
 
@@ -208,7 +237,14 @@ export class ChatStorageManager {
       this.currentSession.title = message.content.slice(0, 40) + (message.content.length > 40 ? '...' : '');
     }
 
-    await this.saveSession(this.currentSession);
+    try {
+      await this.saveSession(this.currentSession);
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error saving session after message add:', error);
+      }
+      throw error;
+    }
   }
   
   // Update the content of the last message (e.g., for streaming responses)
@@ -224,35 +260,52 @@ export class ChatStorageManager {
   // Save the current session state to the server (e.g., after streaming is complete)
   async saveCurrentSessionState(): Promise<void> {
     if (this.currentSession) {
-      await this.saveSession(this.currentSession);
+      try {
+        await this.saveSession(this.currentSession);
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error saving session after message update:', error);
+        }
+        throw error;
+      }
     }
   }
 
   // Delete a session from the server
   async deleteSession(sessionId: string): Promise<void> { // Use sessionId consistently
     try {
-      await fetch(`/api/chat/${sessionId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/chat/${sessionId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error(`Failed to delete session: ${response.status}`);
+      }
       if (this.currentSession?.id === sessionId) {
         this.currentSession = null;
         this.metadata.currentSessionId = null;
         this.saveClientMetadata();
       }
     } catch (error) {
-      console.error(`Error deleting session ${sessionId}:`, error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Error deleting session ${sessionId}:`, error);
+      }
     }
   }
 
   // Legacy delete method, can be removed later
   async deleteSessionByFilename(filename: string): Promise<void> {
     try {
-      await fetch(`/api/chat/${filename}`, { method: 'DELETE' });
+      const response = await fetch(`/api/chat/${filename}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error(`Failed to delete session: ${response.status}`);
+      }
       if (this.currentSession?.filename === filename) {
         this.currentSession = null;
         this.metadata.currentSessionId = null;
         this.saveClientMetadata();
       }
     } catch (error) {
-      console.error(`Error deleting session ${filename}:`, error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Error deleting session ${filename}:`, error);
+      }
     }
   }
 

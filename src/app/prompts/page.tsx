@@ -83,14 +83,13 @@ import {
   User,
   Maximize,
   Edit,
-  Play,
-  FolderOpen
+  Play
 } from 'lucide-react';
 import CodeBlock, { MessageContentRenderer } from './CodeBlock';
 
 // Responsive Table Component
 interface ResponsiveTableProps {
-  data: any[];
+  data: Record<string, string>[];
   headers: string[];
   title?: string;
 }
@@ -568,7 +567,7 @@ const PromptsPage: React.FC = () => {
   } | null>(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isHistorySidebarVisible, setIsHistorySidebarVisible] = useState(false);
-  const [chatHistory, setChatHistory] = useState<any[]>([]);
+  const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatSession, setCurrentChatSession] = useState<ChatSession | null>(null);
   const [isLoadingChat, setIsLoadingChat] = useState(true);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -578,9 +577,17 @@ const PromptsPage: React.FC = () => {
 
   // Function to refresh chat history from server
   const refreshChatHistory = useCallback(async () => {
-    const sessions = await chatStorage.listSessions();
-    setChatHistory(sessions);
-    return sessions;
+    try {
+      const sessions = await chatStorage.listSessions();
+      setChatHistory(sessions);
+      return sessions;
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error refreshing chat history:', error);
+      }
+      setChatHistory([]);
+      return [];
+    }
   }, []);
 
   // Race condition protection for sendMessage
@@ -642,27 +649,36 @@ const PromptsPage: React.FC = () => {
         setSelectedModel(lastModel);
       }
 
-      const [sessions, currentSession] = await Promise.all([
-        chatStorage.listSessions(),
-        chatStorage.getCurrentSession(),
-      ]);
+      try {
+        const [sessions, currentSession] = await Promise.all([
+          chatStorage.listSessions(),
+          chatStorage.getCurrentSession(),
+        ]);
 
-      setChatHistory(sessions);
+        setChatHistory(sessions);
 
-      if (currentSession) {
-        setCurrentChatSession(currentSession);
-        setMessages(currentSession.messages);
-        if (currentSession.model) {
-          const model = allModels.find(m => m.id === currentSession.model.id) || defaultModel;
-          setSelectedModel(model);
+        if (currentSession) {
+          setCurrentChatSession(currentSession);
+          setMessages(currentSession.messages);
+          if (currentSession.model) {
+            const model = allModels.find(m => m.id === currentSession.model.id) || defaultModel;
+            setSelectedModel(model);
+          }
+        } else {
+          setMessages([]);
+          setCurrentChatSession(null);
         }
-      } else {
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error loading initial data:', error);
+        }
+        setChatHistory([]);
         setMessages([]);
         setCurrentChatSession(null);
+      } finally {
+        setIsLoadingChat(false);
+        setIsInitializing(false);
       }
-
-      setIsLoadingChat(false);
-      setIsInitializing(false);
     };
 
     loadInitialData();
@@ -679,25 +695,32 @@ const PromptsPage: React.FC = () => {
   const saveFunction = useCallback(async (sessionData: { messages: ChatMessage[], model: AIModel, session: ChatSession | null }) => {
     const { messages, model, session } = sessionData;
     
-    if (!session) {
-      // Create new session
-      const newSession = await chatStorage.createSession(model, messages);
-      setCurrentChatSession(newSession);
-      console.log('🆕 New chat session created');
-    } else {
-      // Update existing session  
-      const updatedSessionData = {
-        ...session,
-        messages,
-        model
-      };
-      const savedSession = await chatStorage.saveSession(updatedSessionData);
-      
-      // Only update state if ID changed to prevent loops
-      if (!currentChatSession || currentChatSession.id !== savedSession.id) {
-        setCurrentChatSession(savedSession);
+    try {
+      if (!session) {
+        // Create new session
+        const newSession = await chatStorage.createSession(model, messages);
+        setCurrentChatSession(newSession);
+        console.log('🆕 New chat session created');
+      } else {
+        // Update existing session  
+        const updatedSessionData = {
+          ...session,
+          messages,
+          model
+        };
+        const savedSession = await chatStorage.saveSession(updatedSessionData);
+        
+        // Only update state if ID changed to prevent loops
+        if (!currentChatSession || currentChatSession.id !== savedSession.id) {
+          setCurrentChatSession(savedSession);
+        }
+        console.log('💾 Chat session updated');
       }
-      console.log('💾 Chat session updated');
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error in saveFunction:', error);
+      }
+      // Don't throw error to prevent breaking the UI flow
     }
   }, [currentChatSession]);
 
@@ -778,7 +801,7 @@ const PromptsPage: React.FC = () => {
       }
 
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating image:', error);
       throw error;
     } finally {
@@ -1155,27 +1178,29 @@ ${language === 'ar' ? 'تم توليد الصورة بنجاح' : 'Image generat
           response = responseContent;
 
 
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('Error generating image:', error);
           
           // معالجة أنواع الأخطاء المختلفة
           let errorMessage = '';
-          if (error.message?.includes('401') || error.message?.includes('Invalid') || error.message?.includes('token')) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          
+          if (errorMsg.includes('401') || errorMsg.includes('Invalid') || errorMsg.includes('token')) {
             errorMessage = language === 'ar' 
               ? 'خطأ في مفتاح API - يرجى التحقق من إعدادات Hugging Face token'
               : 'API key error - please check Hugging Face token configuration';
-          } else if (error.message?.includes('503') || error.message?.includes('loading')) {
+          } else if (errorMsg.includes('503') || errorMsg.includes('loading')) {
             errorMessage = language === 'ar' 
-              ? 'النموذج قيد التحميل - يرجى المحاولة مرة أخرى خلال دقائق'
-              : 'Model is loading - please try again in a few minutes';
-          } else if (error.message?.includes('rate limit') || error.message?.includes('429')) {
+              ? 'النموذج قيد التحميل - يرجى المحاولة لاحقاً'
+              : 'Model is loading - please try again later';
+          } else if (errorMsg.includes('429') || errorMsg.includes('rate')) {
             errorMessage = language === 'ar' 
-              ? 'تم الوصول لحد استخدام الخدمة - انتظر قليلاً ثم حاول مرة أخرى'
-              : 'Rate limit reached - wait a moment then try again';
+              ? 'تم تجاوز الحد المسموح - يرجى المحاولة لاحقاً'
+              : 'Rate limit exceeded - please try again later';
           } else {
-            errorMessage = language === 'ar' 
-              ? `فشل في توليد الصورة: ${error.message}`
-              : `Failed to generate image: ${error.message}`;
+            errorMessage = errorMsg || (language === 'ar' 
+              ? 'فشل في توليد الصورة'
+              : 'Failed to generate image');
           }
 
           responseContent = `❌ **${language === 'ar' ? 'خطأ في توليد الصورة' : 'Image Generation Error'}**
@@ -1293,21 +1318,22 @@ ${language === 'ar'
 
       setMessages(prev => [...prev, assistantMessage]);
       setLastMessageId(assistantMessage.id);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending message:', error);
       
-      if (error.message?.includes('rate limit') || error.message?.includes('429')) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
         setError(language === 'ar' 
           ? `تم الوصول لحد استخدام الخدمة. يرجى المحاولة مرة أخرى خلال دقائق قليلة أو الترقية لحساب Pro للحصول على وصول أولوي.\n\nService rate limit reached. Please try again in a few minutes or upgrade to Pro account for priority access.`
           : `Service rate limit reached. Please try again in a few minutes or upgrade to Pro account for priority access.\n\nتم الوصول لحد استخدام الخدمة. يرجى المحاولة مرة أخرى خلال دقائق قليلة أو الترقية لحساب Pro.`
         );
-      } else if (error.message?.includes('Invalid API key')) {
+      } else if (errorMsg.includes('Invalid API key')) {
         setError(language === 'ar' 
           ? `خطأ في مفتاح API. يرجى التحقق من ملف .env والتأكد من وجود GPTGOD_API و OPEN_ROUTER_API.\n\nAPI key error. Please check .env file and ensure GPTGOD_API and OPEN_ROUTER_API are set.`
           : `API key error. Please check .env file and ensure GPTGOD_API and OPEN_ROUTER_API are set.\n\nخطأ في مفتاح API. يرجى التحقق من ملف .env والتأكد من وجود المفاتيح المطلوبة.`
         );
       } else {
-        setError(error.message || (language === 'ar' ? 'حدث خطأ أثناء إرسال الرسالة' : 'An error occurred while sending the message'));
+        setError(errorMsg || (language === 'ar' ? 'فشل في إرسال الرسالة' : 'An error occurred while sending the message'));
       }
     } finally {
       setIsLoading(false);
@@ -1417,28 +1443,47 @@ ${language === 'ar'
     setError('');
     setCurrentChatSession(null);
     chatStorage.setCurrentSessionId(null);
-    await refreshChatHistory(); // Refresh to ensure list is up-to-date
+    try {
+      await refreshChatHistory(); // Refresh to ensure list is up-to-date
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error refreshing chat history in startNewChat:', error);
+      }
+    }
   }, [refreshChatHistory]);
 
   const loadChatSession = useCallback(async (sessionId: string) => {
     setIsLoadingChat(true);
-    const session = await chatStorage.getSession(sessionId);
-    if (session) {
-      chatStorage.setCurrentSessionId(session.id);
-      setCurrentChatSession(session);
-      setMessages(session.messages);
-      setSelectedModel(session.model || defaultModel);
-      setIsHistorySidebarVisible(false); // Close sidebar after selection
+    try {
+      const session = await chatStorage.getSession(sessionId);
+      if (session) {
+        chatStorage.setCurrentSessionId(session.id);
+        setCurrentChatSession(session);
+        setMessages(session.messages);
+        setSelectedModel(session.model || defaultModel);
+        setIsHistorySidebarVisible(false); // Close sidebar after selection
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading chat session:', error);
+      }
+    } finally {
+      setIsLoadingChat(false);
     }
-    setIsLoadingChat(false);
   }, []);
 
   const deleteChatSession = useCallback(async (sessionId: string) => {
-    const isCurrent = currentChatSession?.id === sessionId;
-    await chatStorage.deleteSession(sessionId);
-    await refreshChatHistory();
-    if (isCurrent) {
-      await startNewChat();
+    try {
+      const isCurrent = currentChatSession?.id === sessionId;
+      await chatStorage.deleteSession(sessionId);
+      await refreshChatHistory();
+      if (isCurrent) {
+        await startNewChat();
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error deleting chat session:', error);
+      }
     }
   }, [currentChatSession?.id, refreshChatHistory, startNewChat]);
 
@@ -3372,8 +3417,9 @@ ${result.message ? `⚠️ ${result.message}` : ''}`,
                           setShowImageGenerator(false);
                         }
                         
-                      } catch (error: any) {
-                        setError(error.message || (language === 'ar' ? 'فشل في توليد الصورة' : 'Failed to generate image'));
+                      } catch (error: unknown) {
+                        const errorMsg = error instanceof Error ? error.message : String(error);
+                        setError(errorMsg || (language === 'ar' ? 'فشل في توليد الصورة' : 'Failed to generate image'));
                       }
                     }}
                     disabled={!imagePrompt.trim() || isGeneratingImage}

@@ -168,8 +168,8 @@ export class AIAPIGateway {
    * Build request payload
    */
   private buildPayload(
-    messages: ChatMessage[], 
-    model: AIModel, 
+    messages: ChatMessage[],
+    model: AIModel,
     options: {
       temperature?: number;
       max_tokens?: number;
@@ -177,9 +177,9 @@ export class AIAPIGateway {
       frequency_penalty?: number;
       presence_penalty?: number;
       stream?: boolean;
-      tools?: any[];
+      tools?: Record<string, unknown>[];
     } = {}
-  ): any {
+  ): Record<string, unknown> {
     const {
       temperature = 0.7,
       max_tokens = 2048,
@@ -227,7 +227,7 @@ export class AIAPIGateway {
     }
 
     // Standard payload for GPTGOD and OpenRouter
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       model: model.id,
       messages,
       temperature,

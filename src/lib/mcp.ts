@@ -9,7 +9,7 @@ import * as path from 'path';
 export interface MCPTool {
   name: string;
   description: string;
-  parameters: any;
+  parameters: Record<string, unknown>;
 }
 
 export interface MCPServerConfig {
@@ -247,7 +247,7 @@ export class SimpleMCPClient {
   /**
    * تشغيل أداة من خادم معين
    */
-  async executeTool(serverId: string, toolName: string, parameters: any): Promise<string> {
+  async executeTool(serverId: string, toolName: string, parameters: Record<string, unknown>): Promise<string> {
     const server = this.servers.get(serverId);
     if (!server || !server.isConnected || !server.process) {
       throw new Error(`Server ${serverId} not connected`);

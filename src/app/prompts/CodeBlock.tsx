@@ -33,67 +33,129 @@ interface MessageContentRendererProps {
 // Type for timeout references
 type TimeoutRef = ReturnType<typeof setTimeout>;
 
+// Types for Prettier modules
+interface PrettierModule {
+    format: (code: string, options: Record<string, unknown>) => Promise<string>;
+    default?: PrettierModule;
+}
+
+interface PrettierPlugin {
+    default?: PrettierPlugin;
+    [key: string]: unknown;
+}
+
 // Format code with Prettier (lazy-loaded)
 const formatCode = async (code: string, language: string): Promise<string> => {
     try {
         const langLower = language.toLowerCase();
 
         // Dynamic imports to reduce bundle size
-        const prettierMod = await import('prettier/standalone');
-        const prettier = (prettierMod && (prettierMod as any).default) ? (prettierMod as any).default : prettierMod;
+        let prettierMod: PrettierModule;
+        try {
+            prettierMod = await import('prettier/standalone');
+        } catch (error) {
+            if (process.env.NODE_ENV === 'development') {
+                console.warn('Failed to load Prettier:', error);
+            }
+            return code;
+        }
+        
+        const prettier = (prettierMod && prettierMod.default) ? prettierMod.default : prettierMod;
         let parser: string;
-        let plugins: any[] = [];
+        let plugins: PrettierPlugin[] = [];
 
         switch (langLower) {
             case 'javascript':
             case 'js':
             case 'jsx':
                 parser = 'babel';
-                const parserBabel = await import('prettier/plugins/babel');
-                const parserEstree = await import('prettier/plugins/estree');
-                plugins = [
-                    (parserBabel as any).default || parserBabel, 
-                    (parserEstree as any).default || parserEstree
-                ];
+                try {
+                    const parserBabel = await import('prettier/plugins/babel');
+                    const parserEstree = await import('prettier/plugins/estree');
+                    plugins = [
+                        parserBabel.default || parserBabel, 
+                        parserEstree.default || parserEstree
+                    ];
+                } catch (error) {
+                    if (process.env.NODE_ENV === 'development') {
+                        console.warn('Failed to load JS/JSX parsers:', error);
+                    }
+                    return code;
+                }
                 break;
             case 'typescript':
             case 'ts':
             case 'tsx':
                 parser = 'typescript';
-                const parserTypeScript = await import('prettier/plugins/typescript');
-                const parserEstreeTS = await import('prettier/plugins/estree');
-                plugins = [
-                    (parserTypeScript as any).default || parserTypeScript, 
-                    (parserEstreeTS as any).default || parserEstreeTS
-                ];
+                try {
+                    const parserTypeScript = await import('prettier/plugins/typescript');
+                    const parserEstreeTS = await import('prettier/plugins/estree');
+                    plugins = [
+                        parserTypeScript.default || parserTypeScript, 
+                        parserEstreeTS.default || parserEstreeTS
+                    ];
+                } catch (error) {
+                    if (process.env.NODE_ENV === 'development') {
+                        console.warn('Failed to load TypeScript parsers:', error);
+                    }
+                    return code;
+                }
                 break;
             case 'json':
                 parser = 'json';
-                const parserBabelJSON = await import('prettier/plugins/babel');
-                const parserEstreeJSON = await import('prettier/plugins/estree');
-                plugins = [
-                    (parserBabelJSON as any).default || parserBabelJSON, 
-                    (parserEstreeJSON as any).default || parserEstreeJSON
-                ];
+                try {
+                    const parserBabelJSON = await import('prettier/plugins/babel');
+                    const parserEstreeJSON = await import('prettier/plugins/estree');
+                    plugins = [
+                        parserBabelJSON.default || parserBabelJSON, 
+                        parserEstreeJSON.default || parserEstreeJSON
+                    ];
+                } catch (error) {
+                    if (process.env.NODE_ENV === 'development') {
+                        console.warn('Failed to load JSON parsers:', error);
+                    }
+                    return code;
+                }
                 break;
             case 'html':
             case 'htm':
                 parser = 'html';
-                const parserHtml = await import('prettier/plugins/html');
-                plugins = [(parserHtml as any).default || parserHtml];
+                try {
+                    const parserHtml = await import('prettier/plugins/html');
+                    plugins = [parserHtml.default || parserHtml];
+                } catch (error) {
+                    if (process.env.NODE_ENV === 'development') {
+                        console.warn('Failed to load HTML parser:', error);
+                    }
+                    return code;
+                }
                 break;
             case 'css':
             case 'scss':
             case 'less':
                 parser = 'css';
-                const parserCss = await import('prettier/plugins/postcss');
-                plugins = [(parserCss as any).default || parserCss];
+                try {
+                    const parserCss = await import('prettier/plugins/postcss');
+                    plugins = [parserCss.default || parserCss];
+                } catch (error) {
+                    if (process.env.NODE_ENV === 'development') {
+                        console.warn('Failed to load CSS parser:', error);
+                    }
+                    return code;
+                }
                 break;
             case 'markdown':
             case 'md':
                 parser = 'markdown';
-                const parserMarkdown = await import('prettier/plugins/markdown');
-                plugins = [(parserMarkdown as any).default || parserMarkdown];
+                try {
+                    const parserMarkdown = await import('prettier/plugins/markdown');
+                    plugins = [parserMarkdown.default || parserMarkdown];
+                } catch (error) {
+                    if (process.env.NODE_ENV === 'development') {
+                        console.warn('Failed to load Markdown parser:', error);
+                    }
+                    return code;
+                }
                 break;
             default:
                 return code; // Return original code if no parser available
@@ -111,7 +173,9 @@ const formatCode = async (code: string, language: string): Promise<string> => {
 
         return formatted;
     } catch (error) {
-        console.warn('Failed to format code:', error);
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('Failed to format code:', error);
+        }
         return code; // Return original code on error
     }
 };
@@ -131,7 +195,9 @@ const highlightCode = (line: string, language: string): React.ReactNode => {
 
         return React.createElement('span', { style: { color: 'var(--syntax-variable)' } }, line);
     } catch (error) {
-        console.warn('Highlighting failed for line:', line, error);
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('Highlighting failed for line:', line, error);
+        }
         return React.createElement('span', { style: { color: 'var(--syntax-variable)' } }, line);
     }
 };
@@ -185,7 +251,9 @@ const highlightPythonLine = (line: string): React.ReactNode => {
         return highlightKeywordsInText(line);
         
     } catch (error) {
-        console.warn('Python highlighting failed:', error);
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('Python highlighting failed:', error);
+        }
         return React.createElement('span', { style: { color: 'var(--syntax-variable)' } }, line);
     }
 };
@@ -222,11 +290,27 @@ const highlightKeywordsInText = (text: string): React.ReactNode => {
 };
 
 const highlightJavaScript = (line: string): React.ReactNode => {
-    return React.createElement('span', { style: { color: 'var(--syntax-variable)' } }, line);
+    try {
+        return highlightKeywordsInText(line);
+        
+    } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('JavaScript highlighting failed:', error);
+        }
+        return React.createElement('span', { style: { color: 'var(--syntax-variable)' } }, line);
+    }
 };
 
 const highlightJSON = (line: string): React.ReactNode => {
-    return React.createElement('span', { style: { color: 'var(--syntax-variable)' } }, line);
+    try {
+        return React.createElement('span', { style: { color: 'var(--syntax-variable)' } }, line);
+        
+    } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('JSON highlighting failed:', error);
+        }
+        return React.createElement('span', { style: { color: 'var(--syntax-variable)' } }, line);
+    }
 };
 
 // Message Content Renderer with CodeBlock integration
@@ -721,9 +805,9 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ code, language, onCodeEdit, 
             isEditing ? React.createElement('div', { 
                 className: 'p-4'
             },
-                React.createElement('textarea', { 
+                React.createElement('textarea' as any, { 
                     value: editedCode,
-                    onChange: (e) => setEditedCode((e.target as HTMLTextAreaElement).value),
+                    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => setEditedCode(e.target.value),
                     onKeyDown: handleKeyDown,
                     className: 'w-full h-64 text-sm font-mono rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                     style: {
@@ -734,7 +818,7 @@ const CodeBlock: React.FC<CodeBlockProps> = memo(({ code, language, onCodeEdit, 
                     placeholder: currentLanguage === 'ar' ? 'قم بتحرير الكود هنا...' : 'Edit your code here...',
                     autoFocus: true,
                     'aria-label': currentLanguage === 'ar' ? 'محرر الكود' : 'Code editor'
-                }),
+                } as React.TextareaHTMLAttributes<HTMLTextAreaElement>),
                 React.createElement('div', { 
                     className: 'mt-2 text-xs text-gray-400 flex items-center justify-between'
                 },

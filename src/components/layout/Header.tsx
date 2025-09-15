@@ -318,7 +318,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                 }}
                 className={`w-full flex items-center px-3 py-3 rounded-lg hover:bg-accent transition-colors font-medium ${isRTL ? 'flex-row-reverse space-x-reverse' : 'flex-row'} space-x-3`}
               >
-                <Activity className="w-5 h-5 text-primary" />
+                <Activity className="w-5 h-5 text-primary-hover" />
                 <span>{getTranslation('dashboard', language)}</span>
               </button>
               

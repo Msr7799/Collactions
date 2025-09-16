@@ -3,8 +3,14 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo, memo } from 'react';
 import dynamic from 'next/dynamic';
 
-// Dynamic imports for performance
-const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
+// Dynamic imports for performance  
+const ReactMarkdown = dynamic(
+  () => import('react-markdown'),
+  { 
+    ssr: false,
+    loading: () => <div>Loading...</div>
+  }
+) as any;
 const ThinkingMessage = dynamic(() => import('@/components/ai/ThinkingMessage'), { ssr: false });
 const TypewriterEffect = dynamic(() => import('@/components/ai/TypewriterEffect'), { ssr: false });
 
@@ -275,7 +281,7 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
       
       // If there's remaining content after removing JSON, show it
       if (cleanContent) {
-        return <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanContent}</ReactMarkdown>;
+        return <ReactMarkdown remarkPlugins={[remarkGfm]} children={cleanContent} />;
       }
       // Otherwise just return empty content
       return null;
@@ -297,9 +303,8 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
           <ReactMarkdown 
             key={`text-${lastIndex}`} 
             remarkPlugins={[remarkGfm]}
-          >
-            {textPart}
-          </ReactMarkdown>
+            children={textPart}
+          />
         );
       }
 
@@ -478,9 +483,8 @@ const MessageContent: React.FC<MessageContentProps> = memo(({ message, onPreview
             );
           }
         }}
-      >
-        {message.content}
-      </ReactMarkdown>
+        children={message.content}
+      />
     );
   };
 

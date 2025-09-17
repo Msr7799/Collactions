@@ -153,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           
           <button
             title={getTranslation('settings', language)}
-            onClick={() => router.push('/settingjs')}
+            onClick={() => router.push('/settings')}
             className="p-3 group relative transition-all duration-300 ease-in-out"
           >
             <span

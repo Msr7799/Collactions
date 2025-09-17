@@ -1,79 +1,157 @@
 'use client';
 
-import { useEffect } from 'react';
-import FlickerPreventor from './flicker-preventor';
+import React, { useEffect, useRef, useCallback } from 'react';
 
 interface MainPageFlickerWrapperProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-const MainPageFlickerWrapper: React.FC<MainPageFlickerWrapperProps> = ({ children }) => {
+const MainPageFlickerWrapper: React.FC<MainPageFlickerWrapperProps> = ({
+  children,
+  className = '',
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const lastScrollY = useRef(0);
+  
+  // تحسين GPU مع استخدام أفضل للـ will-change
+  const optimizeGPU = useCallback((el: HTMLElement) => {
+    el.style.backfaceVisibility = 'hidden';
+    el.style.transform = 'translateZ(0)';
+    el.style.willChange = 'transform, opacity';
+    
+    // تحسين خاص للـ SVG elements
+    const svgElements = el.querySelectorAll('svg, path');
+    svgElements.forEach((svg) => {
+      if (svg instanceof HTMLElement || svg instanceof SVGElement) {
+        svg.style.willChange = 'pathLength, stroke-dashoffset, transform';
+        svg.style.transform = 'translateZ(0)';
+      }
+    });
+  }, []);
+
+  // معالج السكرول المحسن
+  const handleScroll = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    
+    animationFrameRef.current = requestAnimationFrame(() => {
+      const currentScrollY = window.scrollY;
+      const scrollDiff = Math.abs(currentScrollY - lastScrollY.current);
+      
+      // فقط للتغييرات الكبيرة (أكثر من 1000px)
+      if (scrollDiff > 1000) {
+        console.warn('⚠️ Large scroll jump detected:', {
+          scrollDiff,
+          currentScrollY,
+          lastScrollY: lastScrollY.current
+        });
+      }
+      
+      lastScrollY.current = currentScrollY;
+    });
+  }, []);
+
   useEffect(() => {
-    // Prevent flicker from NextJS headers() error
+    const el = containerRef.current;
+    if (!el) return;
+
+    // تطبيق تحسينات GPU
+    optimizeGPU(el);
+
+    // إضافة معالج السكرول
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // مراقب DOM محسن ومصفى
+    const observer = new MutationObserver((mutations) => {
+      const significantMutations = mutations.filter(mutation => {
+        const target = mutation.target as HTMLElement;
+        
+        // تجاهل تغييرات SVG المؤقتة
+        if (target.tagName === 'path' || 
+            target.tagName === 'svg' ||
+            target.closest('svg')) {
+          return false;
+        }
+        
+        // تجاهل تغييرات Framer Motion
+        if (mutation.attributeName === 'style' && 
+            target.style.transform) {
+          return false;
+        }
+        
+        // تجاهل تغييرات Clerk
+        if (target.className?.toString().includes('cl-')) {
+          return false;
+        }
+        
+        // فقط التغييرات المهمة للـ layout
+        return ['class', 'dir'].includes(mutation.attributeName || '');
+      });
+
+      if (significantMutations.length > 0) {
+        console.log('📌 Significant layout mutations:', significantMutations.length);
+        
+        // إعادة تطبيق تحسينات GPU بعد التغييرات المهمة
+        requestAnimationFrame(() => optimizeGPU(el));
+      }
+    });
+
+    observer.observe(el, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ['class', 'dir', 'style'],
+    });
+
+    // قمع الأخطاء والتحذيرات غير المهمة
     const originalConsoleError = console.error;
     const originalConsoleWarn = console.warn;
     
     console.error = (...args) => {
-      const errorMessage = args.join(' ');
-      
-      // Suppress NextJS headers() error and related warnings
-      if (errorMessage.includes('headers()') && errorMessage.includes('should be awaited')) {
-        return; // Suppress this specific error completely
+      const message = args.join(' ');
+      if (message.includes('headers()') || 
+          message.includes('Will-change memory') ||
+          message.includes('sync-dynamic-apis')) {
+        return; // قمع
       }
-      
-      if (errorMessage.includes('Route "/" used') && errorMessage.includes('headers()')) {
-        return; // Suppress route-specific headers error
-      }
-      
-      if (errorMessage.includes('sync-dynamic-apis')) {
-        return; // Suppress sync dynamic APIs error
-      }
-      
-      // Suppress will-change memory warnings (expected with GPU acceleration)
-      if (errorMessage.includes('Will-change memory consumption is too high')) {
-        return; // These are expected with our GPU acceleration
-      }
-      
-      // Display other errors normally
       originalConsoleError.apply(console, args);
     };
 
     console.warn = (...args) => {
-      const warnMessage = args.join(' ');
-      
-      // Suppress font preload warnings
-      if (warnMessage.includes('preloaded with link preload was not used')) {
-        return; // Suppress font preload warnings
+      const message = args.join(' ');
+      if (message.includes('preloaded with link preload')) {
+        return; // قمع
       }
-      
-      // Display other warnings normally
       originalConsoleWarn.apply(console, args);
     };
 
-    // Restore original console methods when component unmounts
     return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       console.error = originalConsoleError;
       console.warn = originalConsoleWarn;
     };
-  }, []);
+  }, [optimizeGPU, handleScroll]);
 
   return (
-    <FlickerPreventor 
-      threshold={400}           // Higher threshold for less false positives
-      delay={25}               // Longer delay for better smoothing
-      enableLogging={false}    // Reduce console noise since flicker is mostly fixed
-      className="main-page-wrapper gpu-accelerated"
+    <div
+      ref={containerRef}
+      className={`flicker-prevented ${className}`}
+      style={{
+        backfaceVisibility: 'hidden',
+        transform: 'translateZ(0)',
+        willChange: 'transform, opacity',
+        // CSS transitions for smooth changes
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
     >
-      <div 
-        className="min-h-screen transition-all duration-300 ease-out"
-        style={{
-          willChange: 'transform, opacity',
-          transform: 'translateZ(0)', // GPU acceleration
-        }}
-      >
-        {children}
-      </div>
-    </FlickerPreventor>
+      {children}
+    </div>
   );
 };
 

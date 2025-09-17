@@ -1,26 +1,22 @@
-/* src/styles/fonts.css */
 @font-face {
   font-family: 'BitingMyNails';
-  src: url('/fonts/biting-my-nails.regular.woff2') format('woff2'),
-       url('/fonts/biting-my-nails.regular.otf') format('opentype');
-  font-weight: 400;
+  src: url('/font/biting-my-nails.regular.woff2') format('woff2');
+  font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'BitingMyNailsOutline';
-  src: url('/fonts/biting-my-nails.outline-regular.woff2') format('woff2'),
-       url('/fonts/biting-my-nails.outline-regular.otf') format('opentype');
-  font-weight: 400;
+  src: url('/font/biting-my-nails.outline-regular.woff2') format('woff2');
+  font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
-
 @font-face {
   font-family: 'Broval';
-  src: url('/fonts/broval.regular.otf') format('opentype');
+  src: url('/font/broval.regular.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -28,7 +24,7 @@
 
 @font-face {
   font-family: 'rolliv';
-  src: url('/fonts/rolliv.regular.ttf') format('truetype');
+  src: url('/font/rolliv.regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -36,7 +32,7 @@
 
 @font-face {
   font-family: 'RADIOAKTIVITET';
-  src: url('/fonts/RADIOAKTIVITET.TTF') format('truetype');
+  src: url('/font/RADIOAKTIVITET.TTF') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -44,7 +40,7 @@
 
 @font-face {
   font-family: 'Elisa';
-  src: url('/fonts/elisa.regular.ttf') format('truetype');
+  src: url('/font/elisa.regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -52,7 +48,7 @@
 
 @font-face {
   font-family: 'Kleptocracy';
-  src: url('/fonts/kleptocracy-titling.lt-regular.otf') format('opentype');
+  src: url('/font/kleptocracy-titling.lt-regular.otf') format('opentype');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -60,7 +56,7 @@
 
 @font-face {
   font-family: 'Kleptocracy';
-  src: url('/fonts/kleptocracy-titling.rg-regular.otf') format('opentype');
+  src: url('/font/kleptocracy-titling.rg-regular.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -68,7 +64,7 @@
 
 @font-face {
   font-family: 'Kleptocracy';
-  src: url('/fonts/kleptocracy-titling.rg-bold.otf') format('opentype');
+  src: url('/font/kleptocracy-titling.rg-bold.otf') format('opentype');
   font-weight: bold;
   font-style: normal;
   font-display: swap;
@@ -76,7 +72,7 @@
 
 @font-face {
   font-family: 'Elvalle';
-  src: url('/fonts/elvalle.bold.ttf') format('truetype');
+  src: url('/font/elvalle.bold.ttf') format('truetype');
   font-weight: bold;
   font-style: normal;
   font-display: swap;
@@ -84,7 +80,7 @@
 
 @font-face {
   font-family: 'SebastienSlab';
-  src: url('/fonts/sebastien-slab-round.regular.ttf') format('truetype');
+  src: url('/font/sebastien-slab-round.regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -92,7 +88,7 @@
 
 @font-face {
   font-family: 'Tycho';
-  src: url('/fonts/tycho.regular.ttf') format('truetype');
+  src: url('/font/tycho.regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

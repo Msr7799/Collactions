@@ -1,7 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import localFont from "next/font/local";
 import "./globals.css";
 import "@/styles/fonts.css";
 import { ClerkProvider } from '@clerk/nextjs';
@@ -19,15 +18,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const biting = localFont({
-  src: [
-    { path: "/fonts/biting-my-nails.regular.woff2", weight: "400", style: "normal" },
-    { path: "/fonts/biting-my-nails.outline-regular.woff2", weight: "400", style: "normal" },
-  ],
-  variable: "--font-biting",
-  display: "swap",
-  preload: true,
-});
+
 
 export const metadata: Metadata = {
   icons: { icon: '/app-icon.svg' },
@@ -38,9 +29,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="ar" className={`${biting.variable} ${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <html lang="ar" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
         <body
-          className={`${biting.className} antialiased relative min-h-screen`}
+          className={`antialiased relative min-h-screen`}
           suppressHydrationWarning
         >
           <ThemeProvider>

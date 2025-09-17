@@ -33,7 +33,7 @@ const CollactionsLogo: React.FC<CollactionsLogoProps> = ({
           }
         `}
         style={{
-          fontFamily: 'var(--font-biting), BitingMyNails, Orbitron, monospace, Arial, sans-serif',
+          fontFamily: 'BitingMyNails, Orbitron, monospace, Arial, sans-serif',
           textShadow: isDark 
             ? '0 0 8px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.8)' 
             : '0 0 6px rgba(0, 0, 0, 0.2), 0 0 12px rgba(0, 0, 0, 0.1), 1px 1px 2px rgba(255, 255, 255, 0.8)',

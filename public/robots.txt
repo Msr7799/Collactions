@@ -1,12 +1,17 @@
 User-agent: *
 Allow: /
+Allow: /prompts
+Allow: /terminal
+Allow: /service/
+Crawl-delay: 1
 
 # Disallow private/admin areas
 Disallow: /api/
-
-
-# Allow specific public API endpoints if needed
-Allow: /api/health
+Disallow: /settings
+Disallow: /profile
+Disallow: /dashboard
+Disallow: /_next/
+Disallow: /generated/
 
 # Sitemaps
 Sitemap: https://collaction.vercel.app/sitemap.xml

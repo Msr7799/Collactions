@@ -8,10 +8,17 @@ export default authMiddleware({
   // Public routes that don't require authentication
   publicRoutes: [
     '/',
-    '/api/health',
-
+    '/prompts',
+    '/terminal',
+    '/service/(.*)',
+    '/api/chat/(.*)',
+    '/api/generate-image',
+    '/api/analyze-image', 
+    '/api/tavily-search',
+    '/api/mcp/(.*)',
     '/favicon.ico',
     '/robots.txt',
+    '/sitemap.xml',
     '/_next',
     '/public',
     '/generated'
@@ -20,18 +27,33 @@ export default authMiddleware({
   beforeAuth: (req) => {
     const { pathname } = req.nextUrl;
     
+    // Add security headers for all responses
+    const response = NextResponse.next();
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    // Add caching headers for static files
+    if (pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js|woff|woff2|ttf|otf)$/)) {
+      response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+    
     // Add caching headers for generated images
     if (pathname.startsWith('/generated/')) {
-      const response = NextResponse.next();
-      
       // 🚀 Cache generated images for 24 hours
       response.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=86400, immutable');
       response.headers.set('Vary', 'Accept-Encoding');
-      response.headers.set('X-Content-Type-Options', 'nosniff');
       
       console.log(`📁 Serving generated image: ${pathname}`);
-      return response;
     }
+    
+    // Rate limiting headers for API routes
+    if (pathname.startsWith('/api/')) {
+      response.headers.set('X-RateLimit-Limit', '100');
+      response.headers.set('X-RateLimit-Window', '900'); // 15 minutes
+    }
+    
+    return response;
   },
   
   afterAuth: (auth, req) => {
@@ -42,11 +64,21 @@ export default authMiddleware({
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    // If it's a protected page and no user, redirect to sign-in
-    if (pathname.startsWith('/dashboard') && !auth.userId) {
+    // Protected pages that require authentication
+    const protectedPages = ['/dashboard', '/profile', '/settings'];
+    const isProtectedPage = protectedPages.some(page => pathname.startsWith(page));
+    
+    if (isProtectedPage && !auth.userId) {
       const signInUrl = new URL('/sign-in', req.url);
       signInUrl.searchParams.set('redirect_url', pathname);
       return NextResponse.redirect(signInUrl);
+    }
+
+    // Add user context headers for authenticated requests
+    if (auth.userId) {
+      const response = NextResponse.next();
+      response.headers.set('X-User-Id', auth.userId);
+      return response;
     }
 
     return NextResponse.next();

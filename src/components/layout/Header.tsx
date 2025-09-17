@@ -153,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           
           <button
             title={getTranslation('settings', language)}
-            onClick={() => router.push('/settings')}
+            onClick={() => router.push('/settingjs')}
             className="p-3 group relative transition-all duration-300 ease-in-out"
           >
             <span
@@ -197,8 +197,13 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           {/* Authentication */}
           {isLoaded && (
             <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-1`}>
-              {isSignedIn ? (
-                <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-1`}>
+              {/* Auth loading placeholder to prevent flicker */}
+              {!isLoaded ? (
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-muted/30 animate-pulse"></div>
+                </div>
+              ) : isSignedIn ? (
+                <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-1 gpu-accelerated`}>
                   {/* Welcome Animation with fixed width to prevent movement */}
                   <div className={`hidden lg:block w-48 overflow-hidden ${isRTL ? 'text-right order-2' : 'text-left order-1'}`}>
                     <TypingAnimation 
@@ -212,7 +217,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                       afterSignOutUrl="/"
                       appearance={{
                         elements: {
-                          avatarBox: "w-8 h-8 theme-gradient-text hover:theme-glow"
+                          avatarBox: "w-8 h-8 theme-gradient-text hover:theme-glow transition-all duration-300"
                         }
                       }}
                     />
@@ -258,14 +263,16 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           </div>
 
           {/* Auth Section - Mobile */}
-          {isLoaded && (
-            <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
+          {!isLoaded ? (
+            <div className="w-8 h-8 rounded-full bg-muted/30 animate-pulse"></div>
+          ) : (
+            <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2 gpu-accelerated`}>
               {isSignedIn ? (
                 <UserButton 
                   afterSignOutUrl="/"
                   appearance={{
                     elements: {
-                      avatarBox: "w-8 h-8"
+                      avatarBox: "w-8 h-8 transition-all duration-300"
                     }
                   }}
                 />

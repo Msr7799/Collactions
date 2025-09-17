@@ -28,10 +28,36 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     if (isClient) {
-      // Save language to localStorage and update document direction
+      // Save language to localStorage and update document direction with smooth transition
       localStorage.setItem('language', language);
-      document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
-      document.documentElement.lang = language;
+      
+      // Add CSS transition class to prevent flicker during language switch
+      const html = document.documentElement;
+      const body = document.body;
+      
+      // Pre-apply transition to all elements that will change
+      const elementsToTransition = document.querySelectorAll('*');
+      elementsToTransition.forEach(el => {
+        if (el instanceof HTMLElement) {
+          el.classList.add('language-transition');
+        }
+      });
+      
+      // Use requestAnimationFrame to batch DOM updates and prevent layout shifts
+      requestAnimationFrame(() => {
+        // Batch all DOM changes together
+        html.dir = isRTL ? 'rtl' : 'ltr';
+        html.lang = language;
+        
+        // Add a smaller delay for DOM to settle, then remove transition classes
+        setTimeout(() => {
+          elementsToTransition.forEach(el => {
+            if (el instanceof HTMLElement) {
+              el.classList.remove('language-transition');
+            }
+          });
+        }, 100); // Much faster removal (was 350ms)
+      });
     }
   }, [language, isRTL, isClient]);
 

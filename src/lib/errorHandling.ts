@@ -41,6 +41,79 @@ export const handleAPIError = (error: unknown): ApiError => {
     return error;
   }
 
+  // Handle Response objects from fetch
+  if (error && typeof error === 'object' && 'status' in error) {
+    const response = error as Response;
+    switch (response.status) {
+      case 400:
+        return new APIError(
+          'Bad request | طلب غير صحيح',
+          'BAD_REQUEST',
+          400
+        );
+      case 401:
+        return new APIError(
+          'Unauthorized access | وصول غير مصرح به',
+          'UNAUTHORIZED',
+          401
+        );
+      case 403:
+        return new APIError(
+          'Access forbidden | الوصول محظور',
+          'FORBIDDEN',
+          403
+        );
+      case 404:
+        return new APIError(
+          'Resource not found | المورد غير موجود',
+          'NOT_FOUND',
+          404
+        );
+      case 409:
+        return new APIError(
+          'Conflict occurred | حدث تضارب',
+          'CONFLICT',
+          409
+        );
+      case 422:
+        return new APIError(
+          'Validation failed | فشل في التحقق',
+          'VALIDATION_ERROR',
+          422
+        );
+      case 429:
+        return new APIError(
+          'Too many requests | طلبات كثيرة جداً',
+          'RATE_LIMITED',
+          429
+        );
+      case 500:
+        return new APIError(
+          'Internal server error | خطأ داخلي في الخادم',
+          'INTERNAL_ERROR',
+          500
+        );
+      case 502:
+        return new APIError(
+          'Bad gateway | بوابة سيئة',
+          'BAD_GATEWAY',
+          502
+        );
+      case 503:
+        return new APIError(
+          'Service unavailable | الخدمة غير متاحة',
+          'SERVICE_UNAVAILABLE',
+          503
+        );
+      case 504:
+        return new APIError(
+          'Gateway timeout | انتهت مهلة البوابة',
+          'GATEWAY_TIMEOUT',
+          504
+        );
+    }
+  }
+
   // If it's a fetch error
   if (error instanceof Error) {
     if (error.message.includes('Failed to fetch')) {
@@ -59,43 +132,14 @@ export const handleAPIError = (error: unknown): ApiError => {
       );
     }
 
-    if (error.message.includes('401')) {
+    // Parse status codes from error messages
+    const statusMatch = error.message.match(/\b(\d{3})\b/);
+    if (statusMatch) {
+      const status = parseInt(statusMatch[1]);
       return new APIError(
-        'Unauthorized access | وصول غير مصرح به',
-        'UNAUTHORIZED',
-        401
-      );
-    }
-
-    if (error.message.includes('403')) {
-      return new APIError(
-        'Access forbidden | الوصول محظور',
-        'FORBIDDEN',
-        403
-      );
-    }
-
-    if (error.message.includes('404')) {
-      return new APIError(
-        'Resource not found | المورد غير موجود',
-        'NOT_FOUND',
-        404
-      );
-    }
-
-    if (error.message.includes('429')) {
-      return new APIError(
-        'Too many requests | طلبات كثيرة جداً',
-        'RATE_LIMITED',
-        429
-      );
-    }
-
-    if (error.message.includes('500')) {
-      return new APIError(
-        'Internal server error | خطأ داخلي في الخادم',
-        'INTERNAL_ERROR',
-        500
+        error.message || `HTTP ${status} error | خطأ HTTP ${status}`,
+        `HTTP_${status}`,
+        status
       );
     }
 
@@ -138,18 +182,23 @@ export const retryWithBackoff = async <T>(
       lastError = error;
       
       // Don't retry on certain errors
-      if (error instanceof APIError) {
-        if ([401, 403, 404].includes(error.status)) {
-          throw error; // Don't retry authorization or not found errors
-        }
+      if (!isRetryableError(error)) {
+        throw handleAPIError(error);
       }
 
       if (attempt === maxRetries) {
         break; // Last attempt, don't delay
       }
 
-      // Calculate delay with exponential backoff
-      const delay = baseDelay * Math.pow(backoffFactor, attempt);
+      // Calculate delay with exponential backoff + jitter
+      const jitter = Math.random() * 0.1 * baseDelay; // 10% jitter
+      const delay = (baseDelay * Math.pow(backoffFactor, attempt)) + jitter;
+      
+      logError(error, `Retry attempt ${attempt + 1}/${maxRetries + 1}`, {
+        delay,
+        nextRetryIn: `${Math.round(delay)}ms`
+      });
+      
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -237,9 +286,47 @@ export const formatErrorForUser = (error: unknown): string => {
     case 'INTERNAL_ERROR':
       return 'A server error occurred. Please try again later. | حدث خطأ في الخادم. يرجى المحاولة لاحقاً.';
     
+    case 'BAD_REQUEST':
+      return 'Invalid request data. Please check your input. | بيانات الطلب غير صحيحة. يرجى التحقق من المدخلات.';
+    
+    case 'VALIDATION_ERROR':
+      return 'Data validation failed. Please check your input. | فشل في التحقق من البيانات. يرجى التحقق من المدخلات.';
+    
+    case 'CONFLICT':
+      return 'A conflict occurred. The resource may already exist. | حدث تضارب. قد يكون المورد موجوداً بالفعل.';
+    
+    case 'SERVICE_UNAVAILABLE':
+      return 'Service is temporarily unavailable. Please try again later. | الخدمة غير متاحة مؤقتاً. يرجى المحاولة لاحقاً.';
+    
+    case 'BAD_GATEWAY':
+      return 'Server connection issue. Please try again. | مشكلة في اتصال الخادم. يرجى المحاولة مرة أخرى.';
+    
+    case 'GATEWAY_TIMEOUT':
+      return 'Server response timeout. Please try again. | انتهت مهلة استجابة الخادم. يرجى المحاولة مرة أخرى.';
+    
     default:
       return apiError.message || 'An unexpected error occurred. Please try again. | حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.';
   }
+};
+
+/**
+ * Check if error is retryable
+ * فحص إذا كان الخطأ قابل لإعادة المحاولة
+ */
+export const isRetryableError = (error: unknown): boolean => {
+  const apiError = handleAPIError(error);
+  
+  // Don't retry these errors
+  const nonRetryableCodes = [
+    'UNAUTHORIZED',
+    'FORBIDDEN', 
+    'NOT_FOUND',
+    'BAD_REQUEST',
+    'VALIDATION_ERROR',
+    'CONFLICT'
+  ];
+  
+  return !nonRetryableCodes.includes(apiError.code);
 };
 
 /**
@@ -263,6 +350,59 @@ export const useErrorHandler = () => {
         logError(error, context);
         throw handleAPIError(error);
       }
+    },
+
+    retryAsync: async <T>(
+      asyncFn: () => Promise<T>,
+      options: {
+        maxRetries?: number;
+        baseDelay?: number;
+        context?: string;
+      } = {}
+    ): Promise<T> => {
+      const { maxRetries = 3, baseDelay = 1000, context = 'Retry Operation' } = options;
+      
+      try {
+        return await retryWithBackoff(asyncFn, maxRetries, baseDelay);
+      } catch (error) {
+        logError(error, context, { maxRetries, baseDelay });
+        throw error;
+      }
+    }
+  };
+};
+
+/**
+ * Create a safe async function that handles errors gracefully
+ * إنشاء دالة async آمنة تتعامل مع الأخطاء بسلاسة
+ */
+export const createSafeAsync = <T extends any[], R>(
+  asyncFn: (...args: T) => Promise<R>,
+  options: {
+    defaultValue?: R;
+    context?: string;
+    onError?: (error: ApiError) => void;
+  } = {}
+) => {
+  return async (...args: T): Promise<R | typeof options.defaultValue> => {
+    try {
+      return await asyncFn(...args);
+    } catch (error) {
+      const apiError = handleAPIError(error);
+      
+      logError(apiError, options.context || 'Safe Async Function', {
+        args: args.length > 0 ? args : undefined
+      });
+
+      if (options.onError) {
+        options.onError(apiError);
+      }
+
+      if (options.defaultValue !== undefined) {
+        return options.defaultValue;
+      }
+
+      throw apiError;
     }
   };
 };

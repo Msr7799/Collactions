@@ -35,12 +35,13 @@ const ThemeToggle: React.FC = () => {
         style={{
           background: `conic-gradient(
             from 315deg,
-            #00e5ff 0deg,
-            #00ffc3 120deg,
-            #ff9800 240deg,
-            #00e5ff 360deg
+            #ff0022ff 0deg,
+            #ff380bff 90deg,
+            #FF847C 120deg,
+            #e5a938ff 160deg,
+            #f57283ff 360deg
           )`,
-          filter: 'blur(1px)'
+          filter: 'blur(4px)'
         }}
       />
       

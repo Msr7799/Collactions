@@ -75,7 +75,7 @@ class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-6 text-center">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center animate-pulse">
                 <AlertTriangle className="w-8 h-8 text-red-400" />
               </div>
             </div>
@@ -84,25 +84,32 @@ class ErrorBoundary extends Component<Props, State> {
               Something went wrong | حدث خطأ ما
             </h2>
 
-            <p className="text-gray-400 mb-6 text-sm">
+            <p className="text-gray-400 mb-6 text-sm leading-relaxed">
               An unexpected error occurred. Please try refreshing the page or return to the home page.
               <br />
-              <span className="text-xs mt-2 block">
+              <span className="text-xs mt-2 block text-gray-500">
                 حدث خطأ غير متوقع. يرجى تحديث الصفحة أو العودة إلى الصفحة الرئيسية.
               </span>
             </p>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <div className="mb-6 p-3 bg-gray-800 rounded border border-gray-600 text-left">
-                <p className="text-red-400 text-xs font-mono break-all">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                  <span className="text-yellow-400 text-sm font-medium">Development Info</span>
+                </div>
+                <p className="text-red-400 text-xs font-mono break-all mb-2">
                   {this.state.error.message}
+                </p>
+                <p className="text-gray-500 text-xs">
+                  <strong>Stack:</strong> {this.state.error.stack?.split('\n')[1]?.trim()}
                 </p>
                 {this.state.errorInfo?.componentStack && (
                   <details className="mt-2">
-                    <summary className="text-gray-400 text-xs cursor-pointer">
+                    <summary className="text-gray-400 text-xs cursor-pointer hover:text-gray-300">
                       Component Stack
                     </summary>
-                    <pre className="text-xs text-gray-500 mt-1 overflow-auto max-h-32">
+                    <pre className="text-xs text-gray-500 mt-1 overflow-auto max-h-32 bg-gray-900 p-2 rounded">
                       {this.state.errorInfo.componentStack}
                     </pre>
                   </details>

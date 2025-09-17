@@ -33,7 +33,7 @@
   "model": {
     "id": "gpt-4o",
     "name": "GPT-4o",
-    "provider": "GPTGOD0",
+    "provider": "GPTGOD",
     "description": "أحدث نموذج من OpenAI مع قدرات متقدمة في النص والصور والصوت - يدعم تحليل الصور",
     "contextLength": 128000,
     "pricing": {

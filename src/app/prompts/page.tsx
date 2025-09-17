@@ -13,6 +13,7 @@ const ReactMarkdown = dynamic(
 ) as any;
 const ThinkingMessage = dynamic(() => import('@/components/ai/ThinkingMessage'), { ssr: false });
 const TypewriterEffect = dynamic(() => import('@/components/ai/TypewriterEffect'), { ssr: false });
+import HistorySidebar from './HistorySidebar';
 
 
 import remarkGfm from 'remark-gfm';
@@ -89,7 +90,8 @@ import {
   User,
   Maximize,
   Edit,
-  Play
+  Play,
+  History
 } from 'lucide-react';
 import CodeBlock, { MessageContentRenderer } from './CodeBlock';
 
@@ -2337,26 +2339,34 @@ ${language === 'ar'
                 />
               </div>
               <div className="flex items-center space-x-1 lg:space-x-2">
+                   <button 
+              onClick={startNewChat}  
+              className="p-1.5 lg:p-2 text-muted hover:text-foreground transition-colors rounded"
+              title={language === 'ar' ? 'إضافة محادثة جديدة' : 'New Chat'}
+              >
+                <Plus className="h-8 w-8 text-primary-hover lg:h-8 lg:w-8" />
+              </button>
                 <button 
                   onClick={toggleHistorySidebar}
-                  className="p-1.5 lg:p-2 text-muted hover:text-foreground transition-colors rounded"
+                  className="p-1.5 lg:p-2 text-slate hover:text-yellow-400 transition-colors rounded"
                   title={language === 'ar' ? 'تاريخ المحادثات' : 'Chat History'}
                 >
-                  <MessageSquare className="h-3 w-3 lg:h-4 lg:w-4" />
+                  <History className="h-3 w-3 lg:h-4 lg:w-4" />
                 </button>
-                <button 
-                  onClick={handleUploadFile}
-                  className="p-1.5 lg:p-2 text-muted hover:text-foreground transition-colors rounded"
-                  title={language === 'ar' ? 'رفع ملف' : 'Upload file'}
-                >
-                  <Upload className="h-3 w-3 lg:h-4 lg:w-4" />
-                </button>
+           
                 <button 
                   onClick={handleTerminalOpen}
-                  className="p-1.5 lg:p-2 text-muted hover:text-foreground transition-colors rounded"
+                  className="p-1.5 lg:p-2 text-slate  hover:text-cyan-400 transition-colors rounded"
                   title={language === 'ar' ? 'فتح الطرفية' : 'Open terminal'}
                 >
                   <Terminal className="h-3 w-3 lg:h-4 lg:w-4" />
+                </button>
+                       <button 
+                  onClick={handleChatHistory}
+                  className="p-1.5 lg:p-2 text-slate hover:text-red-400 transition-colors rounded"
+                  title={language === 'ar' ? 'الإعدادات' : 'Settings'}
+                >
+                  <Settings className="w-3 h-3 lg:w-4 lg:h-4" />
                 </button>
                 <button 
                   onClick={() => setShowAddServer(true)}
@@ -2383,12 +2393,7 @@ ${language === 'ar'
                 >
                   <Zap className="h-3 w-3 lg:h-4 lg:w-4" />
                 </button>
-                <button 
-                  onClick={handleChatHistory}
-                  title={language === 'ar' ? 'الإعدادات' : 'Settings'}
-                >
-                  <Settings className="w-5 h-5" />
-                </button>
+         
               </div>
             </div>
 
@@ -3584,8 +3589,18 @@ ${result.message ? `⚠️ ${result.message}` : ''}`,
           </div>
         </div>
       )}
-
-   
+     
+    {/* History Sidebar */}
+    <HistorySidebar
+      isVisible={isHistorySidebarVisible}
+      onClose={() => setIsHistorySidebarVisible(false)}
+      language={language}
+      currentChatSession={currentChatSession}
+      onChatSelect={loadChatSession}
+      onChatDelete={deleteChatSession}
+      onNewChat={startNewChat}
+    />
+ 
     </Layout>
   );
 };

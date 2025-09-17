@@ -13,6 +13,7 @@
     --background: #0c1012;
     --high-light-bg: #26161f;
     --bg-dark: #030505;
+    --slate:#64748b;
     --foreground: #f0f0f0;
     --primary: #761800;
     --primary-glow: rgba(255, 255, 255, 0.4);
@@ -68,6 +69,7 @@
     --very-dark-bg: #E5E5E5;  /* Lighter very dark background for light mode */
     --user-bg: #f8f8f8;
     --background: #ffffff9f;
+    --slate: #1d293d;
     --high-light-bg: #f8f9fa;
     --bg-dark: #f5f5f5;
     --foreground: #1a1a1a;
@@ -143,6 +145,7 @@
   --color-user-bg: var(--user-bg);
   --color-very-dark-bg: var(--very-dark-bg);
   --color-sec-primary: var(--sec-primary);
+  --color-slate: var(--slate);
 
 }
 
@@ -217,6 +220,7 @@ color: var(--light);
 
 /* Light theme text improvements */
 :root.light {
+  --slate: var(--slate-800);
   --text-primary: #111827;
   --text-secondary: #374151;
   --text-muted: #6b7280;

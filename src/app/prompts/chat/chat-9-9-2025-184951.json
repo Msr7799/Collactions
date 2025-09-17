@@ -73,20 +73,20 @@
   "createdAt": "2025-09-09T15:49:51.181Z",
   "updatedAt": "2025-09-09T15:49:51.181Z",
   "model": {
-    "id": "meta-llama/llama-3.1-405b-instruct",
-    "name": "Llama 3.1 405B Instruct",
-    "provider": "Meta",
-    "description": "النموذج الضخم بـ 405B معامل من Meta، يضاهي GPT-4o وClaude 3.5 في الأداء - مجاني ومتقدم جداً",
-    "contextLength": 66000,
+    "id": "o1-preview",
+    "name": "GPT o1-Preview",
+    "provider": "GPTGOD",
+    "description": "نموذج التفكير المتقدم من OpenAI - يظهر خطوات التفكير بالتفصيل قبل الإجابة",
+    "contextLength": 128000,
     "pricing": {
-      "input": "Free",
-      "output": "Free"
+      "input": "Via GPTGOD",
+      "output": "Via GPTGOD"
     },
     "capabilities": [
+      "reasoning_visible",
+      "step_by_step",
       "advanced_reasoning",
-      "complex_tasks",
-      "high_quality_dialogue",
-      "instruction_following"
+      "chain_of_thought"
     ],
     "type": "free"
   }

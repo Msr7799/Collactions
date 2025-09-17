@@ -72,14 +72,19 @@ export const GoogleGeminiEffect = ({
   // مكون الشعار المخصص
   const CustomLogo = () => (
     <span 
-      className="text-4xl md:text-7xl font-bold transition-all duration-300 hover:opacity-90"
+      className={`text-4xl md:text-8xl font-bold transition-all duration-300 hover:opacity-90 ${
+        isDark 
+          ? 'bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600' 
+          : ''
+      }`}
       style={{
         fontFamily: 'BitingMyNails, Orbitron, monospace, Arial, sans-serif',
         textShadow: isDark 
-          ? '0 0 8px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.8)' 
-          : '0 0 6px rgba(0, 0, 0, 0.2), 0 0 12px rgba(0, 0, 0, 0.1), 1px 1px 2px rgba(255, 255, 255, 0.8)',
-        filter: 'brightness(1.05)',
-        color: isDark ? '#ffffff' : '#111827'
+          ? '0 0 8px rgba(196, 203, 233, 0.17), 0 0 16px rgba(102, 102, 102, 0.29), 0 1px 2px rgba(0, 0, 0, 0.8)' 
+          : '0 0 6px rgba(181, 172, 172, 0.13), 0 0 12px rgba(96, 96, 96, 0.1), 1px 1px 2px rgba(255, 255, 255, 0.8)',
+        filter: 'brightness(1.8)',
+        letterSpacing: '0.1em',
+        color: isDark ? undefined : '#212b41'
       }}
     >
       COLLACTIONS
@@ -116,14 +121,25 @@ export const GoogleGeminiEffect = ({
           <AppIcon />
         </div>
       </div>
-      <h1 className="text-4xl md:text-7xl z-40 font-bold pb-6 mt-40px text-center text-foreground mb-5">
+      <h1 className="relative z-10 mb-22 top-20 text-lg md:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600  text-center font-sans font-bold"> 
         <CustomLogo />
       </h1>
 
-      <h1 className="text-4xl md:text-7xl z-50 font-bold pb-6 pt-4 mt-10 text-center text-foreground mb-10">
-        {language === 'ar' ? 'بوابة الوكيل إلى العالم' : 'Your Agent\'s Gateway to the World'}
-      </h1>
+
+
+      <h1 className={`relative z-10 mb-33 text-lg md:text-8xl text-center font-sans font-extrabold ${
+        isDark 
+          ? 'bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600' 
+          : ''
+      }`}
+      style={{
+        color: isDark ? undefined : '#212b41'
+      }}> 
       
+        {language === 'ar' ? 'بوابة الوكيل إلى العالم' : 'Your Agent\'s Gateway to the World'}
+        
+        
+        </h1>
 
 
       {/* Search Section - مرئي في جميع الشاشات */}

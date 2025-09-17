@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 
 
 export const metadata: Metadata = {
-  icons: { icon: '/app-icon.svg' },
+  icons: { icon: '/app-icon-red.svg' },
   title: "Collactions - AI Gateway",
   description: "Your Agent's Gateway to the World",
 };

@@ -78,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
           className={`flex items-center hover:opacity-80 transition-opacity flex-shrink-0 ${isRTL ? 'ml-4 space-x-reverse' : 'mr-4'} space-x-2 ${isMobileMenuOpen ? 'hidden' : 'flex'} md:flex`}
         >
           <img 
-            src="/app-icon.svg" 
+            src="/app-icon-red.svg" 
             alt="Collactions Logo" 
             className="w-11 h-11 md:w-10 md:h-10 pointer-events-none drop-shadow-sm"
           />

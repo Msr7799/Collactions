@@ -38,7 +38,7 @@ export default function NotFound() {
           {language === 'ar' ? 'الصفحة غير موجودة' : 'Page not found'}
         
         </h1>
-        <br />
+       
 
         <p className="relative bottom-10 z-10 text-2xl md:text-2xl  bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-400  text-center font-sans font-bold">
           {language === 'ar' 

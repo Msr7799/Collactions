@@ -81,10 +81,10 @@ export const GoogleGeminiEffect = ({
         fontFamily: 'BitingMyNails, Orbitron, monospace, Arial, sans-serif',
         textShadow: isDark 
           ? '0 0 8px rgba(196, 203, 233, 0.17), 0 0 16px rgba(102, 102, 102, 0.29), 0 1px 2px rgba(0, 0, 0, 0.8)' 
-          : '0 0 6px rgba(181, 172, 172, 0.13), 0 0 12px rgba(96, 96, 96, 0.1), 1px 1px 2px rgba(255, 255, 255, 0.8)',
+          : '0 0 6px rgba(0, 0, 0, 0.13), 0 0 12px rgba(1, 1, 1, 0.27), 1px 1px 2px rgba(255, 255, 255, 0.8)',
         filter: 'brightness(1.8)',
-        letterSpacing: '0.1em',
-        color: isDark ? undefined : '#212b41'
+        letterSpacing: '0.08em',
+        color: isDark ? undefined : '#0f131cff'
       }}
     >
       COLLACTIONS

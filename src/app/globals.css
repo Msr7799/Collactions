@@ -5,6 +5,61 @@
   font-weight: 600;
 }
 
+/* CSS to prevent flicker during language switching */
+.language-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Smooth direction change */
+html {
+  transition: direction 0.3s ease-in-out;
+}
+
+/* Prevent layout shifts during language switching */
+html, body {
+  transition: 
+    direction 0.3s ease-in-out,
+    margin 0.3s ease-in-out,
+    padding 0.3s ease-in-out !important;
+}
+
+/* All margin/padding changes should transition smoothly */
+* {
+  transition: 
+    margin 0.3s ease-in-out,
+    padding 0.3s ease-in-out,
+    left 0.3s ease-in-out,
+    right 0.3s ease-in-out,
+    text-align 0.3s ease-in-out,
+    transform 0.3s ease-in-out !important;
+}
+
+/* Prevent margin flicker on language switch */
+.ml-3, .mr-3, .ml-4, .mr-4, .ml-5, .mr-5,
+.pl-3, .pr-3, .pl-4, .pr-4, .pl-5, .pr-5,
+.space-x-2, .space-x-reverse, 
+.text-left, .text-right {
+  transition: all 0.3s ease-in-out !important;
+}
+
+/* GPU acceleration for critical elements only */
+.gpu-accelerated, 
+[dir="rtl"], 
+[dir="ltr"],
+header,
+.header {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Reduce will-change usage for input and button - only when needed */
+input:focus,
+button:hover {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
 
   :root {
     /* Dark theme (default) */

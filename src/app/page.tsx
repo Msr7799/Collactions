@@ -6,6 +6,7 @@ import ServiceGateway from '@/components/services/ServiceGateway';
 import AppIcon from '@/app/app-icon';
 import { useScroll, useTransform } from "motion/react";
 import { GoogleGeminiEffect } from "../components/ui/google-gemini-effect";
+import MainPageFlickerWrapper from '@/components/ui/main-page-flicker-wrapper';
 
 
 export default function Home() {
@@ -26,8 +27,9 @@ export default function Home() {
 
 
   return (
-    <Layout title="Collactions " >
-  <div className="flex flex-col mt-10 !w-full items-center justify-center mb-20">
+    <MainPageFlickerWrapper>
+      <Layout title="Collactions " >
+    <div className="flex flex-col mt-10 !w-full items-center justify-center mb-20">
           <div
             className="h-[400vh] bg-very-dark-bg w-full  !border-white/[0.1] rounded-md relative pt-40 overflow-clip"
             ref={ref}
@@ -50,5 +52,6 @@ export default function Home() {
       <ServiceGateway />
   
     </Layout>
+    </MainPageFlickerWrapper>
   );
 }

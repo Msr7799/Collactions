@@ -9,7 +9,6 @@ import { useScroll, useTransform } from "motion/react";
 import { GoogleGeminiEffect } from "../components/ui/google-gemini-effect";
 import MainPageFlickerWrapper from '@/components/ui/MainPageFlickerWrapper';
 
-
 export default function Home() {
 
   const ref = React.useRef(null);
@@ -53,6 +52,6 @@ export default function Home() {
       <ServiceGateway />
   
     </Layout>
-    </MainPageFlickerWrapper>
+     </MainPageFlickerWrapper> 
   );
 }

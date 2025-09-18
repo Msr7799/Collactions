@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
 
   return (
     <header 
-      className="relative top-0 left-0 right-0  w-full border-b shadow-lg"
+      className="relative top-0 left-0 right-0 w-full border-b shadow-lg z-[10000]"
       style={{
         backgroundColor: 'var(--user-bg)',
         backdropFilter: 'none'
@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                 placeholder={getTranslation('search_placeholder', language)}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full py-2 bg-background border border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm ${isRTL ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4 text-left'}`}
+                className={`w-full py-2 bg-background border border-rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm ${isRTL ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4 text-left'}`}
                 dir={isRTL ? 'rtl' : 'ltr'}
               />
             </form>
@@ -293,12 +293,12 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
         <>
           {/* Backdrop overlay to close menu when clicking outside */}
           <div 
-            className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-[9998]" 
+            className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[99998]" 
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
           {/* Menu content */}
-          <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border shadow-lg z-[9999]">
+          <div className="md:hidden fixed top-16 left-0 right-0 bg-background/98 backdrop-blur-md border shadow-2xl z-[99999]">
             <div className="px-4 py-6 space-y-4">
             
             {/* Mobile Search */}

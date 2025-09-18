@@ -50,7 +50,7 @@ export default authMiddleware({
     return res;
   },
 
-  afterAuth: (auth, req) => {
+  afterAuth: async (auth, req) => {
     const { pathname } = req.nextUrl;
 
     // 🛑 لو API user وما في userId → Unauthorized
@@ -64,13 +64,6 @@ export default authMiddleware({
       const signInUrl = new URL('/sign-in', req.url);
       signInUrl.searchParams.set('redirect_url', pathname);
       return NextResponse.redirect(signInUrl);
-    }
-
-    // ✅ مرر User context في الهيدرز
-    if (auth.userId) {
-      const res = NextResponse.next();
-      res.headers.set('X-User-Id', auth.userId);
-      return res;
     }
 
     return NextResponse.next();

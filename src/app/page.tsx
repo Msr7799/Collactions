@@ -31,8 +31,9 @@ export default function Home() {
       <Layout title="Collactions " >
     <div className="flex flex-col mt-10 !w-full items-center justify-center mb-20">
           <div
-            className="h-[400vh] bg-very-dark-bg w-full  !border-white/[0.1] rounded-md relative pt-40 overflow-clip"
+            className="h-[400vh] bg-very-dark-bg w-full !border-white/[0.1] rounded-md relative pt-40 overflow-clip"
             ref={ref}
+            style={{ position: 'relative' }}
           >
             <div className=" flex items-center justify-center  !w-full">
       

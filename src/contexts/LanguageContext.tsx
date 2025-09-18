@@ -1,75 +1,47 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Language } from '@/lib/translations';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   isRTL: boolean;
+  isLoading: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('ar');
+export const LanguageProvider: React.FC<{ 
+  children: React.ReactNode;
+  initialLanguage?: Language;
+}> = ({ children, initialLanguage = 'ar' }) => {
+  const [language, setLanguage] = useState<Language>(initialLanguage);
   const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   const isRTL = language === 'ar';
 
   useEffect(() => {
     setIsClient(true);
-    // Load saved language from localStorage
-    const savedLang = localStorage.getItem('language') as Language;
-    if (savedLang && (savedLang === 'ar' || savedLang === 'en')) {
-      setLanguage(savedLang);
-    }
+    setIsLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (isClient) {
-      // Save language to localStorage and update document direction with smooth transition
-      localStorage.setItem('language', language);
-      
-      // Add CSS transition class to prevent flicker during language switch
-      const html = document.documentElement;
-      const body = document.body;
-      
-      // Pre-apply transition to all elements that will change
-      const elementsToTransition = document.querySelectorAll('*');
-      elementsToTransition.forEach(el => {
-        if (el instanceof HTMLElement) {
-          el.classList.add('language-transition');
-        }
-      });
-      
-      // Use requestAnimationFrame to batch DOM updates and prevent layout shifts
-      requestAnimationFrame(() => {
-        // Batch all DOM changes together
-        html.dir = isRTL ? 'rtl' : 'ltr';
-        html.lang = language;
-        
-        // Add a smaller delay for DOM to settle, then remove transition classes
-        setTimeout(() => {
-          elementsToTransition.forEach(el => {
-            if (el instanceof HTMLElement) {
-              el.classList.remove('language-transition');
-            }
-          });
-        }, 100); // Much faster removal (was 350ms)
-      });
-    }
-  }, [language, isRTL, isClient]);
-
   const handleSetLanguage = (lang: Language) => {
+    // Set cookie and refresh page to re-render server with new language
+    document.cookie = `lang=${lang}; path=/; max-age=${365 * 24 * 60 * 60}; samesite=lax`;
     setLanguage(lang);
+    router.refresh(); // Trigger server re-render with new cookie
   };
 
   return (
     <LanguageContext.Provider value={{ 
       language, 
       setLanguage: handleSetLanguage, 
-      isRTL 
+      isRTL,
+      isLoading 
     }}>
       {children}
     </LanguageContext.Provider>
@@ -84,7 +56,8 @@ export const useLanguage = () => {
       return {
         language: 'ar' as Language,
         setLanguage: () => {},
-        isRTL: true
+        isRTL: true,
+        isLoading: false
       };
     }
     throw new Error('useLanguage must be used within a LanguageProvider');

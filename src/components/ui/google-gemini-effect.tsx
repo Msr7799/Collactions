@@ -110,7 +110,7 @@ export const GoogleGeminiEffect = ({
   };
 
   return (
-      <div className={cn("sticky top-139 z-0", className)}>
+      <div className={cn("sticky top-139 z-0")} >
       {/* Hero Title */}
             <div className={`absolute left-1/2 w-[890px] h-[890px] flex items-center justify-center ${
         isMobile 
@@ -132,31 +132,35 @@ export const GoogleGeminiEffect = ({
       }`}
       style={{
         color: isDark ? undefined : '#212b41'
-      }}> 
+      }}
+      suppressHydrationWarning> 
       
         {language === 'ar' ? 'بوابة الوكيل إلى العالم' : 'Your Agent\'s Gateway to the World'}
         
       </h1>
 
       {/* Search Section */}
-      <div className="max-w-2xl mx-auto mb-20" dir={isRTL ? 'rtl' : 'ltr'}>
-        <form onSubmit={handleSearch} className="relative z-[-1]">
-          <div className="relative">
-            <Search className={`absolute z-[-1] top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400 ${isRTL ? 'right-4' : 'left-4'}`} />
+      <div className="max-w-2xl mx-auto mb-20 relative z-[50]" suppressHydrationWarning>
+        <form onSubmit={handleSearch} className="relative z-[51]">
+          <div className="relative z-[52]">
+            <Search className={`absolute z-[53] top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400 ${isRTL ? 'right-4' : 'left-4'}`} />
             <input
               type="text"
               placeholder={language === 'ar' ? 'البحث في الخدمات...' : 'Search services...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full py-4 bg-black/40 backdrop-blur-sm border-5 !border-primary-hover/20 rounded-xl focus:outline-none focus:ring-3 focus:ring-[#761800]/50 focus:border-primary/40 text-white placeholder-neutral-400 transition-all duration-300 ${isRTL ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'}`}
-              dir={isRTL ? 'rtl' : 'ltr'}
+              className={`relative z-[54] w-full py-4 bg-black/40 backdrop-blur-sm border-5 !border-primary-hover/20 rounded-xl focus:outline-none focus:ring-3 focus:ring-[#761800]/50 focus:border-primary/40 text-white placeholder-neutral-400 transition-all duration-300 ${isRTL ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'} cursor-text pointer-events-auto`}
+              suppressHydrationWarning
+              style={{ pointerEvents: 'auto' }}
             />
           </div>
           
           {/* Search Button */}
           <button
             type="submit"
-            className={`absolute top-1/2 transform -translate-y-1/2 px-4 py-2 bg-[#761800] hover:bg-[#761800]/70 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${isRTL ? 'left-3' : 'right-3'}`}
+            className={`absolute z-[55] top-1/2 transform -translate-y-1/2 px-4 py-2 bg-[#761800] hover:bg-[#761800]/70 text-white rounded-lg transition-colors duration-200 text-sm font-medium ${isRTL ? 'left-3' : 'right-3'} cursor-pointer pointer-events-auto`}
+            style={{ pointerEvents: 'auto' }}
+            suppressHydrationWarning
           >
             {language === 'ar' ? 'بحث' : 'Search'}
           </button>

@@ -39,19 +39,19 @@ const Footer: React.FC = () => {
             <div>
               <h3 className="font-semibold text-foreground mb-3">Resources</h3>
               <ul className="space-y-2 text-sm text-white/80">
-                <li><a href="#" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Documentation</a></li>
-                <li><a href="#" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">API Reference</a></li>
-                <li><a href="#" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">System Status</a></li>
+                <li><a href="https://github.com/Msr7799/collactions" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Documentation</a></li>
+                <li><a href="https://github.com/Msr7799/collactions" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">API Reference</a></li>
+                <li><a href="https://github.com/Msr7799/collactions" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">System Status</a></li>
               </ul>
             </div>
             
             <div>
               <h3 className="font-semibold text-foreground mb-3">Company</h3>
               <ul className="space-y-2 text-sm text-white/80">
-                <li><a href="#" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Mission</a></li>
-                <li><a href="#" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Blog</a></li>
-                <li><a href="#" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Careers</a></li>
-                <li><a href="#" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Privacy Policy</a></li>
+                <li><a href="https://github.com/Msr7799/collactions" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Mission</a></li>
+                <li><a href="https://github.com/Msr7799/collactions" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Blog</a></li>
+                <li><a href="https://github.com/Msr7799/collactions" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Careers</a></li>
+                <li><a href="https://github.com/Msr7799/collactions" className="hover:text-primary-hover transition-colors duration-300 ease-in-out">Privacy Policy</a></li>
               </ul>
             </div>
             
@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
 
           <div className="border-t mt-15 pt-10 text-center text-sm text-foreground/50">
             <p>
-              built with love by developer Mohamed Alromaihi <Heart className="inline-block  mx-1 mr-2 w-5 h-5 text-primary-hover" />
+              Built with love by developer Mohamed Alromaihi <Heart className="inline-block mx-1 mr-2 w-5 h-5 text-primary-hover" />
             </p>
             <div className="mt-1 text-xs text-white/40">
             &copy; 2025 Collactions. All rights reserved.

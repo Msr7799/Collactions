@@ -55,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
         backgroundColor: 'var(--user-bg)',
         backdropFilter: 'none'
       }}
-      dir={isRTL ? 'rtl' : 'ltr'}
+      suppressHydrationWarning
     >
       <div className={`w-full flex h-16 md:h-20 items-center px-4 md:px-6 ${isRTL ? 'flex-row' : 'flex-row'}`}>
         
@@ -98,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={`w-full py-2 bg-background border border-rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm ${isRTL ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4 text-left'}`}
-                dir={isRTL ? 'rtl' : 'ltr'}
+                suppressHydrationWarning
               />
             </form>
           </div>
@@ -311,7 +311,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = true, onMenuToggle 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={`w-full py-3 bg-accent border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 ${isRTL ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4 text-left'}`}
-                  dir={isRTL ? 'rtl' : 'ltr'}
+                  suppressHydrationWarning
                 />
               </form>
             )}

@@ -149,7 +149,7 @@ const SettingsPage: React.FC = () => {
 
           {/* User Info Card */}
           {user && (
-            <div className="border-3 !border-[var(--user-border)] bg-[var(--user-bg)] rounded-lg z-50 p-6 mb-8">
+            <div className="border-3 !border-[var(--user-border)] bg-user-bg/60 rounded-lg z-50 p-6 mb-8">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-[var(--bg-dark)] rounded-full border-3 !border-[var(--muted)]/90 flex items-center justify-center">
                   <User className="w-8 h-8 text-foreground" />
@@ -182,7 +182,7 @@ const SettingsPage: React.FC = () => {
                   </h2>
                 </div>
 
-                <div className="bg-[var(--user-bg)] z-50 border-4 rounded-lg divide-y">
+                <div className="bg-user-bg/60 z-50 border-4 rounded-lg divide-y">
                   {category.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="p-4 hover:bg-muted/40 border-2 transition-colors">
                       <button className="w-full text-left flex items-center justify-between">

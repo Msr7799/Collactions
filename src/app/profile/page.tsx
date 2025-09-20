@@ -4,34 +4,112 @@ import React from 'react';
 import TransparentLayout from '@/components/layout/TransparentLayout';
 import { StarsLayout } from '@/components/layout/StarsLayout';
 import { User, Mail, Calendar, Globe, Shield, Activity, Edit } from 'lucide-react';
-// Temporarily disabled to fix Next.js 15 headers() error
-// import { useUser } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslation } from '@/lib/translations';
 
 const ProfilePage: React.FC = () => {
   const { language, isRTL } = useLanguage();
+  const { isSignedIn, user, isLoaded } = useUser();
   
-  // Temporarily disabled to fix Next.js 15 headers() error
-  // const { user } = useUser();
-  const user = {
-    fullName: getTranslation('temporary_user', language),
-    primaryEmailAddress: { emailAddress: 'user@example.com' },
-    createdAt: new Date().toISOString()
-  };
+  // Show loading while auth is loading
+  if (!isLoaded) {
+    return (
+      <StarsLayout>
+        <TransparentLayout title="Collactions" showSearch={false}>
+          <div className="min-h-screen text-foreground py-8">
+            <div className="max-w-6xl mx-auto px-6">
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                  <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-muted">{getTranslation('loading', language)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TransparentLayout>
+      </StarsLayout>
+    );
+  }
+  
+  // Show sign-in prompt if not signed in
+  if (!isSignedIn) {
+    return (
+      <StarsLayout>
+        <TransparentLayout title="Collactions" showSearch={false}>
+          <div className="min-h-screen text-foreground py-8">
+            <div className="max-w-6xl mx-auto px-6">
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                  <User className="w-16 h-16 text-muted mx-auto mb-4" />
+                  <h2 className="text-2xl font-bold mb-2">{getTranslation('sign_in_required', language)}</h2>
+                  <p className="text-muted">{getTranslation('please_sign_in_to_view_profile', language)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TransparentLayout>
+      </StarsLayout>
+    );
+  }
+
+  // Calculate days since joining
+  const daysSinceJoining = user?.createdAt ? 
+    Math.floor((new Date().getTime() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
   const stats = [
-    { label: getTranslation('services_used', language), value: '12', icon: <Activity className="w-5 h-5" /> },
-    { label: getTranslation('api_calls', language), value: '2.3K', icon: <Globe className="w-5 h-5" /> },
-    { label: getTranslation('active_projects', language), value: '5', icon: <Shield className="w-5 h-5" /> },
-    { label: getTranslation('active_days', language), value: '28', icon: <Calendar className="w-5 h-5" /> }
+    { 
+      label: getTranslation('services_used', language), 
+      value: '12', 
+      icon: <Activity className="w-5 h-5" /> 
+    },
+    { 
+      label: getTranslation('api_calls', language), 
+      value: '2.3K', 
+      icon: <Globe className="w-5 h-5" /> 
+    },
+    { 
+      label: getTranslation('active_projects', language), 
+      value: '5', 
+      icon: <Shield className="w-5 h-5" /> 
+    },
+    { 
+      label: getTranslation('active_days', language), 
+      value: daysSinceJoining.toString(), 
+      icon: <Calendar className="w-5 h-5" /> 
+    }
   ];
 
+  // Generate recent activity based on user data
   const recentActivity = [
-    { action: getTranslation('used_context7_service', language), time: getTranslation('minutes_ago', language), status: 'success' },
-    { action: getTranslation('created_new_project', language), time: getTranslation('hour_ago', language), status: 'info' },
-    { action: getTranslation('updated_settings', language), time: getTranslation('hours_ago_3', language), status: 'warning' },
-    { action: getTranslation('new_login', language), time: getTranslation('day_ago', language), status: 'success' }
+    { 
+      action: getTranslation('used_context7_service', language), 
+      time: getTranslation('minutes_ago', language), 
+      status: 'success' 
+    },
+    { 
+      action: getTranslation('created_new_project', language), 
+      time: getTranslation('hour_ago', language), 
+      status: 'info' 
+    },
+    ...(user?.lastSignInAt ? [{
+      action: getTranslation('new_login', language),
+      time: new Date(user.lastSignInAt).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      status: 'success' as const
+    }] : []),
+    { 
+      action: getTranslation('account_created' as any, language), 
+      time: user?.createdAt ? new Date(user.createdAt).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+        month: 'short',
+        day: 'numeric'
+      }) : getTranslation('unknown' as any, language), 
+      status: 'info' 
+    }
   ];
 
   const getStatusColor = (status: string) => {
@@ -60,21 +138,36 @@ const ProfilePage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             {/* Profile Info */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1 bg-user-bg/50 space-y-6">
               
               {/* User Card */}
               <div className=" border rounded-lg p-6">
                 <div className="text-center">
-                  <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                    <User className="w-12 h-12 text-black" />
-                  </div>
+                  {user?.imageUrl ? (
+                    <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 border-2 border-primary/20">
+                      <img 
+                        src={user.imageUrl} 
+                        alt={user.fullName || user.firstName || 'User'} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl font-bold text-black">
+                        {(user?.firstName?.[0] || user?.fullName?.[0] || 'U').toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                   <h2 className="text-xl font-semibold text-foreground mb-1">
-                    {user?.fullName || getTranslation('user', language)}
+                    {user?.fullName || user?.firstName || getTranslation('user', language)}
                   </h2>
                   <p className="text-muted mb-4">
                     {user?.primaryEmailAddress?.emailAddress}
                   </p>
-                  <button className="w-full px-4 py-2 bg-primary hover:bg-primary-hover text-black rounded-md font-medium transition-colors flex items-center justify-center space-x-2">
+                  <button 
+                    onClick={() => window.open('https://accounts.clerk.dev', '_blank')}
+                    className="w-full px-4 py-2 bg-primary hover:bg-primary-hover text-black rounded-md font-medium transition-colors flex items-center justify-center space-x-2"
+                  >
                     <Edit className="w-4 h-4" />
                     <span>{getTranslation('edit_profile', language)}</span>
                   </button>
@@ -82,7 +175,7 @@ const ProfilePage: React.FC = () => {
               </div>
 
               {/* Account Details */}
-              <div className=" border rounded-lg p-6">
+              <div className=" border  rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">{getTranslation('account_details', language)}</h3>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
@@ -97,7 +190,11 @@ const ProfilePage: React.FC = () => {
                     <div>
                       <p className="text-sm text-muted">{getTranslation('join_date', language)}</p>
                       <p className="text-foreground">
-                        {user?.createdAt ? new Date(user.createdAt).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US') : getTranslation('not_specified', language)}
+                        {user?.createdAt ? new Date(user.createdAt).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : getTranslation('not_specified', language)}
                       </p>
                     </div>
                   </div>
@@ -105,9 +202,46 @@ const ProfilePage: React.FC = () => {
                     <Shield className="w-5 h-5 text-primary" />
                     <div>
                       <p className="text-sm text-muted">{getTranslation('account_status', language)}</p>
-                      <span className="inline-block px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">
-                        {getTranslation('active_verified', language)}
+                      <span className={`inline-block px-2 py-1 rounded text-xs ${
+                        user?.primaryEmailAddress?.verification?.status === 'verified' 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-yellow-500/20 text-yellow-400'
+                      }`}>
+                        {user?.primaryEmailAddress?.verification?.status === 'verified' 
+                          ? getTranslation('active_verified', language)
+                          : getTranslation('pending_verification' as any, language)
+                        }
                       </span>
+                    </div>
+                  </div>
+                  
+                  {/* Last Sign In */}
+                  {user?.lastSignInAt && (
+                    <div className="flex items-center space-x-3">
+                      <Activity className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="text-sm text-muted">{getTranslation('last_sign_in' as any, language)}</p>
+                        <p className="text-foreground">
+                          {new Date(user.lastSignInAt).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* User ID */}
+                  <div className="flex items-center space-x-3">
+                    <User className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted">{getTranslation('user_id' as any, language)}</p>
+                      <p className="text-foreground font-mono text-xs break-all">
+                        {user?.id}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -115,7 +249,7 @@ const ProfilePage: React.FC = () => {
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 bg-user-bg/60 space-y-6">
               
               {/* Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

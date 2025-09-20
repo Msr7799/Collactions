@@ -11,7 +11,7 @@ export default function NotFound() {
   const { language } = useLanguage();
 
   return (
-    <div className="min-h-screen  text-white flex items-center justify-center relative overflow-hidden">
+    <div className="dark min-h-screen bg-black text-white flex items-center justify-center relative overflow-hidden">
       {/*app icon*/}
       <div className="absolute inset-0 flex items-center justify-center bottom-150">
       <AppIcon />
@@ -40,7 +40,7 @@ export default function NotFound() {
         </h1>
        
 
-        <p className="relative bottom-10 z-10 text-2xl md:text-2xl  bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-400  text-center font-sans font-bold">
+        <p className="relative top-5 z-10 text-2xl md:text-2xl  bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-400  text-center font-sans font-bold">
           {language === 'ar' 
             ? 'عذراً، لم نتمكن من العثور على الصفحة التي تبحث عنها.'
             : "Sorry, we couldn't find the page you're looking for."

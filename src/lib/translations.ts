@@ -388,6 +388,34 @@ export const translations = {
     ar: 'جاري التحميل...',
     en: 'Loading...'
   },
+  sign_in_required: {
+    ar: 'تسجيل الدخول مطلوب',
+    en: 'Sign In Required'
+  },
+  please_sign_in_to_view_profile: {
+    ar: 'يرجى تسجيل الدخول لعرض الملف الشخصي',
+    en: 'Please sign in to view your profile'
+  },
+  pending_verification: {
+    ar: 'في انتظار التحقق',
+    en: 'Pending Verification'
+  },
+  last_sign_in: {
+    ar: 'آخر تسجيل دخول',
+    en: 'Last Sign In'
+  },
+  user_id: {
+    ar: 'معرف المستخدم',
+    en: 'User ID'
+  },
+  account_created: {
+    ar: 'تم إنشاء الحساب',
+    en: 'Account Created'
+  },
+  unknown: {
+    ar: 'غير معروف',
+    en: 'Unknown'
+  },
   error: {
     ar: 'خطأ',
     en: 'Error'

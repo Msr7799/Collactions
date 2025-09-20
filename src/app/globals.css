@@ -122,7 +122,7 @@ button:hover {
   /* Light theme */
   :root.light {
     --very-dark-bg: #E5E5E5;  /* Lighter very dark background for light mode */
-    --user-bg: #f8f8f8;
+    --user-bg: #f8f8f8c6;
     --background: #ffffff9f;
     --slate: #1d293d;
     --high-light-bg: #f8f9fa;

@@ -143,7 +143,7 @@ export const GoogleGeminiEffect = ({
       <div className="max-w-2xl mx-auto mb-20 relative z-[50]" suppressHydrationWarning>
         <form onSubmit={handleSearch} className="relative z-[51]">
           <div className="relative z-[52]">
-            <Search className={`absolute z-[53] top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400 ${isRTL ? 'right-4' : 'left-4'}`} />
+            <Search className={`absolute  top-1/2 transform z-[55] -translate-y-1/2 w-5 h-5 text-neutral-400 ${isRTL ? 'right-4' : 'left-4'}`} />
             <input
               type="text"
               placeholder={language === 'ar' ? 'البحث في الخدمات...' : 'Search services...'}

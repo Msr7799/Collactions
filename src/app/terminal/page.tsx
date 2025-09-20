@@ -1407,7 +1407,7 @@ nothing to commit, working tree clean`;
       );
       
       if (shouldSave) {
-        // Call the main saveNanoFile function
+        saveNanoFile();
       }
     }
     
@@ -1417,6 +1417,44 @@ nothing to commit, working tree clean`;
     if (inputRef.current) {
       inputRef.current.focus();
     }
+  };
+
+  const saveNanoFile = () => {
+    const fullPath = currentPath + '/' + nanoFile.name;
+    const node = getNodeAtPath(fullPath);
+    
+    if (node) {
+      // Update existing file
+      node.content = nanoFile.content;
+    } else {
+      // Create new file
+      const pathParts = fullPath.split('/').filter(Boolean);
+      const fileName = pathParts.pop()!;
+      const dirPath = '/' + pathParts.join('/');
+      const parentNode = getNodeAtPath(dirPath);
+      
+      if (parentNode && parentNode.type === 'directory') {
+        parentNode.children = parentNode.children || {};
+        parentNode.children[fileName] = {
+          name: fileName,
+          type: 'file',
+          permissions: '-rw-r--r--',
+          owner: environment.USER,
+          modified: new Date(),
+          size: nanoFile.content.length,
+          content: nanoFile.content
+        };
+      }
+    }
+    
+    // Show save confirmation
+    setCommands(prev => [...prev, {
+      input: '',
+      output: language === 'ar' ? 
+        `تم حفظ الملف: ${nanoFile.name}` :
+        `File saved: ${nanoFile.name}`,
+      timestamp: new Date()
+    }]);
   };
 
   const handleCommand = async () => {
@@ -1476,51 +1514,6 @@ nothing to commit, working tree clean`;
     const promptSymbol = '➜';
     
     return `${promptSymbol} ${user}@${host}:${path} ${gitBranch}`;
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const completed = getTabCompletion(currentCommand);
-      setCurrentCommand(completed);
-    } else if (e.key === 'Enter' && currentCommand.trim()) {
-      handleCommand();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
-        const newIndex = historyIndex + 1;
-        setHistoryIndex(newIndex);
-        setCurrentCommand(commandHistory[commandHistory.length - 1 - newIndex]);
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (historyIndex > 0) {
-        const newIndex = historyIndex - 1;
-        setHistoryIndex(newIndex);
-        setCurrentCommand(commandHistory[commandHistory.length - 1 - newIndex]);
-      } else if (historyIndex === 0) {
-        setHistoryIndex(-1);
-        setCurrentCommand('');
-      }
-    } else if (e.ctrlKey && e.key === 'c') {
-      e.preventDefault();
-      setCurrentCommand('');
-      setCommands(prev => [...prev, {
-        input: currentCommand + '^C',
-        output: '',
-        timestamp: new Date()
-      }]);
-    } else if (e.ctrlKey && e.key === 'l') {
-      e.preventDefault();
-      setCommands([]);
-    } else if (e.ctrlKey && e.key === 'r') {
-      e.preventDefault();
-      // البحث في تاريخ الأوامر
-      const searchTerm = prompt(language === 'ar' ? 'ابحث في تاريخ الأوامر:' : 'Search command history:');
-      if (searchTerm) {
-        const matches = commandHistory.filter(cmd => cmd.includes(searchTerm));
-        if (matches.length > 0) {
-          setCurrentCommand(matches[matches.length - 1]);
-        }
-      }
-    }
   };
 
   const handleNanoKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -1536,7 +1529,7 @@ nothing to commit, working tree clean`;
   return (
     <StarsLayout>
       <TransparentLayout>
-        <div className="min-h-screen mt-20 text-green-400 font-mono">
+        <div className="min-h-screen flex justify-center items-center text-green-400 font-mono">
           <div className={'transition-all duration-300 ' + (isMaximized ? 'fixed inset-0 z-50' : 'container mx-auto p-4')}>
             <div className={'bg-black border border-green-500 rounded-lg overflow-hidden shadow-2xl ' + (isMinimized ? 'h-12' : 'h-[700px]')}>
               {/* Terminal Header */}

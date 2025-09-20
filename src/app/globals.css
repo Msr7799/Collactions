@@ -100,7 +100,7 @@ button:hover {
     
     /* CodeBlock Colors - Dark Mode */
     --codeblock-bg: #1e1e1e;
-    --codeblock-header-bg: #212121;
+    --codeblock-header-bg: #080808;
     --codeblock-text: #e0e6ed;
     --codeblock-text-muted: #b8b8b8;
     --codeblock-border: #3e3e3e;

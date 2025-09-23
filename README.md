@@ -1,7 +1,8 @@
 # Structure Drawing Tool - Advanced Diagramming Application
-   <td align="center" style="padding: 50px;">
-        <img src="public/app-icon-red.svg" width="300" height="300" style="border-radius: 10px; border: 2px solid gray; flex: 1; align-items: center; justify-content: center; padding: 10px; margin: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
-      </td>
+  <p align="center">
+  <img src="public/app-icon-red.svg" alt="App Icon" width="300" height="300">
+</p>
+
 
 [![Next.js Version](https://img.shields.io/badge/Next.js-14.0+-blue.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://typescriptlang.org/)
@@ -41,9 +42,9 @@ Structure Drawing Tool is a sophisticated web-based diagramming application buil
 
 [![Features](https://img.shields.io/badge/Features-%E2%9C%85-white?style=for-the-badge&logo=readme&logoColor=white)](FEATURES.md)
 
-   <td align="center" style="padding: 50px;">
-        <img src="public/small_icon_lime.svg" width="150" height="300" style="border-radius: 10px; flex: 1; align-items: center; justify-content: center; padding: 10px; margin: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
-      </td>
+  <p align="center">
+  <img src="public/small_icon_lime.svg" alt="App Icon" width="300" height="300">
+</p>
 
 ### 🎨 **Advanced Drawing Engine**
 - **Interactive Canvas**: High-performance drawing canvas with zoom and pan

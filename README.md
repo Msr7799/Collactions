@@ -1,6 +1,6 @@
 # Structure Drawing Tool - Advanced Diagramming Application
    <td align="center" style="padding: 50px;">
-        <img src="public/app-icon-red.svg" width="300" height="300" style="border-radius: 10px; flex: 1; align-items: center; justify-content: center; padding: 10px; margin: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
+        <img src="public/app-icon-red.svg" width="300" height="300" style="border-radius: 10px; border: 2px solid gray; flex: 1; align-items: center; justify-content: center; padding: 10px; margin: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
       </td>
 
 [![Next.js Version](https://img.shields.io/badge/Next.js-14.0+-blue.svg)](https://nextjs.org/)

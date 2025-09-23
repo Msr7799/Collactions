@@ -416,6 +416,18 @@ export const translations = {
     ar: 'غير معروف',
     en: 'Unknown'
   },
+  please_sign_in_to_access_settings: {
+    ar: 'يرجى تسجيل الدخول للوصول إلى الإعدادات',
+    en: 'Please sign in to access settings'
+  },
+  joined: {
+    ar: 'انضم في',
+    en: 'Joined'
+  },
+  coming_soon: {
+    ar: 'قريباً',
+    en: 'Coming Soon'
+  },
   error: {
     ar: 'خطأ',
     en: 'Error'

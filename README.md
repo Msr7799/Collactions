@@ -1,17 +1,12 @@
 # Structure Drawing Tool - Advanced Diagramming Application
-  <p align="center">
-  <img src="public/app-icon-red.svg" alt="App Icon" width="300" height="300">
-</p>
+   <td align="center" style="padding: 50px;">
+        <img src="public/app-icon-red.svg" width="300" height="300" style="border-radius: 10px; flex: 1; align-items: center; justify-content: center; padding: 10px; margin: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
+      </td>
 
-
-[![Next.js Version](https://img.shields.io/badge/Next.js-14.0+-blue.svg)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://typescriptlang.org/)
+[![Next.js Version](https://img.shields.io/badge/Next.js-15%2B-blue.svg)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.0+-blue.svg)](https://tailwindcss.com/)
-
-[![Releases](https://img.shields.io/badge/Releases-green?style=for-the-badge&logo=github)](https://github.com/your-repo/releases)
-
-## Overview
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.x-blue.svg)](https://tailwindcss.com/)
 
 [![Read in Arabic](https://img.shields.io/badge/Read%20in%20Arabic-%E2%9C%85-white?style=for-the-badge&logo=readme&logoColor=white)](README-ar.md)
 
@@ -42,9 +37,7 @@ Structure Drawing Tool is a sophisticated web-based diagramming application buil
 
 [![Features](https://img.shields.io/badge/Features-%E2%9C%85-white?style=for-the-badge&logo=readme&logoColor=white)](FEATURES.md)
 
-  <p>
-  <img src="public/small_icon_lime.svg" alt="App Icon" width="150" height="150">
-</p>
+<img src="public/collactions-logo.svg" width="150" height="150" />
 
 ### 🎨 **Advanced Drawing Engine**
 - **Interactive Canvas**: High-performance drawing canvas with zoom and pan
@@ -93,177 +86,83 @@ Structure Drawing Tool is a sophisticated web-based diagramming application buil
 - pnpm 8.0 or higher
 - Git
 
-### Installation
+### Run locally
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-repo/structure-drawing-tool.git
-   cd structure-drawing-tool
-   ```
+```bash
+git clone https://github.com/Msr7799/collactions.git
+cd collactions
+pnpm install
+cp .env.example .env.local
+# edit .env.local to provide your keys (Clerk, OpenAI/Anthropic if used)
+pnpm dev
 
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
+# Open http://localhost:3000
+```
 
-3. **Configure environment variables**
-   ```bash
-   cp .env.example .env.local
-   # Edit .env.local with your configuration
-   ```
+Notes:
+- The app uses MCP integration under `src/lib/mcp.ts` and the MCP API routes in `src/app/api/mcp`.
+- AI backends are pluggable and configured via environment variables. The project integrates with free model endpoints where possible — see `src/app/api/generate-image/route.ts` and `src/app/api/chat/*` for examples.
 
-4. **Run the development server**
-   ```bash
-   pnpm dev
-   ```
-
-5. **Open the application**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 📱 Platform Support
-
-| Platform | Status | Notes |
-|----------|--------|-------|
-| Web (Desktop) | ✅ | Full support |
-| Web (Mobile) | ✅ | Responsive design |
-| PWA | ✅ | Offline capable |
-| Electron | 🔄 | In development |
-
-## 🏗️ Project Structure
+## Project Layout (high level)
 
 ```
 src/
-├── app/                        # Next.js 14 App Router
-│   ├── api/                   # API routes
-│   │   └── chat/             # AI chat endpoints
-│   ├── dashboard/            # Main dashboard
-│   ├── enhanced-chat/        # AI chat interface
-│   └── prompts/             # AI prompt management
-├── components/              # React components
-│   ├── ai/                 # AI-related components
-│   ├── layout/            # Layout components
-│   └── prompts/          # Prompt components
-├── contexts/             # React contexts
-│   └── LanguageContext.tsx # Language switching
-├── lib/                 # Utility libraries
-│   ├── api.ts          # API utilities
-│   ├── mcp.ts         # MCP integration
-│   └── utils.ts      # General utilities
-└── types/           # TypeScript type definitions
+├─ app/                # Next.js App Router (pages, API routes, terminal)
+├─ components/         # UI components (ai, layout, prompts, providers)
+├─ contexts/           # React contexts (LanguageContext, ThemeContext)
+├─ lib/                # Utilities (api, mcp, models, translations)
+├─ config/             # mcp-servers.json and related config
+└─ styles/             # CSS / fonts
 ```
 
-## 🔧 Configuration
+## Important Files to Review
 
-### Environment Variables
+- `src/app/terminal/page.tsx` — terminal emulator and nano-like editor behavior
+- `src/app/prompts/CodeBlock.tsx` — the advanced code block UI
+- `src/app/api/mcp/templates/route.ts` — MCP templates API
+- `src/lib/mcp.ts` — MCP client/server utilities
 
-Create a `.env.local` file with the following variables:
+## Environment variables
+
+Create `.env.local` (example keys):
 
 ```env
-# Authentication
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
 CLERK_SECRET_KEY=your_clerk_secret
 
-# AI Services
+# Optional AI service keys (if you want to use external models)
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
 
-# Database
-DATABASE_URL=your_database_url
-
-# App Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-### Available Drawing Tools
+## Technologies Used
 
-#### Shape Tools
-- **Basic Shapes**: Rectangle, Circle, Triangle, Line
-- **Flowchart**: Process, Decision, Connector, Terminal
-- **Network**: Server, Router, Database, Cloud
-- **UML**: Class, Sequence, Use Case diagrams
+- Next.js (App Router)
+- React 19 + TypeScript
+- Tailwind CSS
+- Framer Motion (animations)
+- Clerk (authentication)
+- Model Context Protocol (MCP) integration (`@modelcontextprotocol/sdk`)
+- Free AI model integrations (configurable via environment variables)
+- Zustand (state management)
+- Lucide icons, MUI (select components)
 
-#### AI Features
-- **Smart Layout**: Automatic diagram organization
-- **Text-to-Diagram**: Generate diagrams from descriptions
-- **Style Transfer**: Apply consistent styling
-- **Content Suggestions**: Intelligent content recommendations
+## Development notes
 
-## 🎯 Usage
+- Keep templates and MCP server configuration in `config/mcp-servers.json` and the API routes under `src/app/api/mcp`.
+- The language system uses a cookie + middleware for SSR-friendly language selection in `middleware.ts` and `src/contexts/LanguageContext.tsx`.
+- If you add new AI backends, implement them behind `src/lib/api.ts` and the API routes so the UI can call them securely.
 
-### Basic Diagram Creation
-1. Launch the application and sign in
-2. Select "New Diagram" from the dashboard
-3. Choose a template or start blank
-4. Use the toolbar to add shapes and connections
-5. Customize styling and properties
+## Contributing
 
-### AI-Assisted Drawing
-1. Open the AI chat panel
-2. Describe the diagram you want to create
-3. The AI will generate suggestions and layouts
-4. Refine and customize the generated content
+Contributions are welcome — fork, create a feature branch, and open a pull request. Please keep language support and tests in mind.
 
-### Collaboration
-1. Share your diagram with team members
-2. Enable real-time collaboration mode
-3. See live cursors and changes
-4. Use comments for feedback
+## License
 
-### Export & Sharing
-1. Click the export button in the toolbar
-2. Choose your preferred format (PNG/SVG/PDF)
-3. Configure export settings
-4. Download or share the diagram
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow TypeScript best practices
-- Maintain bilingual support (English/Arabic)
-- Write comprehensive tests
-- Update documentation
-- Ensure responsive design
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Developer
-
-**Your Name**
-- 📧 Email: your.email@example.com
-- 🌐 GitHub: [Your GitHub Profile](https://github.com/yourusername)
-
-## 🐛 Bug Reports & Feature Requests
-
-If you encounter any issues or have suggestions for improvements:
-
-📧 **Email**: your.email@example.com
-
-Please include:
-- Browser and OS information
-- Steps to reproduce the issue
-- Expected vs actual behavior
-- Screenshots (if applicable)
-
-## 🙏 Acknowledgments
-
-- Next.js team for the amazing framework
-- OpenAI and Anthropic for AI capabilities
-- Tailwind CSS for styling system
-- Open-source community contributors
+MIT — see [LICENSE](LICENSE)
 
 ---
 
-**Structure Drawing Tool** - Empowering visual communication with intelligent diagramming
-
-Built with ❤️ for the global community
+If you want, I can also add a short developer section that lists how to run unit tests, linting commands, and how to add MCP templates programmatically.

@@ -42,8 +42,8 @@ Structure Drawing Tool is a sophisticated web-based diagramming application buil
 
 [![Features](https://img.shields.io/badge/Features-%E2%9C%85-white?style=for-the-badge&logo=readme&logoColor=white)](FEATURES.md)
 
-  <p align="center">
-  <img src="public/small_icon_lime.svg" alt="App Icon" width="300" height="300">
+  <p>
+  <img src="public/small_icon_lime.svg" alt="App Icon" width="150" height="150">
 </p>
 
 ### 🎨 **Advanced Drawing Engine**

@@ -3,6 +3,7 @@
   <p align="center">
   <img src="public/app-icon-red.svg" alt="App Icon" width="300" height="300">
 </p>
+
 [![Next.js Version](https://img.shields.io/badge/Next.js-14.0+-blue.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)

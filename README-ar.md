@@ -1,9 +1,8 @@
 # أداة رسم الهيكلة - تطبيق الرسوم البيانية المتقدم
 
-   <td align="center" style="padding: 50px;">
-        <img src="public/app-icon-red.svg" width="300" height="300" style="border-radius: 10px; flex: 1; align-items: center; justify-content: center; padding: 10px; margin: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
-      </td>
-
+  <p align="center">
+  <img src="public/app-icon-red.svg" alt="App Icon" width="300" height="300">
+</p>
 [![Next.js Version](https://img.shields.io/badge/Next.js-14.0+-blue.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -42,7 +41,11 @@
 
 [![Features](https://img.shields.io/badge/Features-%E2%9C%85-white?style=for-the-badge&logo=readme&logoColor=white)](FEATURES-ar.md)
 
-<img src="public/collactions-logo.svg" width="150" height="150" />
+<p align="right">
+  <img src="public/small_icon_lime.svg" alt="App Icon" width="150" height="150">
+</p>
+
+
 
 ### 🎨 **محرك الرسم المتطور**
 - **لوحة تفاعلية**: لوحة رسم عالية الأداء مع إمكانيات التكبير والتحريك

@@ -2,27 +2,27 @@
   "servers": {
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"],
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@2025.8.21", "./"],
       "env": {},
       "description": "Local filesystem operations - read and write files"
     },
     "fetch": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
       "env": {},
-      "description": "Web content fetching from URLs and APIs"
+      "description": "Web content fetching from URLs and APIs (uvx mcp-server-fetch)"
     },
     "git": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-git"],
+      "args": ["-y", "@modelcontextprotocol/server-github@2025.4.8"],
       "env": {
         "GIT_DIR": "./.git"
       },
-      "description": "Git repository operations and version control"
+      "description": "GitHub-backed Git operations (server-github) — ملاحظة: package مُعلَن كمُهمل (DEPRECATED)"
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequentialthinking"],
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking@2025.7.1"],
       "env": {
         "DEBUG": "false"
       },
@@ -30,7 +30,7 @@
     },
     "memory": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "args": ["-y", "@modelcontextprotocol/server-memory@2025.8.4"],
       "env": {
         "MEMORY_BACKEND": "json",
         "MEMORY_PATH": "./src/app/prompts/chat"
@@ -39,18 +39,18 @@
     },
     "time": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-time"],
+      "args": ["-y", "@odgrim/mcp-datetime@0.2.0"],
       "env": {},
-      "description": "Time and date operations with timezone support"
+      "description": "Time and date operations with timezone & IANA timezone support (mcp-datetime)"
     },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"],
+      "args": ["-y", "@upstash/context7-mcp@1.0.17"],
       "env": {
         "API_KEY": "d69119af-ffd5-426a-babe-649f4b13269f",
         "ENDPOINT": "https://api.upstash.com/context7"
       },
-      "description": "Context7 documentation and library search",
+      "description": "Context7 documentation and library search (Upstash)",
       "disabled": false
     }
   },
@@ -60,7 +60,7 @@
       "name": "Time Server",
       "description": "الحصول على الوقت والتاريخ الحالي مع دعم المناطق الزمنية",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-time"],
+      "args": ["-y", "@odgrim/mcp-datetime@0.2.0"],
       "category": "utility",
       "tools": ["get_current_time", "convert_timezone", "format_date"]
     },
@@ -69,7 +69,7 @@
       "name": "Fetch Server",
       "description": "جلب محتوى المواقع والـ APIs مع دعم المصادقة",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "args": ["-y", "@smithery/mcp-fetch@0.8.12"],
       "category": "web",
       "tools": ["fetch_url", "post_request", "get_headers"]
     },
@@ -78,7 +78,7 @@
       "name": "Filesystem Server",
       "description": "قراءة وكتابة وإدارة الملفات المحلية",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"],
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@2025.8.21", "./"],
       "category": "files",
       "tools": ["read_file", "write_file", "list_directory", "create_directory"]
     },
@@ -87,7 +87,7 @@
       "name": "Sequential Thinking",
       "description": "نظام التفكير المتسلسل والتحليل المنطقي خطوة بخطوة",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequentialthinking"],
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking@2025.7.1"],
       "category": "ai",
       "tools": ["think_step_by_step", "analyze_problem", "generate_solution"]
     },
@@ -96,18 +96,27 @@
       "name": "Memory Server",
       "description": "نظام الذاكرة والمعرفة المتقدم مع قاعدة بيانات JSON",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "args": ["-y", "@modelcontextprotocol/server-memory@2025.8.4"],
       "category": "ai",
       "tools": ["create_entities", "search_nodes", "add_observations", "create_relations"]
     },
     {
       "id": "git",
       "name": "Git Server",
-      "description": "عمليات Git وإدارة التحكم في الإصدارات",
+      "description": "عمليات Git وإدارة التحكم في الإصدارات (GitHub-focused)",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-git"],
+      "args": ["-y", "@modelcontextprotocol/server-github@2025.4.8"],
       "category": "development",
       "tools": ["git_status", "git_log", "git_diff", "git_commit", "git_branch"]
+    },
+    {
+      "id": "context7",
+      "name": "Context7",
+      "description": "Context7 documentation and library search (Upstash)",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@1.0.17"],
+      "category": "web",
+      "tools": ["search_docs", "get_examples", "get_versions"]
     }
   ],
   "production": {

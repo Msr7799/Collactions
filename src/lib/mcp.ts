@@ -97,8 +97,16 @@ export class SimpleMCPClient {
 
         childProcess.stdout?.on('data', (data: Buffer) => {
           const response = data.toString();
-          // اعتبر أي مخرجات كعلامة على النجاح
-          if (!server.isConnected && response.trim()) {
+          console.log(`📥 ${id} stdout:`, response.trim());
+          
+          // 🔧 FIX: ابحث عن علامات جاهزية محددة
+          if (!server.isConnected && response.trim() && 
+              (response.includes('stdio transport') || 
+               response.includes('server connected') ||
+               response.includes('MCP server') ||
+               response.includes('running') ||
+               response.includes('ready'))) {
+            console.log(`✅ Server ${id} readiness detected`);
             clearTimeout(timeout);
             resolve(true);
           }
@@ -123,13 +131,23 @@ export class SimpleMCPClient {
           console.warn(`⚠️ Failed to send initialize to ${id}:`, error);
         }
 
-        // تأكد من النجاح بعد ثانيتين
+        // 🔧 FIX: انتظار جاهزية فعلية أو timeout
         setTimeout(() => {
           if (!server.isConnected) {
+            console.log(`⏰ Server ${id} timeout - attempting tools fetch as final check`);
             clearTimeout(timeout);
-            resolve(true); // نعتبرها نجحت
+            // محاولة أخيرة: جلب الأدوات
+            try {
+              this.fetchServerTools(server);
+              // إذا لم ترمي خطأ، نعتبرها نجحت
+              console.log(`✅ Server ${id} validated via tools fetch`);
+              resolve(true);
+            } catch (error) {
+              console.log(`❌ Server ${id} failed tools fetch:`, error);
+              resolve(false);
+            }
           }
-        }, 2000);
+        }, 5000); // زيادة timeout إلى 5 ثواني
       });
 
       server.isConnected = true;
@@ -387,15 +405,19 @@ export class SimpleMCPClient {
 
     try {
       // محاولة إيقاف العملية بلطف أولاً
-      if (!server.process.killed) {
-        server.process.kill('SIGTERM');
-        
-        // انتظار قصير لإنهاء العملية
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // إذا لم تنته، استخدم SIGKILL
-        if (!server.process.killed) {
-          server.process.kill('SIGKILL');
+      if (server.process && !server.process.killed) {
+        try {
+          server.process.kill('SIGTERM');
+          
+          // انتظار قصير لإنهاء العملية
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          // إذا لم تنته، استخدم SIGKILL
+          if (server.process && !server.process.killed) {
+            server.process.kill('SIGKILL');
+          }
+        } catch (error) {
+          console.warn(`⚠️ Error during process termination for ${serverId}:`, error);
         }
       }
       
@@ -510,21 +532,24 @@ async function initializeBasicServers(client: SimpleMCPClient) {
     } catch (error) {
       console.warn('⚠️ Using fallback server config');
       configData = {
-        mcpServers: {
+        servers: {
           'time': {
             command: 'npx',
-            args: ['-y', '@modelcontextprotocol/server-time'],
-            disabled: false
+            args: ['-y', '@odgrim/mcp-datetime@0.2.0'],
+            disabled: false,
+            description: 'Time and date operations with timezone support'
           },
           'fetch': {
-            command: 'npx', 
-            args: ['-y', '@modelcontextprotocol/server-fetch'],
-            disabled: false
+            command: 'uvx', 
+            args: ['mcp-server-fetch'],
+            disabled: false,
+            description: 'Web content fetching from URLs and APIs'
           },
           'sequential-thinking': {
             command: 'npx',
-            args: ['-y', '@modelcontextprotocol/server-sequentialthinking'],
-            disabled: false
+            args: ['-y', '@modelcontextprotocol/server-sequential-thinking'],
+            disabled: false,
+            description: 'Sequential reasoning'
           }
         }
       };
@@ -549,19 +574,18 @@ async function initializeBasicServers(client: SimpleMCPClient) {
           });
           console.log(`📝 Server ${serverId} added to registry`);
           
-          // تشغيل الخادم تلقائياً في background
-          setTimeout(async () => {
-            try {
-              const success = await client.startServer(serverId);
-              if (success) {
-                console.log(`✅ Auto-connected server: ${serverId}`);
-              } else {
-                console.log(`⚠️ Failed to auto-connect server: ${serverId}`);
-              }
-            } catch (error) {
-              console.log(`❌ Error auto-connecting ${serverId}:`, error);
+          // 🔧 FIX: تشغيل الخادم فوراً وانتظار النتيجة
+          try {
+            console.log(`🔄 Starting server: ${serverId} immediately...`);
+            const success = await client.startServer(serverId);
+            if (success) {
+              console.log(`✅ Auto-connected server: ${serverId}`);
+            } else {
+              console.log(`⚠️ Failed to auto-connect server: ${serverId}`);
             }
-          }, 100); // Small delay to avoid blocking
+          } catch (error) {
+            console.log(`❌ Error auto-connecting ${serverId}:`, error);
+          }
         }
       }
     }

@@ -80,25 +80,85 @@
       "content": "تمام، الساعة في البحرين الآن هي [الساعة الحالية بتوقيت البحرين].\n\n**ملاحظة:** بما أنني نموذج لغوي، لا يمكنني الوصول إلى التوقيت الفعلي المباشر. سأقوم بتحديث هذه الإجابة بناءً على معلومات الوقت الحالية المتاحة لي في اللحظة التي أرسل فيها الرد. للحصول على أدق توقيت، يفضل استخدام محرك بحث أو موقع متخصص في عرض التوقيت.\n",
       "role": "assistant",
       "timestamp": "2025-09-24T00:40:49.062Z"
+    },
+    {
+      "id": "0e374471-a5ee-4410-8957-e85dfa599eff",
+      "content": "شلون أسوي كوبي بوتن بال HTML و Bootstrap  لعمل كوبي للكلام المكتوب في داخل هذا \nالكارد           \n       <div class=\"api-card h-120 text-light card mb-3\" style=\"background: #3e3e3e; border: 4px solid var(--muted);\">\n                            <h4 class=\"card-title text-light\">📖 جلب جميع السور</h4>\n                            <div class=\"api-endpoint\">GET /api/surahs </div>\n                            <p>احصل على قائمة جميع السور مع معلوماتها الأساسية</p>\n                        </div>\n\nهذا النص اللي اريد أن أعمل له كوبي وأسوي له زر في داخل ال div \n<div class=\"api-endpoint\">GET /api/surahs </div>\n\n \n",
+      "role": "user",
+      "timestamp": "2025-09-24T04:16:03.113Z"
+    },
+    {
+      "id": "4e6c06f1-4fb7-494c-a207-6fce8df87047",
+      "content": "❌ **Image Generation Error**\n\nAPI key error - please check Hugging Face token configuration\n\nYou can try again or use a different text description.",
+      "role": "assistant",
+      "timestamp": "2025-09-24T04:16:04.713Z"
+    },
+    {
+      "id": "33021e60-d171-4039-a3e7-72eb40c38662",
+      "content": "شلون أسوي كوبي بوتن بال HTML و Bootstrap  لعمل كوبي للكلام المكتوب في داخل هذا \nالكارد           \n       <div class=\"api-card h-120 text-light card mb-3\" style=\"background: #3e3e3e; border: 4px solid var(--muted);\">\n                            <h4 class=\"card-title text-light\">📖 جلب جميع السور</h4>\n                            <div class=\"api-endpoint\">GET /api/surahs </div>\n                            <p>احصل على قائمة جميع السور مع معلوماتها الأساسية</p>\n                        </div>\n\nهذا النص اللي اريد أن أعمل له كوبي وأسوي له زر في داخل ال div \n<div class=\"api-endpoint\">GET /api/surahs </div>\n\n \n",
+      "role": "user",
+      "timestamp": "2025-09-24T04:16:30.728Z"
+    },
+    {
+      "id": "5c31a847-7b58-4995-a17e-a95eb860ce98",
+      "content": "❌ **Image Generation Error**\n\nAPI key error - please check Hugging Face token configuration\n\nYou can try again or use a different text description.",
+      "role": "assistant",
+      "timestamp": "2025-09-24T04:16:31.312Z"
+    },
+    {
+      "id": "39459091-b7b3-4354-9f95-a3ebf913da3f",
+      "content": "شلون أسوي كوبي بوتن بال HTML و Bootstrap  لعمل كوبي للكلام المكتوب في داخل هذا \nالكارد           \n       <div class=\"api-card h-120 text-light card mb-3\" style=\"background: #3e3e3e; border: 4px solid var(--muted);\">\n                            <h4 class=\"card-title text-light\">📖 جلب جميع السور</h4>\n                            <div class=\"api-endpoint\">GET /api/surahs </div>\n                            <p>احصل على قائمة جميع السور مع معلوماتها الأساسية</p>\n                        </div>\n\nهذا النص اللي اريد أن أعمل له كوبي وأسوي له زر في داخل ال div \n<div class=\"api-endpoint\">GET /api/surahs </div>\n\n \n",
+      "role": "user",
+      "timestamp": "2025-09-24T04:16:59.958Z"
+    },
+    {
+      "id": "8a823167-47ad-49ae-95ab-9cb9432799a3",
+      "content": "❌ **Image Generation Error**\n\nAPI key error - please check Hugging Face token configuration\n\nYou can try again or use a different text description.",
+      "role": "assistant",
+      "timestamp": "2025-09-24T04:17:00.745Z"
+    },
+    {
+      "id": "b5c6ddd4-097d-4325-88ca-0813db34002b",
+      "content": "شلون أسوي كوبي بوتن بال HTML و Bootstrap  لعمل كوبي للكلام المكتوب في داخل هذا \nالكارد           \n       <div class=\"api-card h-120 text-light card mb-3\" style=\"background: #3e3e3e; border: 4px solid var(--muted);\">\n                            <h4 class=\"card-title text-light\">📖 جلب جميع السور</h4>\n                            <div class=\"api-endpoint\">GET /api/surahs </div>\n                            <p>احصل على قائمة جميع السور مع معلوماتها الأساسية</p>\n                        </div>\n\nهذا النص اللي اريد أن أعمل له كوبي وأسوي له زر في داخل ال div \n<div class=\"api-endpoint\">GET /api/surahs </div>\n\n \n",
+      "role": "user",
+      "timestamp": "2025-09-24T06:08:14.284Z"
+    },
+    {
+      "id": "6fec4e14-633b-490a-93e9-65c491fc2ea4",
+      "content": "\n# إنشاء زر نسخ النص باستخدام HTML وBootstrap\n\nلإنشاء زر نسخ للنص الموجود داخل العنصر `<div class=\"api-endpoint\">`، سأقوم بإنشاء كود HTML مع إضافة JavaScript للتعامل مع عملية النسخ.\n\n```html\n<!DOCTYPE html>\n<html lang=\"ar\" dir=\"rtl\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>زر نسخ النص</title>\n    <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css\" rel=\"stylesheet\">\n    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css\">\n    <style>\n        body {\n            background-color: #2c2c2c;\n            color: #f8f9fa;\n            padding: 20px;\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        }\n        .api-card {\n            border-radius: 12px;\n            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);\n            transition: transform 0.3s ease;\n        }\n        .api-card:hover {\n            transform: translateY(-5px);\n        }\n        .api-endpoint {\n            position: relative;\n            background: #4a4a4a;\n            padding: 12px 15px;\n            border-radius: 8px;\n            font-family: 'Courier New', monospace;\n            font-size: 16px;\n            margin: 15px 0;\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n        }\n        .copy-btn {\n            background: #6c757d;\n            border: none;\n            border-radius: 6px;\n            padding: 6px 12px;\n            color: white;\n            cursor: pointer;\n            transition: all 0.3s ease;\n            display: flex;\n            align-items: center;\n            gap: 5px;\n        }\n        .copy-btn:hover {\n            background: #5a6268;\n        }\n        .copy-btn.copied {\n            background: #28a745;\n        }\n        .card-title {\n            border-bottom: 2px solid #5a6268;\n            padding-bottom: 10px;\n        }\n        .toast {\n            position: fixed;\n            top: 20px;\n            right: 20px;\n            z-index: 9999;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container my-5\">\n        <h1 class=\"text-center mb-4\">زر نسخ النص باستخدام Bootstrap</h1>\n        \n        <!-- البطاقة التي طلبتها -->\n        <div class=\"api-card h-120 text-light card mb-3\" style=\"background: #3e3e3e; border: 4px solid var(--muted);\">\n            <div class=\"card-body\">\n                <h4 class=\"card-title text-light\">📖 جلب جميع السور</h4>\n                <div class=\"api-endpoint\">\n                    <span>GET /api/surahs</span>\n                    <button class=\"copy-btn\" onclick=\"copyText(this)\">\n                        <i class=\"fas fa-copy\"></i> نسخ\n                    </button>\n                </div>\n                <p>احصل على قائمة جميع السور مع معلوماتها الأساسية</p>\n            </div>\n        </div>\n\n        <!-- Toast للإشعار -->\n        <div class=\"toast\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\" data-bs-autohide=\"true\" data-bs-delay=\"2000\">\n            <div class=\"toast-header\">\n                <i class=\"fas fa-check-circle text-success me-2\"></i>\n                <strong class=\"me-auto\">تم النسخ</strong>\n                <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n            </div>\n            <div class=\"toast-body\">\n                تم نسخ النص إلى الحافظة!\n            </div>\n        </div>\n    </div>\n\n    <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>\n    <script>\n        function copyText(btn) {\n            // الحصول على النص من العنصر المجاور للزر\n            const textToCopy = btn.previousElementSibling.textContent;\n            \n            // نسخ النص إلى الحافظة\n            navigator.clipboard.writeText(textToCopy).then(() => {\n                // إظهار إشعار النجاح\n                const toast = new bootstrap.Toast(document.querySelector('.toast'));\n                toast.show();\n                \n                // تغيير مظهر الزر مؤقتاً\n                btn.classList.add('copied');\n                btn.innerHTML = '<i class=\"fas fa-check\"></i> تم النسخ';\n                \n                // العودة إلى المظهر الأصلي بعد ثانيتين\n                setTimeout(() => {\n                    btn.classList.remove('copied');\n                    btn.innerHTML = '<i class=\"fas fa-copy\"></i> نسخ';\n                }, 2000);\n            }).catch(err => {\n                console.error('Failed to copy: ', err);\n                alert('فشل في نسخ النص: ' + err);\n            });\n        }\n    </script>\n</body>\n</html>\n```\n\n## شرح الكود:\n\n1. **الهيكل الأساسي**: قمت بإنشاء هيكل HTML مع إضافة Bootstrap وFont Awesome للرموز.\n\n2. **التصميم**: أضفت تنسيقات CSS لجعل البطاقة وزر النسخ يبدوان جذابين مع تأثيرات عند التحويم.\n\n3. **زر النسخ**: أضفت زرًا داخل العنصر `api-endpoint` يحتوي على أيقونة نسخ.\n\n4. **وظيفة النسخ**: عند النقر على الزر، تستدعى دالة `copyText()` التي:\n   - تستخرج النص من العنصر المجاور\n   - تستخدم `navigator.clipboard.writeText()` لنسخ النص\n   - تعرض إشعارًا باستخدام مكون Toast من Bootstrap\n   - تغير مظهر الزر مؤقتًا للإشارة إلى أن النسخ تم بنجاح\n\n5. **التوافق**: الكود متوافق مع المتصفحات الحديثة التي تدعم Clipboard API.\n\nيمكنك نسخ هذا الكود وتشغيله مباشرة في متصفحك، وسيعمل زر النسخ كما هو مطلوب.",
+      "role": "assistant",
+      "timestamp": "2025-09-24T06:10:07.611Z"
+    },
+    {
+      "id": "988ac63c-5b10-4856-865a-8607bae3f819",
+      "content": "هل يمكنك معرفت كم الساعه الان في البحرين",
+      "role": "user",
+      "timestamp": "2025-09-24T07:05:58.056Z"
+    },
+    {
+      "id": "dc44f09a-e161-4f3b-9d28-ce076b1b3b2b",
+      "content": "الساعة الآن في البحرين هي: **١٠:٠٥:٥٨ مساءً**  \nاليوم: **الأربعاء، ٢٤ سبتمبر ٢٠٢٥**  \n\n(التوقيت محسوب بناءً على توقيت الرياض المقدم من النظام، مع افتراض أن البحرين في نفس التوقيت)  \n\n*ملاحظة: البحرين تستخدم توقيت العربيا القياسي (AST) وهو UTC+3 على مدار العام، مثل الرياض.*",
+      "role": "assistant",
+      "timestamp": "2025-09-24T07:06:09.609Z"
     }
   ],
   "createdAt": "2025-09-01T19:16:59.761Z",
   "updatedAt": "2025-09-01T19:16:59.761Z",
   "model": {
-    "id": "google/gemini-2.0-flash-exp:free",
-    "name": "Google Gemini 2.0 Flash Experimental",
+    "id": "deepseek/deepseek-chat-v3.1:free",
+    "name": "DeepSeek V3.1",
     "provider": "OpenRouter",
-    "description": "نموذج Gemini 2.0 التجريبي مع سياق 1M - مجاني",
-    "contextLength": 1048576,
+    "description": "أحدث إصدار من DeepSeek مع سياق 163K - مجاني",
+    "contextLength": 163840,
     "pricing": {
       "input": "Free",
       "output": "Free"
     },
     "capabilities": [
-      "experimental",
-      "large_context",
-      "multimodal",
-      "vision"
+      "advanced_reasoning",
+      "chat",
+      "problem_solving",
+      "large_context"
     ],
     "type": "free"
   }

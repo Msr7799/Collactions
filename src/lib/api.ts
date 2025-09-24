@@ -29,7 +29,8 @@ interface APIKeys {
   GPTGOD_API2: string;
   OPEN_ROUTER_API: string;
   OPEN_ROUTER_API2: string;
-  HF_TOKEN: string; // Unified Hugging Face token name
+  HF_TOKEN: string; // Primary Hugging Face token
+  HF_TOKEN2: string; // Backup Hugging Face token
 }
 
 // Chat message interface for internal use
@@ -61,7 +62,8 @@ export class AIAPIGateway {
       GPTGOD_API2: process.env.NEXT_PUBLIC_GPTGOD_API2 || '',
       OPEN_ROUTER_API: process.env.NEXT_PUBLIC_OPEN_ROUTER_API || '',
       OPEN_ROUTER_API2: process.env.NEXT_PUBLIC_OPEN_ROUTER_API2 || '',
-      HF_TOKEN: process.env.NEXT_PUBLIC_HF_TOKEN || '' // Unified HF token name
+      HF_TOKEN: process.env.NEXT_PUBLIC_HF_TOKEN || '', // Primary HF token
+      HF_TOKEN2: process.env.NEXT_PUBLIC_HF_TOKEN2 || '' // Backup HF token
     };
 
     // Debug environment variables
@@ -104,9 +106,14 @@ export class AIAPIGateway {
         }
       
       case 'Hugging Face':
-        const token = this.apiKeys.HF_TOKEN;
-        // Token validation without exposing sensitive data
-        return token;
+        // Use primary HF token first, then fallback to backup token on retry
+        if (attempt > 0 && this.apiKeys.HF_TOKEN2) {
+          console.log('🔄 Primary HF Token failed, switching to backup key (HF_TOKEN2)');
+          return this.apiKeys.HF_TOKEN2;
+        } else {
+          console.log('Using primary HF Token');
+          return this.apiKeys.HF_TOKEN;
+        }
       
       default:
         // Use primary OpenRouter key first, then fallback to backup key on retry
@@ -643,33 +650,46 @@ export class AIAPIGateway {
   }
 
   /**
-   * Generate image using Hugging Face models
+   * Generate image using Hugging Face models with fallback support
    */
   async generateImageHF(prompt: string, modelId: string): Promise<Blob> {
-    const accessToken = this.getAccessToken('Hugging Face');
     const endpoint = `https://api-inference.huggingface.co/models/${modelId}`;
-    const headers = this.buildHeaders('Hugging Face', accessToken);
-    
     const payload = {
       inputs: prompt
     };
 
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload)
-      });
+    // Try both primary and backup tokens
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const accessToken = this.getAccessToken('Hugging Face', attempt);
+        const headers = this.buildHeaders('Hugging Face', accessToken);
+        
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload)
+        });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          if (response.status === 401 && attempt === 0) {
+            console.log(`🔄 HF Token attempt ${attempt + 1} failed with 401, trying backup token...`);
+            continue; // Try backup token
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.blob();
+      } catch (error) {
+        if (attempt === 0) {
+          console.log(`🔄 HF Token attempt ${attempt + 1} failed, trying backup token...`);
+          continue;
+        }
+        console.error('Error generating image:', error);
+        throw error;
       }
-
-      return await response.blob();
-    } catch (error) {
-      console.error('Error generating image:', error);
-      throw error;
     }
+    
+    throw new Error('All HF token attempts failed');
   }
 
   /**

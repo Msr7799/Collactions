@@ -1,0 +1,51 @@
+{
+  "id": "chat-24-9-2025-103138.json",
+  "filename": "chat-24-9-2025-103138.json",
+  "title": "\"كم الساعة الآن؟",
+  "messages": [
+    {
+      "id": "e9572df4-81ae-463a-8f02-4e87da6fb64c",
+      "content": "\"كم الساعة الآن؟",
+      "role": "user",
+      "timestamp": "2025-09-24T07:31:30.560Z"
+    },
+    {
+      "id": "30661984-e77f-4691-8dea-f8588631d9c4",
+      "content": "الساعة الآن [أدخل الوقت الحالي هنا].\n",
+      "role": "assistant",
+      "timestamp": "2025-09-24T07:31:35.572Z"
+    },
+    {
+      "id": "6588d93d-9cf5-421c-9e88-e976b04fc740",
+      "content": " كم الساعة الآن في البحرين",
+      "role": "user",
+      "timestamp": "2025-09-24T07:32:17.992Z"
+    },
+    {
+      "id": "0686e71a-4ca4-4daa-bff7-38798864ffe5",
+      "content": "بناءً على المعلومات المتوفرة من MCP tool، الوقت الحالي في الرياض هو الأربعاء، ٢٤ سبتمبر ٢٠٢٥ في ١٠:٣٢:١٨ (undefined/get_current_time). بما أنني لا أستطيع تحديد الوقت في البحرين مباشرةً، هذا هو أقرب تقدير بناءً على مصدر المعلومات المتاح.\n",
+      "role": "assistant",
+      "timestamp": "2025-09-24T07:32:32.475Z"
+    }
+  ],
+  "createdAt": "2025-09-24T07:31:38.597Z",
+  "updatedAt": "2025-09-24T07:31:38.597Z",
+  "model": {
+    "id": "google/gemini-2.0-flash-exp:free",
+    "name": "Google Gemini 2.0 Flash Experimental",
+    "provider": "OpenRouter",
+    "description": "نموذج Gemini 2.0 التجريبي مع سياق 1M - مجاني",
+    "contextLength": 1048576,
+    "pricing": {
+      "input": "Free",
+      "output": "Free"
+    },
+    "capabilities": [
+      "experimental",
+      "large_context",
+      "multimodal",
+      "vision"
+    ],
+    "type": "free"
+  }
+}

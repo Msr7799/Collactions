@@ -94,6 +94,7 @@ import {
   History
 } from 'lucide-react';
 import CodeBlock, { MessageContentRenderer } from './CodeBlock';
+import MCPManager from './MCP-Manager';
 
 // Responsive Table Component
 interface ResponsiveTableProps {
@@ -509,14 +510,10 @@ const PromptsPage: React.FC = () => {
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [sendingMessageId, setSendingMessageId] = useState<string | null>(null);
-  const [serverPaths, setServerPaths] = useState<{[key: string]: string}>({
-    filesystem: '/home/msr/Desktop/ss/collactions',
-    git: '/home/msr/Desktop/ss/collactions'
-  });
+  // Removed serverPaths - now using config file directly
   const [error, setError] = useState<string>('');
   const [activeMode, setActiveMode] = useState<'general' | 'code' | 'creative'>('general');
   const [showSettings, setShowSettings] = useState(false);
-  const [showAddServer, setShowAddServer] = useState(false);
   const [imageModal, setImageModal] = useState<{isOpen: boolean, src: string}>({isOpen: false, src: ''});
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
 
@@ -549,8 +546,9 @@ const PromptsPage: React.FC = () => {
   const [imagePrompt, setImagePrompt] = useState('');
   const [attachedImages, setAttachedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [mcpEnabled, setMcpEnabled] = useState(true);
+  const [showMCPManager, setShowMCPManager] = useState(false);
   const [thinkingMessages, setThinkingMessages] = useState<{[key: string]: {thinking: string, response: string, isCompleted: boolean}}>({});
   const [fullscreenImage, setFullscreenImage] = useState<{index: number, url: string} | null>(null);
   const [attachedFile, setAttachedFile] = useState<{file: File, content: string, preview: string} | null>(null);
@@ -999,23 +997,25 @@ const PromptsPage: React.FC = () => {
       // Check if selected model is for image generation
       const isImageModel = selectedModel.capabilities.includes('text_to_image');
       
-      // Enhanced detection for image requests
-      const hasImageKeywords = /(?:generate|create|make|draw|paint|sketch|design|توليد|إنشاء|ارسم|اصنع|صمم|اطلب|أريد)\s*(?:an?\s+)?(?:image|picture|photo|painting|drawing|artwork|صورة|رسمة|لوحة|تصميم)/i.test(lastMessage);
+      // Enhanced detection for image requests - FIXED LOGIC
+      const hasImageKeywords = /(?:generate|create|make|draw|paint|sketch|design|توليد|إنشاء|ارسم|اصنع|صمم)\s*(?:an?\s+)?(?:image|picture|photo|painting|drawing|artwork|صورة|رسمة|لوحة|تصميم)/i.test(lastMessage);
       const hasImageContext = /(?:FLUX|Stable\s*Diffusion|Hugging\s*Face|AI\s*art|digital\s*art|فن\s*رقمي|ذكاء\s*اصطناعي)/i.test(lastMessage);
       
-      // Simple keyword detection for common image requests
-      const simpleImageKeywords = /(?:صورة|رسمة|لوحة|تصميم|image|picture|photo|drawing)/i.test(lastMessage);
-      const hasDescriptiveContent = lastMessage.length > 50 && /(?:with|featuring|showing|في|يظهر|يحتوي|مع)/i.test(lastMessage);
+      // Explicit image generation requests only
+      const explicitImageRequest = /(?:اعمل\s*صورة|انشئ\s*صورة|ارسم\s*لي|generate\s*image|create\s*image|make\s*image|draw\s*me)/i.test(lastMessage);
       
-      // If user selected specific models, treat any descriptive message as generation request
-      const isImageRequest = isImageModel || hasImageKeywords || hasImageContext || simpleImageKeywords ||
-                            (hasDescriptiveContent && lastMessage.length > 100);
+      // Code-related keywords should NOT trigger image generation
+      const hasCodeKeywords = /(?:HTML|CSS|JavaScript|Bootstrap|React|Vue|Angular|Python|Java|كود|برمجة|موقع|تطبيق|website|app|function|class|div|button|script)/i.test(lastMessage);
+      
+      // FIXED: Only trigger image generation for explicit requests, NOT long descriptive text
+      const isImageRequest = !hasCodeKeywords && (isImageModel || hasImageKeywords || hasImageContext || explicitImageRequest);
       
       console.log('🔍 Image request detection:', {
         isImageModel,
         hasImageKeywords,
         hasImageContext, 
-        simpleImageKeywords,
+        explicitImageRequest,
+        hasCodeKeywords,
         isImageRequest,
         messageLength: lastMessage.length
       });
@@ -1572,9 +1572,7 @@ ${language === 'ar'
           }
         }
         
-        setShowAddServer(false);
-        setNewServerData({ name: '', command: '', args: [], env: {} });
-        setServerJsonInput('');
+        // Removed old server form logic
         
         const successMessage = language === 'ar' 
           ? (user ? 'تم إنشاء وحفظ الخادم بنجاح!' : 'تم إنشاء الخادم بنجاح!')
@@ -1853,10 +1851,15 @@ ${language === 'ar'
             {/* MCP Sidebar */}
             <div className="p-3 lg:p-4 bg-bg-[#212121] border-b flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h1 className="text-lg lg:text-xl font-semibold text-foreground flex items-center">
-                  <Server className="w-5 h-5 mr-2" />
-                  {language === 'ar' ? 'خوادم MCP' : 'MCP Servers'}
-                </h1>
+                <div>
+                  <h1 className="text-lg lg:text-xl font-semibold text-foreground flex items-center">
+                    <Server className="w-5 h-5 mr-2" />
+                    {language === 'ar' ? 'مراقب الخوادم' : 'Server Monitor'}
+                  </h1>
+                  <p className="text-xs text-muted mt-1">
+                    {language === 'ar' ? 'مراقبة سريعة • للإدارة المتقدمة اضغط إدارة' : 'Quick monitoring • Use Manage for advanced settings'}
+                  </p>
+                </div>
                 <div className="flex items-center space-x-2">
                   {/* Disconnect All Button */}
                   <button
@@ -1974,40 +1977,17 @@ ${language === 'ar'
                           </div>
                         )}
                         
-                        {/* Path Config Button for Filesystem/Git */}
-                        {(server.id === 'filesystem' || server.id === 'git') && (
-                          <div className="mt-2 pt-2 border-t border-border/30">
-                            <button 
-                              onClick={() => {
-                                const newPath = prompt(
-                                  language === 'ar' 
-                                    ? `أدخل المسار الجديد لـ ${server.name}:` 
-                                    : `Enter new path for ${server.name}:`,
-                                  serverPaths[server.id] || '/home/msr/Desktop/ss/collactions'
-                                );
-                                if (newPath && newPath.trim()) {
-                                  setServerPaths(prev => ({
-                                    ...prev,
-                                    [server.id]: newPath.trim()
-                                  }));
-                                }
-                              }}
-                              className="w-full p-1 text-xs bg-bg-dark/50 hover:bg-bg-dark text-muted hover:text-foreground border border-border/50 rounded transition-colors flex items-center justify-center space-x-1"
-                              title={language === 'ar' ? 'تعديل المسار' : 'Edit Path'}
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m8 10 4 4 4-4" />
-                              </svg>
-                              <span>{language === 'ar' ? 'تعديل المسار' : 'Edit Path'}</span>
-                            </button>
-                            {serverPaths[server.id] && (
-                              <div className="mt-1 text-xs text-blue-400">
-                                {language === 'ar' ? 'المسار:' : 'Path:'} {serverPaths[server.id]}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                        {/* Advanced Settings Hint */}
+                        <div className="mt-2 pt-2 border-t border-border/30">
+                          <button 
+                            onClick={() => setShowMCPManager(true)}
+                            className="w-full p-1 text-xs bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 hover:text-blue-300 border border-blue-500/30 rounded transition-colors flex items-center justify-center space-x-1"
+                            title={language === 'ar' ? 'إعدادات متقدمة' : 'Advanced Settings'}
+                          >
+                            <Settings className="w-3 h-3" />
+                            <span>{language === 'ar' ? 'إعدادات متقدمة' : 'Advanced Settings'}</span>
+                          </button>
+                        </div>
 
                         {/* Server Actions */}
                         <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
@@ -2025,8 +2005,7 @@ ${language === 'ar'
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ 
                                       serverId: server.id, 
-                                      action,
-                                      path: serverPaths[server.id] || undefined
+                                      action
                                     })
                                   });
                                   
@@ -2177,18 +2156,20 @@ ${language === 'ar'
                 </div>
               )}
 
+              {/* MCP Management */}
               <button
-                onClick={() => setShowAddServer(!showAddServer)}
-                className="w-full flex items-center justify-center space-x-2 p-2 lg:p-3 bg-transparent hover:bg-bg-dark border border-border rounded-lg transition-colors"
+                onClick={() => setShowMCPManager(true)}
+                className="w-full flex items-center justify-center space-x-2 p-2 lg:p-3 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 rounded-lg transition-colors mb-3"
+                title={language === 'ar' ? 'الإدارة المتقدمة والتكوين' : 'Advanced Management & Config'}
               >
-                <Plus className="w-3 h-3" />
-                <span className="text-xs lg:text-sm text-foreground">
-                  {language === 'ar' ? 'إضافة خادم' : 'Add Server'}
+                <Settings className="w-4 h-4" />
+                <span className="text-sm text-foreground">
+                  {language === 'ar' ? 'إدارة الخوادم' : 'Manage Servers'}
                 </span>
               </button>
 
-              {/* Add Server Form */}
-              {showAddServer && (
+              {/* Old Add Server Form - Removed */}
+              {false && (
                 <div className="mt-4 p-4 bg-card rounded-lg border border-border">
                   <h3 className="font-medium mb-3 flex items-center gap-2">
                     <Plus className="w-4 h-4" />
@@ -2267,7 +2248,7 @@ ${language === 'ar'
                               args: [],
                               env: {}
                             });
-                            setShowAddServer(false);
+                            // Server added via MCP Manager now
                             
                             // Refresh server list
                             await refreshServers();
@@ -2368,31 +2349,117 @@ ${language === 'ar'
                 >
                   <Settings className="w-3 h-3 lg:w-4 lg:h-4" />
                 </button>
+               
                 <button 
-                  onClick={() => setShowAddServer(true)}
-                  className={`p-1.5 lg:p-2 transition-colors rounded ${
-                    mcpEnabled 
-                      ? 'text-blue-500 hover:text-blue-400' 
-                      : 'text-gray-400 hover:text-gray-300'
-                  }`}
-                  title={language === 'ar' ? 'إعدادات MCP' : 'MCP Settings'}
-                >
-                  <Server className="h-3 w-3 lg:h-4 lg:w-4" />
-                </button>
+                onClick={() => setShowMCPManager(true)}
+                className={`p-1.5 lg:p-2 transition-colors rounded ${
+                  mcpEnabled 
+                    ? 'text-blue-500 hover:text-blue-400' 
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+                title={language === 'ar' ? 'حالة MCP' : 'MCP Status'}
+              >
+                <Server className="h-3 w-3 lg:h-4 lg:w-4" />
+              </button>
+             
                 <button 
-                  onClick={() => setMcpEnabled(!mcpEnabled)}
+                  onClick={async () => {
+                    const currentlyConnected = mcpServers.filter(s => s.status === 'connected');
+                    const shouldDisconnect = currentlyConnected.length > 0;
+                    
+                    if (shouldDisconnect) {
+                      // قطع الاتصال عن جميع الخوادم المتصلة
+                      setIsRefreshingMCP(true);
+                      try {
+                        const disconnectPromises = currentlyConnected.map(async (server) => {
+                          try {
+                            const response = await fetch('/api/mcp/toggle', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ 
+                                serverId: server.id, 
+                                action: 'disconnect'
+                              })
+                            });
+                            const result = await response.json();
+                            return result;
+                          } catch (error) {
+                            console.error(`Failed to disconnect ${server.name}:`, error);
+                            return null;
+                          }
+                        });
+                        
+                        await Promise.all(disconnectPromises);
+                        await refreshServers();
+                        setMcpEnabled(false);
+                      } catch (error) {
+                        console.error('Error disconnecting all servers:', error);
+                      } finally {
+                        setIsRefreshingMCP(false);
+                      }
+                    } else {
+                      // تشغيل جميع الخوادم المتاحة
+                      setIsRefreshingMCP(true);
+                      try {
+                        const connectPromises = mcpServers.map(async (server) => {
+                          if (server.status !== 'connected') {
+                            try {
+                              const response = await fetch('/api/mcp/toggle', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                  serverId: server.id, 
+                                  action: 'connect'
+                                })
+                              });
+                              const result = await response.json();
+                              return result;
+                            } catch (error) {
+                              console.error(`Failed to connect ${server.name}:`, error);
+                              return null;
+                            }
+                          }
+                          return null;
+                        });
+                        
+                        await Promise.all(connectPromises);
+                        // تأخير للسماح بالاتصال
+                        setTimeout(async () => {
+                          await refreshServers();
+                          setMcpEnabled(true);
+                        }, 3000);
+                      } catch (error) {
+                        console.error('Error connecting all servers:', error);
+                      } finally {
+                        setIsRefreshingMCP(false);
+                      }
+                    }
+                  }}
+                  disabled={isRefreshingMCP}
                   className={`p-1.5 lg:p-2 transition-colors rounded ${
-                    mcpEnabled 
+                    isRefreshingMCP 
+                      ? 'text-yellow-500 cursor-not-allowed'
+                      : mcpServers.filter(s => s.status === 'connected').length > 0
                       ? 'text-green-500 hover:text-green-400' 
                       : 'text-red-500 hover:text-red-400'
                   }`}
                   title={language === 'ar' 
-                    ? `${mcpEnabled ? 'إيقاف' : 'تفعيل'} MCP` 
-                    : `${mcpEnabled ? 'Disable' : 'Enable'} MCP`
+                    ? isRefreshingMCP 
+                      ? 'جاري المعالجة...'
+                      : `${mcpServers.filter(s => s.status === 'connected').length > 0 ? 'قطع الاتصال عن' : 'تشغيل'} جميع الخوادم`
+                    : isRefreshingMCP
+                      ? 'Processing...'
+                      : `${mcpServers.filter(s => s.status === 'connected').length > 0 ? 'Disconnect' : 'Connect'} All Servers`
                   }
                 >
-                  <Zap className="h-3 w-3 lg:h-4 lg:w-4" />
+                  {isRefreshingMCP ? (
+                    <Loader className="h-3 w-3 lg:h-4 lg:w-4 animate-spin" />
+                  ) : (
+                    <Zap className="h-3 w-3 lg:h-4 lg:w-4" />
+                  )}
                 </button>
+                
+         
          
               </div>
             </div>
@@ -2968,7 +3035,7 @@ ${language === 'ar'
 
                   <button 
                     onClick={() => {
-                      setShowAddServer(true);
+                      setShowMCPManager(true);
                       refreshServers();
                     }}
                     className="px-2 lg:px-3 py-1 lg:py-1.5 text-s rounded-full transition-all duration-300 border-2 border-border text-foreground hover:text-foreground hover:!border-foreground/50 flex items-center space-x-1"
@@ -3063,7 +3130,7 @@ ${language === 'ar'
                       {/* Add Server Button */}
                       <div className="pt-2">
                         <button
-                          onClick={() => setShowAddServer(true)}
+                          onClick={() => setShowMCPManager(true)}
                           className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-primary text-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
                         >
                           <Plus className="w-4 h-4" />
@@ -3183,8 +3250,8 @@ ${language === 'ar'
           )}
 
 
-          {/* Add Server Modal */}
-          {showAddServer && (
+          {/* Old Add Server Modal - Removed */}
+          {false && (
             <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-2 lg:p-4">
               <div className="bg-background border border-border rounded-lg p-4 lg:p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div className="flex items-center justify-between mb-4 lg:mb-6">
@@ -3193,9 +3260,7 @@ ${language === 'ar'
                   </h3>
                   <button
                     onClick={() => {
-                      setShowAddServer(false);
-                      setNewServerData({ name: '', command: '', args: [], env: {} });
-                      setServerJsonInput('');
+                      // Modal closed - old system removed
                     }}
                     className="p-2 text-muted hover:text-foreground rounded-full hover:bg-bg-dark transition-colors"
                   >
@@ -3315,9 +3380,7 @@ ${language === 'ar'
                 <div className="flex flex-col lg:flex-row justify-end space-y-2 lg:space-y-0 lg:space-x-3 mt-4 lg:mt-6 pt-4 border-t border-border">
                   <button
                     onClick={() => {
-                      setShowAddServer(false);
-                      setNewServerData({ name: '', command: '', args: [], env: {} });
-                      setServerJsonInput('');
+                      // Cancel button - old system removed
                     }}
                     className="w-full lg:w-auto px-3 lg:px-4 py-2 text-xs lg:text-sm bg-bg-dark border border-border rounded-lg hover:bg-bg-dark/80 transition-colors"
                   >
@@ -3599,6 +3662,12 @@ ${result.message ? `⚠️ ${result.message}` : ''}`,
       onChatSelect={loadChatSession}
       onChatDelete={deleteChatSession}
       onNewChat={startNewChat}
+    />
+    
+    {/* MCP Manager Modal */}
+    <MCPManager
+      isOpen={showMCPManager}
+      onClose={() => setShowMCPManager(false)}
     />
  
     </Layout>

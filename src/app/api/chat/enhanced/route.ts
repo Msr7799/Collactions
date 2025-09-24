@@ -83,15 +83,34 @@ export async function POST(request: NextRequest) {
     console.log('📤 Enhanced message length:', enhancedMessage.length);
     
     const aiGateway = getAIGateway();
-    const chatMessages: ChatMessage[] = [
+    let chatMessages: ChatMessage[] = [
       ...messages.map((m: any) => ({ role: m.role, content: m.content })),
       { role: 'user', content: enhancedMessage }
     ];
+
+    // 🔧 INJECT MCP RESULTS: حقن نتائج MCP كـ system message
+    if (mcpResults && mcpResults.length > 0) {
+      const mcpText = mcpResults.map(r => {
+        const content = typeof r.content === 'string' ? r.content : JSON.stringify(r.content);
+        return `${r.serverId}/${r.tool}: ${content}`;
+      }).join('\n');
+
+      const systemMessage: ChatMessage = {
+        role: 'system',
+        content: `MCP TOOL OUTPUT (use this information in your response):\n${mcpText}\n\nPlease incorporate this information naturally in your reply and mention the source.`
+      };
+
+      // إدراج system message في البداية
+      chatMessages = [systemMessage, ...chatMessages];
+      console.log('✅ MCP Results injected as system message:', mcpResults.length, 'results');
+    }
 
     let aiResponse;
     let thinking = '';
     
     console.log('📤 Prepared chat messages:', chatMessages.length, 'messages');
+    console.log('🔍 First message role:', chatMessages[0]?.role, 'preview:', 
+      typeof chatMessages[0]?.content === 'string' ? chatMessages[0]?.content?.substring(0, 100) : '[complex content]');
     
     if (supportsReasoning) {
       // للنماذج التي تدعم الـ reasoning، محاولة استخراج التفكير

@@ -1,0 +1,51 @@
+{
+  "id": "chat-24-9-2025-101237.json",
+  "filename": "chat-24-9-2025-101237.json",
+  "title": "هل تعلم كم الوقت الان في البحرين وبشكل د",
+  "messages": [
+    {
+      "id": "748303ed-05e8-4290-9831-ffeaa3b8f75d",
+      "content": "هل تعلم كم الوقت الان في البحرين وبشكل دقيق",
+      "role": "user",
+      "timestamp": "2025-09-24T07:12:32.754Z"
+    },
+    {
+      "id": "c88c03a6-5c18-4e63-acd2-b71814100b3f",
+      "content": "الأربعاء، ٢٤ سبتمبر ٢٠٢٥ في ١٠:١٢:٣٢\n",
+      "role": "assistant",
+      "timestamp": "2025-09-24T07:12:34.893Z"
+    },
+    {
+      "id": "b816039e-115d-4aff-b21f-fc460b9c6528",
+      "content": "\"كم الساعة الآن؟",
+      "role": "user",
+      "timestamp": "2025-09-24T07:20:05.104Z"
+    },
+    {
+      "id": "da15d466-7add-4154-a3d8-f45fc790606c",
+      "content": "الآن هو الأربعاء، ٢٤ سبتمبر ٢٠٢٥ في الساعة ١٠:١٣ صباحاً في البحرين.\n",
+      "role": "assistant",
+      "timestamp": "2025-09-24T07:20:10.029Z"
+    }
+  ],
+  "createdAt": "2025-09-24T07:12:37.966Z",
+  "updatedAt": "2025-09-24T07:12:37.966Z",
+  "model": {
+    "id": "google/gemini-2.0-flash-exp:free",
+    "name": "Google Gemini 2.0 Flash Experimental",
+    "provider": "OpenRouter",
+    "description": "نموذج Gemini 2.0 التجريبي مع سياق 1M - مجاني",
+    "contextLength": 1048576,
+    "pricing": {
+      "input": "Free",
+      "output": "Free"
+    },
+    "capabilities": [
+      "experimental",
+      "large_context",
+      "multimodal",
+      "vision"
+    ],
+    "type": "free"
+  }
+}

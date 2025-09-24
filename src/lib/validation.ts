@@ -318,3 +318,31 @@ export const validateSearchQuery = (query: string): ValidationResult => {
 
   return { isValid: errors.length === 0, errors, warnings };
 };
+
+/**
+ * Validate user ID for authorization
+ * التحقق من معرف المستخدم للتفويض
+ */
+export const validateUserIdAuth = (
+  providedUserId: string,
+  authenticatedUserId: string
+): ValidationResult => {
+  const errors: string[] = [];
+  
+  // Check if provided user ID exists and is valid
+  if (!providedUserId || typeof providedUserId !== 'string') {
+    errors.push('User ID is required | معرف المستخدم مطلوب');
+  }
+  
+  // Check if authenticated user ID exists and is valid  
+  if (!authenticatedUserId || typeof authenticatedUserId !== 'string') {
+    errors.push('Authentication required | مطلوب تسجيل الدخول');
+  }
+  
+  // Check authorization - user can only access their own data
+  if (providedUserId && authenticatedUserId && providedUserId !== authenticatedUserId) {
+    errors.push('Unauthorized access to user data | وصول غير مصرح به لبيانات المستخدم');
+  }
+  
+  return { isValid: errors.length === 0, errors };
+};

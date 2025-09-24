@@ -516,6 +516,7 @@ const PromptsPage: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [imageModal, setImageModal] = useState<{isOpen: boolean, src: string}>({isOpen: false, src: ''});
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(true);
 
   // Image modal functions
   const openImageModal = useCallback((src: string) => {
@@ -1223,6 +1224,7 @@ ${language === 'ar'
       } else {
         // Use Enhanced API with MCP support for normal chat
         console.log('Using Enhanced API with MCP support');
+        console.log('🔍 Web Search Status:', webSearchEnabled ? 'ENABLED' : 'DISABLED');
         
         const enhancedResponse = await fetch('/api/chat/enhanced', {
           method: 'POST',
@@ -1231,7 +1233,8 @@ ${language === 'ar'
             message: messageContent,
             messages: apiMessages.slice(0, -1), // Don't include the current message
             model: selectedModel,
-            useMCP: mcpEnabled // Use MCP if enabled
+            useMCP: mcpEnabled, // Use MCP if enabled
+            webSearch: webSearchEnabled // Use Tavily web search if enabled
           })
         });
 

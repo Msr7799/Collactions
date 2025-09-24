@@ -105,8 +105,12 @@ export class SimpleMCPClient {
                response.includes('server connected') ||
                response.includes('MCP server') ||
                response.includes('running') ||
-               response.includes('ready'))) {
+               response.includes('ready') ||
+               response.includes('connected to stdio') ||
+               response.includes('DateTime server connected'))) {
             console.log(`✅ Server ${id} readiness detected`);
+            server.isConnected = true;
+            server.status = 'connected';
             clearTimeout(timeout);
             resolve(true);
           }
@@ -140,21 +144,25 @@ export class SimpleMCPClient {
             try {
               this.fetchServerTools(server);
               // إذا لم ترمي خطأ، نعتبرها نجحت
+              server.isConnected = true;
+              server.status = 'connected';
               console.log(`✅ Server ${id} validated via tools fetch`);
               resolve(true);
             } catch (error) {
               console.log(`❌ Server ${id} failed tools fetch:`, error);
+              server.status = 'error';
               resolve(false);
             }
           }
-        }, 5000); // زيادة timeout إلى 5 ثواني
+        }, 8000); // زيادة timeout إلى 8 ثواني للـ production
       });
 
-      server.isConnected = true;
-      server.status = 'connected';
+      // 🔧 CRITICAL FIX: لا تضع isConnected=true هنا! فقط بعد resolve()
       
-      // جلب الأدوات المتاحة
-      await this.fetchServerTools(server);
+      // جلب الأدوات المتاحة بعد التأكد من الجاهزية
+      if (server.isConnected) {
+        await this.fetchServerTools(server);
+      }
       
       console.log(`✅ MCP Server connected: ${id}`);
       return true;

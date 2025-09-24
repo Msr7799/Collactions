@@ -173,3 +173,94 @@ export const generateSecureToken = (length: number = 32): string => {
   
   return result;
 };
+
+/**
+ * Validate user authentication and authorization
+ * التحقق من مصادقة المستخدم والتفويض
+ */
+interface AuthValidationResult {
+  isValid: boolean;
+  userId?: string;
+  error?: {
+    message: string;
+    status: number;
+  };
+}
+
+export const validateUserAuth = (
+  req: any,
+  requiredUserId?: string
+): AuthValidationResult => {
+  // 1. Check if user object exists
+  if (!req.user) {
+    return {
+      isValid: false,
+      error: {
+        message: 'Authentication required | مطلوب تسجيل الدخول',
+        status: 401
+      }
+    };
+  }
+
+  // 2. Check if user ID exists
+  if (!req.user.id || typeof req.user.id !== 'string') {
+    return {
+      isValid: false,
+      error: {
+        message: 'Invalid user session | جلسة مستخدم غير صحيحة',
+        status: 401
+      }
+    };
+  }
+
+  // 3. If specific user ID is required, validate it
+  if (requiredUserId !== undefined) {
+    // Validate required user ID format
+    if (!requiredUserId || typeof requiredUserId !== 'string') {
+      return {
+        isValid: false,
+        error: {
+          message: 'Invalid user ID format | صيغة معرف المستخدم غير صحيحة',
+          status: 400
+        }
+      };
+    }
+
+    // Check authorization - user can only access their own data
+    if (requiredUserId !== req.user.id) {
+      return {
+        isValid: false,
+        error: {
+          message: 'Unauthorized access | وصول غير مصرح به',
+          status: 403
+        }
+      };
+    }
+  }
+
+  return {
+    isValid: true,
+    userId: req.user.id
+  };
+};
+
+/**
+ * Example usage in API routes
+ * مثال على الاستخدام في مسارات API
+ * 
+ * // Before (VULNERABLE):
+ * if (userId !== req.user.id) {
+ *   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+ * }
+ * 
+ * // After (SECURE):
+ * const authResult = validateUserAuth(req, userId);
+ * if (!authResult.isValid) {
+ *   return NextResponse.json(
+ *     { error: authResult.error.message }, 
+ *     { status: authResult.error.status }
+ *   );
+ * }
+ * 
+ * // Use authResult.userId for verified user ID
+ */

@@ -1,7 +1,7 @@
-# Structure Drawing Tool - Advanced Diagramming Application
-   <td align="center" style="padding: 50px;">
-        <img src="public/app-icon-red.svg" width="300" height="300" style="border-radius: 10px; flex: 1; align-items: center; justify-content: center; padding: 10px; margin: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
-      </td>
+# Collactions — AI Gateway & Intelligent Chat Platform
+   <p align="center">
+   <img src="public/app-icon-red.svg" alt="App Icon" width="300" height="300">
+</p>
 
 [![Next.js Version](https://img.shields.io/badge/Next.js-15%2B-blue.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://typescriptlang.org/)
@@ -10,80 +10,67 @@
 
 [![Read in Arabic](https://img.shields.io/badge/Read%20in%20Arabic-%E2%9C%85-white?style=for-the-badge&logo=readme&logoColor=white)](README-ar.md)
 
-Structure Drawing Tool is a sophisticated web-based diagramming application built with Next.js and TypeScript, featuring native Arabic language support and advanced drawing capabilities. The application provides a seamless, modern experience for creating professional diagrams, flowcharts, and structural visualizations with powerful AI-enhanced features.
+Collactions is an advanced AI Gateway and intelligent chat platform built with Next.js and TypeScript. It provides unified access to multiple AI providers (OpenRouter, GPTGOD, Hugging Face), MCP server integration, AI-powered prompt enhancement & translation, advanced code blocks with syntax highlighting, free AI-based image generation, and a realistic terminal emulator (nano + zsh) — all inside a responsive, animated UI with Arabic/English support.
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" style="padding: 50px;">
-        <img src="public/screenshots/diagram-editor.png" width="300" height="200" style="border-radius: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
-      </td>
-      <td align="center" style="padding: 50px;">
-        <img src="public/screenshots/ai-chat.png" width="300" height="200" style="border-radius: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
-      </td>
-    </tr>
-    <tr>
-      <td align="center" style="padding: 50px;">
-        <img src="public/screenshots/dashboard.png" width="300" height="200" style="border-radius: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
-      </td>
-      <td align="center" style="padding: 50px;">
-        <img src="public/screenshots/templates.png" width="300" height="200" style="border-radius: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" />
-      </td>
-    </tr>
-  </table>
-</div>
+<p align="center">
+   <img src="public/collaction_gif.gif" alt="Collactions Preview" width="800" height="400">
+</p>
 
-## ✨ Key Features
+## What this project provides
 
-[![Features](https://img.shields.io/badge/Features-%E2%9C%85-white?style=for-the-badge&logo=readme&logoColor=white)](FEATURES.md)
+- **Multi-Provider AI Gateway**: Unified access to 54+ free AI models from OpenRouter, GPTGOD, and Hugging Face with automatic fallback and rate limiting.
+- **MCP Server Integration**: Extensible Model Context Protocol servers including filesystem, git, memory, sequential-thinking, and more.
+- **AI-Powered Chat Interface**: Advanced chat experience with prompt enhancement, translation between languages, and intelligent message processing.
+- **Smart Code Handling**: Advanced code blocks with syntax highlighting, copy/download functionality, and fullscreen editing modes.
+- **Free Image Generation**: AI-powered image creation using Hugging Face models with GPT-4o description enhancement.
+- **Terminal Emulator**: Realistic terminal simulation with `nano` editor and `zsh` prompt for developer workflows.
+- **Bilingual Support**: Full Arabic and English interface with intelligent language detection and translation.
+- **Authentication**: Secure user management via Clerk with profile management and session persistence.
 
-<img src="public/collactions-logo.svg" width="150" height="150" />
+## Key Features
 
-### 🎨 **Advanced Drawing Engine**
-- **Interactive Canvas**: High-performance drawing canvas with zoom and pan
-- **Smart Shapes**: Intelligent shape recognition and auto-alignment
-- **Vector Graphics**: Scalable vector-based diagrams for crisp rendering
-- **Layer Management**: Multi-layer support for complex diagrams
-- **Grid & Guidelines**: Precision drawing with snap-to-grid functionality
+- **AI Model Management**
+   - Access to 54+ free models from multiple providers with smart routing and fallback mechanisms.
+   - Real-time model status monitoring and automatic error handling.
+   - Custom model configurations and preferences per user.
 
-### 🤖 **AI-Powered Features**
-- **Smart Suggestions**: AI-powered shape and layout recommendations
-- **Auto-Generation**: Generate diagrams from text descriptions
-- **Enhanced Chat**: Interactive AI assistant for diagram creation
-- **Template Recognition**: AI-driven template suggestions
-- **Content Analysis**: Intelligent diagram analysis and optimization
+- **MCP Server Ecosystem**
+   - Filesystem operations, git integration, memory management, and sequential thinking capabilities.
+   - Extensible server architecture with automatic discovery and tool integration.
+   - Real-time server status monitoring and connection management.
 
-### 🌐 **Bilingual Support**
-- **Native Arabic Support**: Full RTL layout and Arabic text rendering
-- **Dual Interface**: Seamless English-Arabic interface switching
-- **Localized Content**: Context-aware content in both languages
-- **RTL Diagrams**: Native right-to-left diagram flow support
+- **Chat & Communication**
+   - AI-powered prompt enhancement and automatic translation between Arabic and English.
+   - Session persistence with automatic saving and chat history management.
+   - Advanced message rendering with typing animations and rich content support.
 
-### 🎨 **Modern User Interface**
-- **Dark/Light Mode**: Elegant theming with user preferences
-- **Responsive Design**: Optimized for all screen sizes
-- **Material Design**: Clean, intuitive interface design
-- **Accessibility**: Full WCAG 2.1 compliance
+- **Developer Tools**
+   - Advanced code blocks with syntax highlighting, language detection, and copy/download functionality.
+   - Integrated terminal emulator with nano editor and zsh prompt simulation.
+   - Git integration and filesystem operations through MCP servers.
 
-### 🔧 **Professional Tools**
-- **Export Options**: Multiple export formats (PNG, SVG, PDF, JSON)
-- **Template Library**: Pre-built professional templates
-- **Collaboration**: Real-time collaborative editing
-- **Version Control**: Diagram versioning and history
-- **Cloud Sync**: Automatic cloud synchronization
+- **Image Generation**
+   - Free AI-powered image creation using Hugging Face FLUX.1-dev model.
+   - GPT-4o enhanced descriptions for better image quality.
+   - Seamless integration within chat conversations.
 
-### 🔐 **Security & Privacy**
-- **Secure Authentication**: Clerk-based secure login system
-- **Data Encryption**: End-to-end encrypted data storage
-- **Privacy-First**: Local processing with optional cloud sync
-- **Permission Management**: Granular access controls
+- **Modern UI/UX**
+   - Responsive design with Tailwind CSS and Framer Motion animations.
+   - Dark/light theme support with smooth transitions.
+   - Bilingual interface (Arabic/English) with RTL support.
 
-## 🚀 Getting Started
+- **Security & Performance**
+   - Clerk-powered authentication with secure session management.
+   - API rate limiting and automatic fallback mechanisms.
+   - Environment-based configuration for secure API key management.
+   - Optimized performance with React memoization and dynamic imports.
 
-### Prerequisites
+## Quickstart
 
-- Node.js 18.0 or higher
-- pnpm 8.0 or higher
+### Requirements
+
+- Node.js >= 20 (project `package.json` targets Node 20+)
+- pnpm
 - Git
 
 ### Run locally

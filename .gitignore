@@ -208,4 +208,11 @@ test-mcp.html
 mcp-control.html
 mcp-manual-control.html
 
+public/config/mcp-servers.json
+
+#trash - buckup
+trash/
+
+
+
 

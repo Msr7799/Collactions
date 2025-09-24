@@ -26,27 +26,79 @@
       "content": "💳 **تجاوز الحد المجاني لتوليد الصور**\n\n⚠️ **المشكلة:** انتهى الرصيد المجاني الشهري لـ Hugging Face\n\n**الوصف المطلوب:** أكتب لي ترجم المكتوب بالانقلينزي صورة فوتوغرافية ساحرة لقمر دموي مشع، يضيء السماء بلون أحمر عميق، ويعكس أشعته المتلألئة على سطح البحر الهادئ، الذي يلتقي بجانب الساحل. الأمواج تتلألأ تحت ضوء القمر، مما يخلق مشهدًا سحريًا مع ظلال رقيقة تبرز تفاصيل الرمال. في الأفق، تظهر  لأشجار النخيل تتمايل برفق في نسيم المساء.\n\n💡 **الحلول المتاحة:**\n• انتظار بداية الشهر القادم لتجديد الرصيد المجاني تلقائياً\n• الاشتراك في Hugging Face PRO للحصول على رصيد أكبر\n• استخدام البرومت مع أدوات توليد صور أخرى مثل DALL-E أو Midjourney\n\n🔗 **روابط مفيدة:**\n• [Hugging Face Pricing](https://huggingface.co/pricing)\n• [Alternative Tools](https://openai.com/dall-e-3)",
       "role": "assistant",
       "timestamp": "2025-09-10T07:34:26.244Z"
+    },
+    {
+      "id": "e54e3b70-b0fe-4cca-9b1a-317f6a2c6fff",
+      "content": "hi",
+      "role": "user",
+      "timestamp": "2025-09-23T23:55:32.441Z"
+    },
+    {
+      "id": "748e9652-0b80-462c-abd1-b0653f11c487",
+      "content": "اه",
+      "role": "user",
+      "timestamp": "2025-09-24T00:01:55.332Z"
+    },
+    {
+      "id": "fda20926-278c-46de-9137-234daa629eef",
+      "content": "هلا",
+      "role": "user",
+      "timestamp": "2025-09-24T00:02:09.796Z"
+    },
+    {
+      "id": "4287252b-e551-498b-81ba-eda30d14be2b",
+      "content": "هلا",
+      "role": "user",
+      "timestamp": "2025-09-24T00:02:23.676Z"
+    },
+    {
+      "id": "19c081bb-ba6f-4f9c-a835-5a74fedd2604",
+      "content": "Alright, the user said \"هلا\" which is an Arabic greeting similar to \"hi\" or \"hello\". They've used it a few times now. I should respond warmly in Arabic to keep the conversation friendly. Since they've reached out multiple times, maybe they're looking for more assistance or just want to chat. I'll ask how I can help them today to keep the interaction productive. Keeping it simple and open-ended should work best.\n\nI'll go with: \"هلا بك! كيف يمكنني مساعدتك اليوم؟\" which means \"Hello! How can I assist you today?\" This is polite and invites them to specify their needs.\nهلا بك! كيف يمكنني مساعدتك اليوم؟",
+      "role": "assistant",
+      "timestamp": "2025-09-24T00:02:29.385Z"
+    },
+    {
+      "id": "8319547d-9303-4f1b-a27d-172ff0485e19",
+      "content": "hi",
+      "role": "user",
+      "timestamp": "2025-09-24T00:39:53.860Z"
+    },
+    {
+      "id": "b87164e7-b6b1-4e7c-bac7-a03e37f9a669",
+      "content": "As they've greeted me again with \"hi,\" I'll respond in English this time to acknowledge their greeting in that language. Since they've already said \"hi\" twice, they may be trying to get my attention or are unsure how to proceed. I'll respond warmly and directly ask how I can help them.\n\n\"Hi there! How can I help you today?\"\n",
+      "role": "assistant",
+      "timestamp": "2025-09-24T00:39:59.080Z"
+    },
+    {
+      "id": "013f23ac-225c-4a33-9856-d46bbdb46be4",
+      "content": "هل بامكانك  أخبارذيذ عن توقيت البحرين الحالي",
+      "role": "user",
+      "timestamp": "2025-09-24T00:40:35.013Z"
+    },
+    {
+      "id": "b04ee1e7-c7d6-4f31-a4f8-5672fd344c50",
+      "content": "تمام، الساعة في البحرين الآن هي [الساعة الحالية بتوقيت البحرين].\n\n**ملاحظة:** بما أنني نموذج لغوي، لا يمكنني الوصول إلى التوقيت الفعلي المباشر. سأقوم بتحديث هذه الإجابة بناءً على معلومات الوقت الحالية المتاحة لي في اللحظة التي أرسل فيها الرد. للحصول على أدق توقيت، يفضل استخدام محرك بحث أو موقع متخصص في عرض التوقيت.\n",
+      "role": "assistant",
+      "timestamp": "2025-09-24T00:40:49.062Z"
     }
   ],
   "createdAt": "2025-09-01T19:16:59.761Z",
   "updatedAt": "2025-09-01T19:16:59.761Z",
   "model": {
-    "id": "gpt-4o",
-    "name": "GPT-4o",
-    "provider": "GPTGOD",
-    "description": "أحدث نموذج من OpenAI مع قدرات متقدمة في النص والصور والصوت - يدعم تحليل الصور",
-    "contextLength": 128000,
+    "id": "google/gemini-2.0-flash-exp:free",
+    "name": "Google Gemini 2.0 Flash Experimental",
+    "provider": "OpenRouter",
+    "description": "نموذج Gemini 2.0 التجريبي مع سياق 1M - مجاني",
+    "contextLength": 1048576,
     "pricing": {
-      "input": "Via GPTGOD",
-      "output": "Via GPTGOD"
+      "input": "Free",
+      "output": "Free"
     },
     "capabilities": [
+      "experimental",
+      "large_context",
       "multimodal",
-      "advanced_reasoning",
-      "coding",
-      "vision",
-      "audio",
-      "image_analysis"
+      "vision"
     ],
     "type": "free"
   }

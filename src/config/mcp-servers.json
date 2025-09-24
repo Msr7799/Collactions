@@ -2,35 +2,46 @@
   "servers": {
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/msr/Desktop/ss/collactions"],
-      "env": {}
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"],
+      "env": {},
+      "description": "Local filesystem operations - read and write files"
     },
     "fetch": {
-      "command": "uvx",
-      "args": ["mcp-server-fetch"],
-      "env": {}
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "env": {},
+      "description": "Web content fetching from URLs and APIs"
     },
     "git": {
-      "command": "uvx",
-      "args": ["mcp-server-git"],
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git"],
       "env": {
-        "GIT_DIR": "/home/msr/Desktop/ss/collactions/.git"
-      }
+        "GIT_DIR": "./.git"
+      },
+      "description": "Git repository operations and version control"
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "args": ["-y", "@modelcontextprotocol/server-sequentialthinking"],
       "env": {
-        "DEBUG": "true"
-      }
+        "DEBUG": "false"
+      },
+      "description": "Advanced sequential reasoning and analysis"
     },
     "memory": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],
       "env": {
-        "MEMORY_BACKEND": "sqlite",
-        "MEMORY_PATH": "/home/msr/Desktop/ss/collactions/memory.db"
-      }
+        "MEMORY_BACKEND": "json",
+        "MEMORY_PATH": "./src/app/prompts/chat"
+      },
+      "description": "Knowledge graph and memory management system"
+    },
+    "time": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-time"],
+      "env": {},
+      "description": "Time and date operations with timezone support"
     },
     "context7": {
       "command": "npx",
@@ -38,71 +49,73 @@
       "env": {
         "API_KEY": "d69119af-ffd5-426a-babe-649f4b13269f",
         "ENDPOINT": "https://api.upstash.com/context7"
-      }
-    },
-    "time-mcp": {
-      "command": "npx",
-      "args": ["-y", "time-mcp"],
-      "env": {}
+      },
+      "description": "Context7 documentation and library search",
+      "disabled": false
     }
   },
   "serverTemplates": [
     {
       "id": "time",
       "name": "Time Server",
-      "description": "الحصول على الوقت والتاريخ الحالي",
+      "description": "الحصول على الوقت والتاريخ الحالي مع دعم المناطق الزمنية",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-time"
-      ],
-      "category": "utility"
+      "args": ["-y", "@modelcontextprotocol/server-time"],
+      "category": "utility",
+      "tools": ["get_current_time", "convert_timezone", "format_date"]
     },
     {
       "id": "fetch",
       "name": "Fetch Server",
-      "description": "جلب محتوى المواقع والـ APIs",
+      "description": "جلب محتوى المواقع والـ APIs مع دعم المصادقة",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-fetch"
-      ],
-      "category": "web"
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "category": "web",
+      "tools": ["fetch_url", "post_request", "get_headers"]
     },
     {
       "id": "filesystem",
       "name": "Filesystem Server",
-      "description": "قراءة وكتابة الملفات المحلية",
+      "description": "قراءة وكتابة وإدارة الملفات المحلية",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "--",
-        "/home/msr/Desktop/ss/collactions"
-      ],
-      "category": "files"
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"],
+      "category": "files",
+      "tools": ["read_file", "write_file", "list_directory", "create_directory"]
     },
     {
       "id": "sequential-thinking",
       "name": "Sequential Thinking",
-      "description": "نظام التفكير المتسلسل والتحليل",
+      "description": "نظام التفكير المتسلسل والتحليل المنطقي خطوة بخطوة",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequentialthinking"
-      ],
-      "category": "ai"
+      "args": ["-y", "@modelcontextprotocol/server-sequentialthinking"],
+      "category": "ai",
+      "tools": ["think_step_by_step", "analyze_problem", "generate_solution"]
     },
     {
       "id": "memory",
       "name": "Memory Server",
-      "description": "نظام الذاكرة والمعرفة المتقدم",
+      "description": "نظام الذاكرة والمعرفة المتقدم مع قاعدة بيانات JSON",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-memory"
-      ],
-      "category": "ai"
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "category": "ai",
+      "tools": ["create_entities", "search_nodes", "add_observations", "create_relations"]
+    },
+    {
+      "id": "git",
+      "name": "Git Server",
+      "description": "عمليات Git وإدارة التحكم في الإصدارات",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git"],
+      "category": "development",
+      "tools": ["git_status", "git_log", "git_diff", "git_commit", "git_branch"]
     }
-  ]
+  ],
+  "production": {
+    "notes": "Production-ready configuration with relative paths and JSON-based memory storage",
+    "deployment": {
+      "filesystem_path": "Uses relative path (./) for cross-platform compatibility",
+      "memory_backend": "JSON files stored in chat directory for easy backup and portability",
+      "git_directory": "Relative .git path works in any deployment environment"
+    }
+  }
 }

@@ -8,9 +8,10 @@
   },
   "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
+    "postinstall": "cd chat-ui && pnpm install --ignore-scripts",
+    "dev": "concurrently --kill-others --names \"COLLACTIONS,CHAT-UI\" -c \"bgBlue.bold,bgGreen.bold\" \"next dev --turbopack\" \"cd chat-ui && pnpm dev\"",
+    "build": "next build && cd chat-ui && pnpm build",
+    "start": "concurrently --names \"COLLACTIONS,CHAT-UI\" -c \"bgBlue.bold,bgGreen.bold\" \"next start\" \"cd chat-ui && pnpm preview\"",
     "lint": "next lint"
   },
   "dependencies": {
@@ -47,6 +48,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sharp": "^0.32.0",
+    "concurrently": "^8.2.2",
     "eslint": "^9",
     "eslint-config-next": "15.4.7",
     "prettier": "^3.6.2",

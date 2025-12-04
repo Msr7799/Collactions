@@ -26,6 +26,25 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   },
+  
+  // Headers for iframe security
+  async headers() {
+    return [
+      {
+        source: '/prompts',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: `frame-src 'self' http://localhost:5173 ${process.env.NEXT_PUBLIC_CHATUI_URL || ''};`,
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -8,10 +8,9 @@
   },
   "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "postinstall": "cd chat-ui && pnpm install --ignore-scripts",
-    "dev": "concurrently --kill-others --names \"COLLACTIONS,CHAT-UI\" -c \"bgBlue.bold,bgGreen.bold\" \"next dev --turbopack\" \"cd chat-ui && pnpm dev\"",
-    "build": "next build && cd chat-ui && pnpm build",
-    "start": "concurrently --names \"COLLACTIONS,CHAT-UI\" -c \"bgBlue.bold,bgGreen.bold\" \"next start\" \"cd chat-ui && pnpm preview\"",
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {

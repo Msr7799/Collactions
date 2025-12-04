@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import TransparentLayout from '@/components/layout/TransparentLayout';
 import { StarsLayout } from '@/components/layout/StarsLayout';
 import { Terminal, X, Minimize2, Maximize2, Copy, Lock, Shield } from 'lucide-react';
-import { chatStorage, ChatSession } from '../prompts/chatStorage';
+import { chatStorage, ChatSession } from '../prompts-legacy/prompts/chatStorage';
 
 interface Command {
   input: string;

@@ -8,10 +8,7 @@ const nextConfig: NextConfig = {
   // Disable strict mode to reduce hydration warnings
   reactStrictMode: false,
   
-  // Skip ESLint and TypeScript checks during build for faster deployment
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Skip TypeScript checks during build for faster deployment
   typescript: {
     ignoreBuildErrors: true,
   },

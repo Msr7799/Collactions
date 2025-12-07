@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Layout from '@/components/layout/Layout';
-import { Loader2, MessageSquare, Maximize2, Minimize2, RefreshCw, ExternalLink } from 'lucide-react';
+import { Loader2, MessageSquare, Maximize2, Minimize2, RefreshCw, ExternalLink, LogIn, AlertTriangle } from 'lucide-react';
 
 export default function PromptsPage() {
   const { language } = useLanguage();
@@ -11,6 +11,7 @@ export default function PromptsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showLoginTip, setShowLoginTip] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // تحديد URL الصحيح بناءً على البيئة
@@ -90,6 +91,36 @@ export default function PromptsPage() {
             </button>
           </div>
         </div>
+
+        {/* Login Tip Banner */}
+        {showLoginTip && (
+          <div className="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm">
+                {isArabic 
+                  ? 'لتسجيل الدخول عبر Google، افتح Chat UI في تبويب جديد أولاً' 
+                  : 'To login with Google, open Chat UI in a new tab first'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={openInNewTab}
+                className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded text-sm transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                {isArabic ? 'تسجيل الدخول' : 'Login'}
+              </button>
+              <button
+                onClick={() => setShowLoginTip(false)}
+                className="text-amber-600 hover:text-amber-800 dark:text-amber-400 p-1"
+                title={isArabic ? 'إخفاء' : 'Dismiss'}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Loading Overlay */}
         {isLoading && (

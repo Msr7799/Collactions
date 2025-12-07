@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Layout from '@/components/layout/Layout';
-import { Loader2, MessageSquare, Maximize2, Minimize2, RefreshCw, ExternalLink, LogIn, AlertTriangle } from 'lucide-react';
+import { Loader2, MessageSquare, Maximize2, Minimize2, RefreshCw, ExternalLink, LogIn, X } from 'lucide-react';
 
 export default function PromptsPage() {
   const { language } = useLanguage();
@@ -11,13 +11,14 @@ export default function PromptsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showLoginTip, setShowLoginTip] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginPopup, setLoginPopup] = useState<Window | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // تحديد URL الصحيح بناءً على البيئة
   const chatUIUrl = process.env.NODE_ENV === 'development' 
     ? 'http://localhost:5173'
-    : process.env.NEXT_PUBLIC_CHATUI_URL || 'https://collactions-chat.vercel.app';
+    : process.env.NEXT_PUBLIC_CHATUI_URL || 'https://chat-ui-nine-sooty.vercel.app';
 
   useEffect(() => {
     // إخفاء loading بعد تحميل iframe
@@ -44,6 +45,35 @@ export default function PromptsPage() {
     window.open(chatUIUrl, '_blank');
   };
 
+  // فتح popup للـ login
+  const openLoginPopup = useCallback(() => {
+    const width = 500;
+    const height = 700;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    
+    const popup = window.open(
+      chatUIUrl,
+      'ChatUI_Login',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
+    
+    setLoginPopup(popup);
+
+    // مراقبة إغلاق النافذة
+    const checkClosed = setInterval(() => {
+      if (popup?.closed) {
+        clearInterval(checkClosed);
+        setLoginPopup(null);
+        setIsLoggedIn(true);
+        // تحديث الـ iframe
+        if (iframeRef.current) {
+          iframeRef.current.src = iframeRef.current.src;
+        }
+      }
+    }, 500);
+  }, [chatUIUrl]);
+
   return (
     <Layout>
       <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900' : 'h-[calc(100vh-80px)]'} flex flex-col`}>
@@ -63,6 +93,29 @@ export default function PromptsPage() {
 
           {/* Controls */}
           <div className="flex items-center gap-2">
+            {/* Login Button */}
+            {!isLoggedIn && (
+              <button
+                onClick={openLoginPopup}
+                className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium"
+                title={isArabic ? 'تسجيل الدخول' : 'Login'}
+              >
+                <LogIn className="w-4 h-4" />
+                {isArabic ? 'تسجيل الدخول' : 'Login'}
+              </button>
+            )}
+
+            {/* Logged In Indicator */}
+            {isLoggedIn && (
+              <div className="flex items-center gap-1.5 bg-green-500/30 px-3 py-1.5 rounded-lg text-sm">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                {isArabic ? 'متصل' : 'Connected'}
+              </div>
+            )}
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-white/30"></div>
+
             {/* Refresh Button */}
             <button
               onClick={handleRefresh}
@@ -92,33 +145,15 @@ export default function PromptsPage() {
           </div>
         </div>
 
-        {/* Login Tip Banner */}
-        {showLoginTip && (
-          <div className="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm">
-                {isArabic 
-                  ? 'لتسجيل الدخول عبر Google، افتح Chat UI في تبويب جديد أولاً' 
-                  : 'To login with Google, open Chat UI in a new tab first'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={openInNewTab}
-                className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded text-sm transition-colors"
-              >
-                <LogIn className="w-4 h-4" />
-                {isArabic ? 'تسجيل الدخول' : 'Login'}
-              </button>
-              <button
-                onClick={() => setShowLoginTip(false)}
-                className="text-amber-600 hover:text-amber-800 dark:text-amber-400 p-1"
-                title={isArabic ? 'إخفاء' : 'Dismiss'}
-              >
-                ✕
-              </button>
-            </div>
+        {/* Login Popup Overlay */}
+        {loginPopup && !loginPopup.closed && (
+          <div className="bg-blue-50 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-800 px-4 py-2 flex items-center justify-center gap-3">
+            <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+            <span className="text-sm text-blue-800 dark:text-blue-200">
+              {isArabic 
+                ? 'جارٍ تسجيل الدخول... أكمل في النافذة المنبثقة ثم أغلقها' 
+                : 'Logging in... Complete in popup window then close it'}
+            </span>
           </div>
         )}
 

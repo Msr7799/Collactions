@@ -13,7 +13,7 @@ const ReactMarkdown = dynamic(
 ) as any;
 const ThinkingMessage = dynamic(() => import('@/components/ai/ThinkingMessage'), { ssr: false });
 const TypewriterEffect = dynamic(() => import('@/components/ai/TypewriterEffect'), { ssr: false });
-import HistorySidebar from './HistorySidebar';
+import HistorySidebar from './prompts/HistorySidebar';
 
 
 import remarkGfm from 'remark-gfm';
@@ -39,7 +39,7 @@ interface MCPPrompt {
 }
 
 import { getAIGateway, ChatMessage as APIChatMessage } from '@/lib/api';
-import { chatStorage, ChatSession } from './chatStorage';
+import { chatStorage, ChatSession } from './prompts/chatStorage';
 
 interface ChatMessage {
   id: string;
@@ -93,7 +93,7 @@ import {
   Play,
   History
 } from 'lucide-react';
-import CodeBlock, { MessageContentRenderer } from './CodeBlock';
-import MCPManager from './MCP-Manager';
+import CodeBlock, { MessageContentRenderer } from './prompts/CodeBlock';
+import MCPManager from './prompts/MCP-Manager';
 
 // ... rest of the file

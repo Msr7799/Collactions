@@ -140,7 +140,7 @@ export default function PromptsPage() {
             className="w-full h-full border-0"
             title="Chat UI"
             allow="clipboard-write; microphone; camera"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-top-navigation allow-top-navigation-by-user-activation"
             onLoad={() => setIsLoading(false)}
             onError={() => {
               setIsLoading(false);
